@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 
-const CLIENT_ID = '1fd98e902f6a4d5d819124e2cbf0563d';
-const CLIENT_SECRET = '2155824fe4774999b6f4183a4ab62f9d';
-const REDIRECT_URI = 'http://localhost:3000/spotify-auth';
+const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
+const CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
+const REDIRECT_URI = `${process.env.NEXT_PUBLIC_HOST}/spotify-auth`;
 
 // All scopes we need for the app
 const SCOPES = [
