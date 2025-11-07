@@ -1,9 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
-const CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
+const CLIENT_ID = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID;
 const REDIRECT_URI = `${process.env.NEXT_PUBLIC_HOST}/spotify-auth`;
 
 // All scopes we need for the app
@@ -21,37 +20,37 @@ export default function SpotifyAuthPage() {
   const [refreshToken, setRefreshToken] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [codeFromUrl, setCodeFromUrl] = useState<string | null>(null);
 
-  // Check if we have a code in the URL
-  const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
-  const codeFromUrl = urlParams?.get('code');
+  // Check if we have a code in the URL (client-side only)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      setCodeFromUrl(urlParams.get('code'));
+    }
+  }, []);
 
   // Step 1: Generate authorization URL
   const authUrl = `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${encodeURIComponent(SCOPES)}`;
 
-  // Step 2: Exchange code for refresh token
+  // Step 2: Exchange code for refresh token via API route
   const getRefreshToken = async (code: string) => {
     setLoading(true);
     setError('');
 
     try {
-      const response = await fetch('https://accounts.spotify.com/api/token', {
+      const response = await fetch('/api/spotify/token', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Authorization': `Basic ${btoa(`${CLIENT_ID}:${CLIENT_SECRET}`)}`,
+          'Content-Type': 'application/json',
         },
-        body: new URLSearchParams({
-          grant_type: 'authorization_code',
-          code: code,
-          redirect_uri: REDIRECT_URI,
-        }),
+        body: JSON.stringify({ code }),
       });
 
       const data = await response.json();
 
       if (data.error) {
-        setError(`Error: ${data.error_description || data.error}`);
+        setError(`Error: ${data.error}`);
       } else {
         setRefreshToken(data.refresh_token);
       }
