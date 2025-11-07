@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 
-const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
-const CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
+// Use NEXT_PUBLIC_ for anything the browser needs to see:
+const CLIENT_ID = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID!;
 const REDIRECT_URI = `${process.env.NEXT_PUBLIC_HOST}/spotify-auth`;
 
 // All scopes we need for the app
@@ -27,40 +27,33 @@ export default function SpotifyAuthPage() {
   const codeFromUrl = urlParams?.get('code');
 
   // Step 1: Generate authorization URL
-  const authUrl = `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${encodeURIComponent(SCOPES)}`;
+	const authUrl =
+		`https://accounts.spotify.com/authorize` +
+		`?client_id=${CLIENT_ID}` +
+		`&response_type=code` +
+		`&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
+		`&scope=${encodeURIComponent(SCOPES)}`;
+	// (Optional but recommended) add state param to protect against CSRF
 
   // Step 2: Exchange code for refresh token
-  const getRefreshToken = async (code: string) => {
-    setLoading(true);
-    setError('');
-
-    try {
-      const response = await fetch('https://accounts.spotify.com/api/token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Authorization': `Basic ${btoa(`${CLIENT_ID}:${CLIENT_SECRET}`)}`,
-        },
-        body: new URLSearchParams({
-          grant_type: 'authorization_code',
-          code: code,
-          redirect_uri: REDIRECT_URI,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.error) {
-        setError(`Error: ${data.error_description || data.error}`);
-      } else {
-        setRefreshToken(data.refresh_token);
-      }
-    } catch (err: any) {
-      setError(`Failed to get token: ${err.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
+	const getRefreshToken = async (code: string) => {
+		setLoading(true);
+		setError('');
+		try {
+			const resp = await fetch('/api/spotify/token', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ code, redirect_uri: REDIRECT_URI }),
+			});
+			const data = await resp.json();
+			if (data.error) setError(`Error: ${data.error_description || data.error}`);
+			else setRefreshToken(data.refresh_token);
+		} catch (e: any) {
+			setError(`Failed to get token: ${e.message}`);
+		} finally {
+			setLoading(false);
+		}
+	};
 
   return (
     <div className="min-h-screen bg-black text-white p-8">
