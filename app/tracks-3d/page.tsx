@@ -5,11 +5,11 @@ import dynamic from 'next/dynamic';
 import useSWR from 'swr';
 import fetcher from '@/lib/fetcher';
 import { motion, AnimatePresence } from 'framer-motion';
-import Navigation from "@/app/components/Interface/Navigation";
+import Navigation from "@/components/Interface/Navigation";
 
 // Dynamically import 3D components to avoid SSR
-const Scene = dynamic(() => import('@/app/components/3D/Scene'), { ssr: false });
-const TrackParticle = dynamic(() => import('@/app/components/3D/TrackParticle'), { ssr: false });
+const Scene = dynamic(() => import('@/components/3D/Scene'), { ssr: false });
+const TrackParticle = dynamic(() => import('@/components/3D/TrackParticle'), { ssr: false });
 
 export default function Tracks3DPage() {
   const [timeRange, setTimeRange] = useState<'short_term' | 'medium_term' | 'long_term'>('short_term');

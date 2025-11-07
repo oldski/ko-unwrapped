@@ -30,7 +30,7 @@ export default function TrackParticle({
   const texture = useLoader(
     THREE.TextureLoader,
     track.album.images[1]?.url || track.album.images[0]?.url
-  );
+  ) as THREE.Texture;
 
   // Animate the particle
   useFrame((state) => {

@@ -1,11 +1,11 @@
 'use client';
 
-import Navigation from "@/app/components/Interface/Navigation";
-import CalendarHeatmap from "@/app/components/CalendarHeatmap";
-import TasteEvolution from "@/app/components/TasteEvolution";
-import OnThisDay from "@/app/components/OnThisDay";
-import ListeningStreaks from "@/app/components/ListeningStreaks";
-import ExportData from "@/app/components/ExportData";
+import Navigation from "@/components/Interface/Navigation";
+import CalendarHeatmap from "@/components/CalendarHeatmap";
+import TasteEvolution from "@/components/TasteEvolution";
+import OnThisDay from "@/components/OnThisDay";
+import ListeningStreaks from "@/components/ListeningStreaks";
+import ExportData from "@/components/ExportData";
 import { motion } from 'framer-motion';
 
 export default function InsightsPage() {

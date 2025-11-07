@@ -2,8 +2,8 @@
 import fetcher from "@/lib/fetcher";
 import useSWR from "swr";
 import Image from "next/image";
-import NowPlaying from "@/app/components/NowPlaying";
-import Spinner from "@/app/components/Interface/Spinner";
+import NowPlaying from "@/components/NowPlaying";
+import Spinner from "@/components/Interface/Spinner";
 import {useState} from "react";
 import { motion, animate } from "framer-motion";
 

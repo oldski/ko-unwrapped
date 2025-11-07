@@ -1,4 +1,4 @@
-import TopArtists from "@/app/components/TopArtists";
+import TopArtists from "@/components/TopArtists";
 
 const TopArtistsPage = () => {
 	

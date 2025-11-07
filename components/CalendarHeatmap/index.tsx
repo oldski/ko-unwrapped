@@ -8,7 +8,7 @@ type ViewMode = 'plays' | 'mood';
 
 export default function CalendarHeatmap() {
   const [viewMode, setViewMode] = useState<ViewMode>('plays');
-  const [hoveredDay, setHoveredDay] = useState<{ date: string; count: number; avgValence?: number } | null>(null);
+  const [hoveredDay, setHoveredDay] = useState<{ date: string; count: number; avgValence?: number; tracks: any[] } | null>(null);
 
   // Fetch all history (last 365 days)
   const startDate = new Date();
@@ -199,7 +199,7 @@ export default function CalendarHeatmap() {
             <p className="text-cyan-400 text-sm">
               {hoveredDay.count} {hoveredDay.count === 1 ? 'play' : 'plays'}
             </p>
-            {viewMode === 'mood' && (
+            {viewMode === 'mood' && hoveredDay.avgValence !== undefined && (
               <p className="text-green-400 text-sm mt-1">
                 Mood: {hoveredDay.avgValence > 0.6 ? 'Happy' : hoveredDay.avgValence > 0.4 ? 'Neutral' : 'Calm'}
               </p>

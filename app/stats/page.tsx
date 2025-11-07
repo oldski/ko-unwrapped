@@ -4,8 +4,8 @@ import { useState, useMemo } from 'react';
 import useSWR from 'swr';
 import fetcher from '@/lib/fetcher';
 import { motion } from 'framer-motion';
-import Navigation from "@/app/components/Interface/Navigation";
-import DateRangePicker from "@/app/components/DateRangePicker";
+import Navigation from "@/components/Interface/Navigation";
+import DateRangePicker from "@/components/DateRangePicker";
 
 export default function StatsPage() {
   const [selectedView, setSelectedView] = useState<'timeline' | 'patterns'>('timeline');

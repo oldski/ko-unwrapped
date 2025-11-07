@@ -29,6 +29,11 @@ export const NowPlaying: React.FC<NowPlayingProps> = ({ getIsPlaying }) => {
 		colorCount: 6
 	});
 
+	// Ensure colors are strings for TypeScript
+	const primaryColor = (clr as string) || '#1DB954';
+	const backgroundColor = (colors?.[2] as string) || '#1DB954';
+	const textColor = (colors?.[2] as string) || '#191414';
+
 	const onExpand = () => setIsExpanded(!isExpanded);
 
 	useEffect(() => {
@@ -64,13 +69,13 @@ export const NowPlaying: React.FC<NowPlayingProps> = ({ getIsPlaying }) => {
 							className="h-full w-full rounded rounded-r-3xl rounded-tl-3xl"
 							style={isExpanded ? {
 								backgroundColor: 'transparent',
-								backgroundImage: `radial-gradient(transparent 1px, ${colors[2]} 1px)`,
+								backgroundImage: `radial-gradient(transparent 1px, ${backgroundColor} 1px)`,
 								backgroundSize: '4px 4px',
 								backdropFilter: 'blur(3px)',
 								opacity: 1,
 							} : {
-								color: clr,
-								backgroundColor: colors[2]
+								color: primaryColor,
+								backgroundColor: backgroundColor
 							}}
 							animate={!isExpanded ? {
 								scale: [1, 1.1, 1],
@@ -96,14 +101,14 @@ export const NowPlaying: React.FC<NowPlayingProps> = ({ getIsPlaying }) => {
 							</motion.div>
 							{isExpanded && (
 								<div className="flex flex-col items-center justify-center w-full h-full p-10 gap-8">
-									<h2 className="text-8xl font-extrabold italic inline drop-shadow-md" style={{'color': clr}}>Now Playing</h2>
+									<h2 className="text-8xl font-extrabold italic inline drop-shadow-md" style={{'color': primaryColor}}>Now Playing</h2>
 
 									<div className="flex items-center justify-center gap-10">
 										{/* Pulsing Album Art */}
 										<div className="relative">
 											<motion.div
 												className="absolute -inset-4 rounded-3xl"
-												style={{ backgroundColor: clr, opacity: 0.3 }}
+												style={{ backgroundColor: primaryColor, opacity: 0.3 }}
 												animate={{
 													scale: [1, 1.1, 1],
 												}}
@@ -135,26 +140,26 @@ export const NowPlaying: React.FC<NowPlayingProps> = ({ getIsPlaying }) => {
 												<div className="grid grid-cols-2 gap-4 mt-4">
 													<div className="bg-black/30 backdrop-blur-sm rounded-lg p-4">
 														<p className="text-sm opacity-70">Tempo</p>
-														<p className="text-3xl font-bold" style={{ color: clr }}>
+														<p className="text-3xl font-bold" style={{ color: primaryColor }}>
 															{Math.round(data.audioFeatures.tempo)}
 														</p>
 														<p className="text-xs opacity-50">BPM</p>
 													</div>
 													<div className="bg-black/30 backdrop-blur-sm rounded-lg p-4">
 														<p className="text-sm opacity-70">Energy</p>
-														<p className="text-3xl font-bold" style={{ color: clr }}>
+														<p className="text-3xl font-bold" style={{ color: primaryColor }}>
 															{Math.round(data.audioFeatures.energy * 100)}%
 														</p>
 													</div>
 													<div className="bg-black/30 backdrop-blur-sm rounded-lg p-4">
 														<p className="text-sm opacity-70">Danceability</p>
-														<p className="text-3xl font-bold" style={{ color: clr }}>
+														<p className="text-3xl font-bold" style={{ color: primaryColor }}>
 															{Math.round(data.audioFeatures.danceability * 100)}%
 														</p>
 													</div>
 													<div className="bg-black/30 backdrop-blur-sm rounded-lg p-4">
 														<p className="text-sm opacity-70">Valence</p>
-														<p className="text-3xl font-bold" style={{ color: clr }}>
+														<p className="text-3xl font-bold" style={{ color: primaryColor }}>
 															{Math.round(data.audioFeatures.valence * 100)}%
 														</p>
 													</div>
@@ -167,7 +172,7 @@ export const NowPlaying: React.FC<NowPlayingProps> = ({ getIsPlaying }) => {
 												target="_blank"
 												rel="noopener noreferrer"
 												className="flex items-center gap-2 px-6 py-3 rounded-lg font-bold transition-all mt-4"
-												style={{ backgroundColor: clr, color: colors[2] }}
+												style={{ backgroundColor: primaryColor, color: textColor }}
 											>
 												<FaSpotify size={24} />
 												Open in Spotify

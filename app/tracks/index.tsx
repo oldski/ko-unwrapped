@@ -1,4 +1,4 @@
-import TopTracks from "@/app/components/TopTracks";
+import TopTracks from "@/components/TopTracks";
 
 const TopTracksPage = () => {
 	

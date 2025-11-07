@@ -4,7 +4,7 @@ import { useState } from 'react';
 import useSWR from 'swr';
 import fetcher from '@/lib/fetcher';
 import { motion } from 'framer-motion';
-import Navigation from "@/app/components/Interface/Navigation";
+import Navigation from "@/components/Interface/Navigation";
 
 interface AudioFeature {
   name: string;

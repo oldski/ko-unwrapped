@@ -1,8 +1,8 @@
 'use client'
 import fetcher from "@/lib/fetcher";
 import useSWR from "swr";
-import Spinner from "@/app/components/Interface/Spinner";
-import Card from "@/app/components/Interface/Card";
+import Spinner from "@/components/Interface/Spinner";
+import Card from "@/components/Interface/Card";
 
 const TopTracks = () => {
 	const { data, error, isLoading} = useSWR(`${process.env.NEXT_PUBLIC_HOST}/api/top-tracks`, fetcher);

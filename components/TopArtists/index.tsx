@@ -1,9 +1,9 @@
 'use client'
 import fetcher from "@/lib/fetcher";
 import useSWR from "swr";
-import Spinner from "@/app/components/Interface/Spinner";
+import Spinner from "@/components/Interface/Spinner";
 import Image from "next/image";
-import Card from "@/app/components/Interface/Card";
+import Card from "@/components/Interface/Card";
 
 const TopArtists = () => {
 	const { data, error, isLoading} = useSWR(`${process.env.NEXT_PUBLIC_HOST}/api/top-artists`, fetcher);

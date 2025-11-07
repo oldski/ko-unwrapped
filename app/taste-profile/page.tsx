@@ -4,7 +4,7 @@ import { useState } from 'react';
 import useSWR from 'swr';
 import fetcher from '@/lib/fetcher';
 import { motion } from 'framer-motion';
-import Navigation from "@/app/components/Interface/Navigation";
+import Navigation from "@/components/Interface/Navigation";
 
 export default function TasteProfilePage() {
   const [timeRange, setTimeRange] = useState<'short_term' | 'medium_term' | 'long_term'>('short_term');
