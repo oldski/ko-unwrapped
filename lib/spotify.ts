@@ -1,5 +1,13 @@
 import { SpotifyAccessToken } from "@/types/Spotify";
-import {IArtistsAPIResponse, IProfileAPIResponse, ITracksAPIResponse} from "./interface";
+import {
+    IArtistsAPIResponse,
+    IProfileAPIResponse,
+    ITracksAPIResponse,
+    IAudioFeaturesResponse,
+    IRecentlyPlayedResponse,
+    IAudioAnalysis,
+    ITopTracksResponse
+} from "./interface";
 
 const client_id = process.env.SPOTIFY_CLIENT_ID;
 const client_secret = process.env.SPOTIFY_CLIENT_SECRET;
@@ -117,7 +125,7 @@ export const topArtists = async (): Promise<IArtistsAPIResponse[]> => {
 export const currentlyPlayingSong = async () => {
     // Obtain an access token
     const { access_token } = await getAccessToken();
-    
+
     // Make a request to the Spotify API to retrieve the currently playing song for the user
     return fetch("https://api.spotify.com/v1/me/player/currently-playing", {
         headers: {
@@ -127,3 +135,71 @@ export const currentlyPlayingSong = async () => {
         next: { revalidate: 0 },
     });
 };
+
+/**
+ * Generic helper function to make authenticated requests to the Spotify API
+ */
+const spotifyApi = async (endpoint: string) => {
+    // Obtain an access token
+    const { access_token } = await getAccessToken();
+
+    // Make the request to the Spotify API
+    const response = await fetch(`https://api.spotify.com${endpoint}`, {
+        headers: {
+            Authorization: `Bearer ${access_token}`,
+        },
+    });
+
+    // Handle the response
+    if (!response.ok) {
+        const errorBody = await response.text();
+        console.error(`Spotify API error for ${endpoint}:`, response.status, errorBody);
+        throw new Error(`Spotify API request failed: ${response.statusText} - ${errorBody}`);
+    }
+
+    return response.json();
+};
+
+/**
+ * Get audio features for multiple tracks
+ * Returns danceability, energy, valence, tempo, and other audio characteristics
+ */
+export async function getAudioFeatures(trackIds: string[]): Promise<IAudioFeaturesResponse> {
+	return spotifyApi(`/v1/audio-features?ids=${trackIds.join(',')}`);
+}
+
+/**
+ * Get recently played tracks for the user
+ * @param limit - Number of tracks to return (max 50)
+ */
+export async function getRecentlyPlayed(limit = 50): Promise<IRecentlyPlayedResponse> {
+	return spotifyApi(`/v1/me/player/recently-played?limit=${limit}`);
+}
+
+/**
+ * Get audio analysis for a track (for beat detection and detailed analysis)
+ * @param trackId - Spotify track ID
+ */
+export async function getAudioAnalysis(trackId: string): Promise<IAudioAnalysis> {
+	return spotifyApi(`/v1/audio-analysis/${trackId}`);
+}
+
+/**
+ * Get top tracks with time range options
+ * @param timeRange - short_term (4 weeks), medium_term (6 months), or long_term (years)
+ * @param limit - Number of tracks to return (max 50)
+ */
+export async function getTopTracksTimeRange(
+	timeRange: 'short_term' | 'medium_term' | 'long_term',
+	limit = 50
+): Promise<ITopTracksResponse> {
+	return spotifyApi(`/v1/me/top/tracks?limit=${limit}&time_range=${timeRange}`);
+}
+
+/**
+ * Get multiple artists details
+ * @param artistIds - Array of Spotify artist IDs
+ */
+export async function getArtists(artistIds: string[]): Promise<{ artists: IArtistsAPIResponse[] }> {
+	return spotifyApi(`/v1/artists?ids=${artistIds.join(',')}`);
+}

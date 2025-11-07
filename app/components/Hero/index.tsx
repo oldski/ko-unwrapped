@@ -29,14 +29,13 @@ const Hero = () => {
 			<div className="flex">
 				{data && (
 					<div>
-						<h1 className="fixed bottom-0 left-0 font-extrabold font-mono italic text-cyan-500 text-8xl mix-blend-multiply z-50">__<a style={{mixBlendMode:'overlay'}} className="mix-blend-overlay hover:mix-blend-exclusion hover:bg-white hover:text-yellow-600 hover:duration-300" href={data.external_urls?.spotify}>{data.display_name}</a>_UNWRAPPED__</h1>
-						{isPlaying ? <h2>Stupid Girl..</h2> : <h2>the world is a vampire</h2>}
-						<Image className="rounded-t-3xl rounded-bl-3xl drop-shadow-sm" src={data.images[0].url} alt={data.display_name} width={data.images[0].width} height={data.images[0].height} />
+						<h1 className="fixed bottom-0 left-0 font-extrabold font-mono italic text-cyan-500 text-8xl mix-blend-multiply z-50">__<a target="_blank" style={{mixBlendMode:'overlay'}} className="mix-blend-overlay hover:mix-blend-exclusion hover:bg-white hover:text-yellow-600 hover:duration-300" href={data.external_urls?.spotify}>{data.display_name}</a>_UNWRAPPED__</h1>
+						{/*<Image className="rounded-t-3xl rounded-bl-3xl drop-shadow-sm" src={data.images[0].url} alt={data.display_name} width={data.images[0].width} height={data.images[0].height} />*/}
+						
+						<NowPlaying getIsPlaying={getIsPlaying} />
 					</div>
 				)}
 			</div>
-			
-			<NowPlaying getIsPlaying={getIsPlaying} />
 		</div>
 	)
 }

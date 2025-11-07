@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    reactStrictMode: false, // Disable to avoid React DevTools compatibility issues
     images: {
         remotePatterns: [
             {
@@ -15,9 +16,9 @@ const nextConfig = {
         ],
     },
     env: {
-        SPOTIFY_CLIENT_ID:'58cb2288c79a4901ae1e9cf928eb518f',
-        SPOTIFY_CLIENT_SECRET:'c712b97c2c6e4eafa6edf7030ade14b5',
-        SPOTIFY_REFRESH_TOKEN: "AQBuXuID4jTOauE0bNDZgiFcwYDrqrLkwzcXP3XAQKj5WlDdp8gnry1znsWoblqrWasLNggumgL31wh5IlTXUnR6_zJjJ4dBSnE22v3WJgNWnMo11BCHgtQvhWinHGJmkFc",
+        SPOTIFY_CLIENT_ID:'1fd98e902f6a4d5d819124e2cbf0563d',
+        SPOTIFY_CLIENT_SECRET:'2155824fe4774999b6f4183a4ab62f9d',
+        SPOTIFY_REFRESH_TOKEN: "AQAgV7ykJZk_kCryM8PhP__U0nHJNdcq-f_gIDOr87-ljCzKzhQ72ak1Oidwvw4IHYlOMZOjvOuGZl10WnKcDHMA-U9KSC7waddIk96tJ2xi8Z8-mFXPAVeMIIyWA_HfrXI",
     }
 };
 
