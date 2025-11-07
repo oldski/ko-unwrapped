@@ -66,14 +66,16 @@ export default function InsightsPage() {
             </motion.div>
           </div>
 
-          {/* Row 4: Export Data (Full Width) */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <ExportData />
-          </motion.div>
+          {/* Row 4: Export Data (Development Only) */}
+          {process.env.NODE_ENV === 'development' && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              <ExportData />
+            </motion.div>
+          )}
         </div>
 
         {/* Footer Note */}
