@@ -9,6 +9,7 @@ import ExportData from "@/components/ExportData";
 import { motion } from 'framer-motion';
 
 export default function InsightsPage() {
+	
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black text-white p-8">
       <Navigation />
@@ -65,7 +66,7 @@ export default function InsightsPage() {
               <ListeningStreaks />
             </motion.div>
           </div>
-
+					
           {/* Row 4: Export Data (Development Only) */}
           {process.env.NODE_ENV === 'development' && (
             <motion.div
