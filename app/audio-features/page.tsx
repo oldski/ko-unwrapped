@@ -107,7 +107,7 @@ export default function AudioFeaturesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black text-white p-8">
+    <div className="min-h-screen text-white p-8">
       <Navigation />
       <div className="max-w-7xl mx-auto">
         {/* Header */}

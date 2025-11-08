@@ -11,7 +11,7 @@ import { motion } from 'framer-motion';
 export default function InsightsPage() {
 	
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black text-white p-8">
+    <div className="min-h-screen text-white p-8">
       <Navigation />
       <div className="max-w-7xl mx-auto">
         {/* Header */}
@@ -20,11 +20,11 @@ export default function InsightsPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-5xl font-bold mb-2">
+          <h1 className="text-5xl font-bold mb-2 text-[var(--color-text-primary)]">
             Your Listening
-            <span className="text-cyan-500"> Insights</span>
+            <span className="text-[var(--color-primary)]"> Insights</span>
           </h1>
-          <p className="text-gray-400 text-lg">
+          <p className="text-[var(--color-text-secondary)] text-lg">
             Deep dive into your music journey with historical data and trends
           </p>
         </motion.div>

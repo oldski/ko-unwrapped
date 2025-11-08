@@ -60,7 +60,7 @@ export const NowPlaying: React.FC<NowPlayingProps> = ({ getIsPlaying }) => {
 								'h-screen w-screen fixed top-0 bg-transparent p-5 duration-300 transition-all'
 							) : (
 								'absolute top-20 right-20 p-2 w-24 h-24 transition-all duration-300'
-							), 'shadow-md'
+							)
 						)}
 					  onClick={onExpand}
 					>
@@ -101,14 +101,13 @@ export const NowPlaying: React.FC<NowPlayingProps> = ({ getIsPlaying }) => {
 							</motion.div>
 							{isExpanded && (
 								<div className="flex flex-col items-center justify-center w-full h-full p-10 gap-8">
-									<h2 className="text-8xl font-extrabold italic inline drop-shadow-md" style={{'color': primaryColor}}>Now Playing</h2>
+									<h2 className="text-8xl font-extrabold italic inline drop-shadow-md text-[var(--color-primary)]">Now Playing</h2>
 
 									<div className="flex items-center justify-center gap-10">
 										{/* Pulsing Album Art */}
 										<div className="relative">
 											<motion.div
-												className="absolute -inset-4 rounded-3xl"
-												style={{ backgroundColor: primaryColor, opacity: 0.3 }}
+												className="absolute -inset-4 rounded-3xl bg-[var(--color-primary)]/30"
 												animate={{
 													scale: [1, 1.1, 1],
 												}}
@@ -129,8 +128,8 @@ export const NowPlaying: React.FC<NowPlayingProps> = ({ getIsPlaying }) => {
 
 										<div className="flex flex-col gap-4">
 											<div>
-												<h4 className="text-3xl font-bold">{data?.artist || "Unknown Artist"}</h4>
-												<h4 className="text-2xl font-light">
+												<h4 className="text-3xl font-bold text-[var(--color-text-primary)]">{data?.artist || "Unknown Artist"}</h4>
+												<h4 className="text-2xl font-light text-[var(--color-text-secondary)]">
 													{data?.title || "Unknown Title"}
 												</h4>
 											</div>
@@ -138,28 +137,28 @@ export const NowPlaying: React.FC<NowPlayingProps> = ({ getIsPlaying }) => {
 											{/* Audio Features */}
 											{data?.audioFeatures && (
 												<div className="grid grid-cols-2 gap-4 mt-4">
-													<div className="bg-black/30 backdrop-blur-sm rounded-lg p-4">
-														<p className="text-sm opacity-70">Tempo</p>
-														<p className="text-3xl font-bold" style={{ color: primaryColor }}>
+													<div className="bg-[var(--color-bg-2)]/30 backdrop-blur-sm rounded-lg p-4 border border-[var(--color-border)]">
+														<p className="text-sm text-[var(--color-text-secondary)]">Tempo</p>
+														<p className="text-3xl font-bold text-[var(--color-primary)]">
 															{Math.round(data.audioFeatures.tempo)}
 														</p>
-														<p className="text-xs opacity-50">BPM</p>
+														<p className="text-xs text-[var(--color-text-secondary)]/50">BPM</p>
 													</div>
-													<div className="bg-black/30 backdrop-blur-sm rounded-lg p-4">
-														<p className="text-sm opacity-70">Energy</p>
-														<p className="text-3xl font-bold" style={{ color: primaryColor }}>
+													<div className="bg-[var(--color-bg-2)]/30 backdrop-blur-sm rounded-lg p-4 border border-[var(--color-border)]">
+														<p className="text-sm text-[var(--color-text-secondary)]">Energy</p>
+														<p className="text-3xl font-bold text-[var(--color-accent)]">
 															{Math.round(data.audioFeatures.energy * 100)}%
 														</p>
 													</div>
-													<div className="bg-black/30 backdrop-blur-sm rounded-lg p-4">
-														<p className="text-sm opacity-70">Danceability</p>
-														<p className="text-3xl font-bold" style={{ color: primaryColor }}>
+													<div className="bg-[var(--color-bg-2)]/30 backdrop-blur-sm rounded-lg p-4 border border-[var(--color-border)]">
+														<p className="text-sm text-[var(--color-text-secondary)]">Danceability</p>
+														<p className="text-3xl font-bold text-[var(--color-secondary)]">
 															{Math.round(data.audioFeatures.danceability * 100)}%
 														</p>
 													</div>
-													<div className="bg-black/30 backdrop-blur-sm rounded-lg p-4">
-														<p className="text-sm opacity-70">Valence</p>
-														<p className="text-3xl font-bold" style={{ color: primaryColor }}>
+													<div className="bg-[var(--color-bg-2)]/30 backdrop-blur-sm rounded-lg p-4 border border-[var(--color-border)]">
+														<p className="text-sm text-[var(--color-text-secondary)]">Valence</p>
+														<p className="text-3xl font-bold text-[var(--color-primary)]">
 															{Math.round(data.audioFeatures.valence * 100)}%
 														</p>
 													</div>
@@ -171,8 +170,7 @@ export const NowPlaying: React.FC<NowPlayingProps> = ({ getIsPlaying }) => {
 												href={data?.songUrl}
 												target="_blank"
 												rel="noopener noreferrer"
-												className="flex items-center gap-2 px-6 py-3 rounded-lg font-bold transition-all mt-4"
-												style={{ backgroundColor: primaryColor, color: textColor }}
+												className="flex items-center gap-2 px-6 py-3 rounded-lg font-bold transition-all mt-4 bg-[var(--color-primary)] text-[var(--color-text-primary)] hover:bg-[var(--color-accent)] border-2 border-[var(--color-border)]"
 											>
 												<FaSpotify size={24} />
 												Open in Spotify

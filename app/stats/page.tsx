@@ -97,19 +97,19 @@ export default function StatsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black text-white p-8">
+    <div className="min-h-screen text-white p-8">
       <Navigation />
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-5xl font-bold mb-2">
+          <h1 className="text-5xl font-bold mb-2 text-[var(--color-text-primary)]">
             Your Listening
-            <span className="text-cyan-500"> Patterns</span>
+            <span className="text-[var(--color-primary)]"> Patterns</span>
           </h1>
-          <p className="text-gray-400 text-lg">
+          <p className="text-[var(--color-text-secondary)] text-lg">
             Discover when and what you love to listen to
           </p>
-          <p className="text-gray-500 text-sm mt-2">
+          <p className="text-[var(--color-text-secondary)]/70 text-sm mt-2">
             Based on your complete listening history from the database
           </p>
         </div>
@@ -124,20 +124,20 @@ export default function StatsPage() {
         <div className="flex gap-2 mb-8">
           <button
             onClick={() => setSelectedView('timeline')}
-            className={`px-6 py-3 rounded-lg font-semibold transition-all ${
+            className={`px-6 py-3 rounded-lg font-semibold transition-all border-2 ${
               selectedView === 'timeline'
-                ? 'bg-cyan-500 text-black'
-                : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                ? 'bg-[var(--color-primary)] text-[var(--color-text-primary)] border-[var(--color-accent)]'
+                : 'bg-[var(--color-bg-2)] text-[var(--color-text-secondary)] border-[var(--color-border)] hover:bg-[var(--color-primary)]/20'
             }`}
           >
             Timeline
           </button>
           <button
             onClick={() => setSelectedView('patterns')}
-            className={`px-6 py-3 rounded-lg font-semibold transition-all ${
+            className={`px-6 py-3 rounded-lg font-semibold transition-all border-2 ${
               selectedView === 'patterns'
-                ? 'bg-cyan-500 text-black'
-                : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                ? 'bg-[var(--color-primary)] text-[var(--color-text-primary)] border-[var(--color-accent)]'
+                : 'bg-[var(--color-bg-2)] text-[var(--color-text-secondary)] border-[var(--color-border)] hover:bg-[var(--color-primary)]/20'
             }`}
           >
             Patterns
@@ -164,51 +164,51 @@ export default function StatsPage() {
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-cyan-500/50 rounded-2xl p-6"
+                    className="bg-[var(--color-primary)]/20 backdrop-blur-sm border border-[var(--color-primary)]/50 rounded-2xl p-6"
                   >
-                    <p className="text-gray-400 text-sm mb-1">Tracks Played</p>
-                    <p className="text-4xl font-bold text-cyan-400">{patterns.totalTracks}</p>
-                    <p className="text-gray-400 text-sm mt-1">in selected period</p>
+                    <p className="text-[var(--color-text-secondary)] text-sm mb-1">Tracks Played</p>
+                    <p className="text-4xl font-bold text-[var(--color-primary)]">{patterns.totalTracks}</p>
+                    <p className="text-[var(--color-text-secondary)] text-sm mt-1">in selected period</p>
                   </motion.div>
 
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
-                    className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/50 rounded-2xl p-6"
+                    className="bg-[var(--color-secondary)]/20 backdrop-blur-sm border border-[var(--color-secondary)]/50 rounded-2xl p-6"
                   >
-                    <p className="text-gray-400 text-sm mb-1">Peak Listening Time</p>
-                    <p className="text-4xl font-bold text-purple-400">
+                    <p className="text-[var(--color-text-secondary)] text-sm mb-1">Peak Listening Time</p>
+                    <p className="text-4xl font-bold text-[var(--color-secondary)]">
                       {patterns.peakHour > 12 ? patterns.peakHour - 12 : patterns.peakHour || 12}
                       {patterns.peakHour >= 12 ? 'PM' : 'AM'}
                     </p>
-                    <p className="text-gray-400 text-sm mt-1">{getTimeOfDay(patterns.peakHour)}</p>
+                    <p className="text-[var(--color-text-secondary)] text-sm mt-1">{getTimeOfDay(patterns.peakHour)}</p>
                   </motion.div>
 
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
-                    className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/50 rounded-2xl p-6"
+                    className="bg-[var(--color-accent)]/20 backdrop-blur-sm border border-[var(--color-accent)]/50 rounded-2xl p-6"
                   >
-                    <p className="text-gray-400 text-sm mb-1">Favorite Day</p>
-                    <p className="text-4xl font-bold text-green-400">
+                    <p className="text-[var(--color-text-secondary)] text-sm mb-1">Favorite Day</p>
+                    <p className="text-4xl font-bold text-[var(--color-accent)]">
                       {dayNames[patterns.peakDay]}
                     </p>
-                    <p className="text-gray-400 text-sm mt-1">Most active listening day</p>
+                    <p className="text-[var(--color-text-secondary)] text-sm mt-1">Most active listening day</p>
                   </motion.div>
 
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
-                    className="bg-gradient-to-br from-orange-500/20 to-red-500/20 border border-orange-500/50 rounded-2xl p-6"
+                    className="bg-[var(--color-primary)]/20 backdrop-blur-sm border border-[var(--color-primary)]/50 rounded-2xl p-6"
                   >
-                    <p className="text-gray-400 text-sm mb-1">Total Listening Time</p>
-                    <p className="text-4xl font-bold text-orange-400">
+                    <p className="text-[var(--color-text-secondary)] text-sm mb-1">Total Listening Time</p>
+                    <p className="text-4xl font-bold text-[var(--color-primary)]">
                       {patterns.totalHours}h
                     </p>
-                    <p className="text-gray-400 text-sm mt-1">{patterns.totalMinutes} minutes</p>
+                    <p className="text-[var(--color-text-secondary)] text-sm mt-1">{patterns.totalMinutes} minutes</p>
                   </motion.div>
                 </div>
 

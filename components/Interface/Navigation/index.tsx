@@ -18,34 +18,11 @@ const Navigation = () => {
 		{ href: "/audio-features", label: "Audio", color: "orange" },
 	];
 
-	const getColorClasses = (color: string, isActive: boolean) => {
-		const colors: Record<string, { active: string; inactive: string }> = {
-			gray: {
-				active: "bg-gray-800 text-white border-gray-600",
-				inactive: "bg-gray-800/20 text-gray-300 border-gray-800/30 hover:bg-gray-800/40 hover:border-gray-700"
-			},
-			purple: {
-				active: "bg-purple-600 text-white border-purple-400",
-				inactive: "bg-purple-600/20 text-purple-300 border-purple-600/30 hover:bg-purple-600/40 hover:border-purple-500"
-			},
-			cyan: {
-				active: "bg-cyan-500 text-black border-cyan-300",
-				inactive: "bg-cyan-500/20 text-cyan-300 border-cyan-500/30 hover:bg-cyan-500/40 hover:border-cyan-400"
-			},
-			pink: {
-				active: "bg-pink-500 text-white border-pink-300",
-				inactive: "bg-pink-500/20 text-pink-300 border-pink-500/30 hover:bg-pink-500/40 hover:border-pink-400"
-			},
-			green: {
-				active: "bg-green-500 text-black border-green-300",
-				inactive: "bg-green-500/20 text-green-300 border-green-500/30 hover:bg-green-500/40 hover:border-green-400"
-			},
-			orange: {
-				active: "bg-orange-500 text-black border-orange-300",
-				inactive: "bg-orange-500/20 text-orange-300 border-orange-500/30 hover:bg-orange-500/40 hover:border-orange-400"
-			},
-		};
-		return isActive ? colors[color].active : colors[color].inactive;
+	const getColorClasses = (isActive: boolean) => {
+		if (isActive) {
+			return "bg-[var(--color-primary)] text-[var(--color-text-primary)] border-[var(--color-accent)]";
+		}
+		return "bg-[var(--color-primary)]/20 text-[var(--color-text-secondary)] border-[var(--color-border)] hover:bg-[var(--color-primary)]/40 hover:border-[var(--color-accent)]";
 	};
 
 	return (
@@ -53,7 +30,7 @@ const Navigation = () => {
 			{/* Mobile Menu Button */}
 			<button
 				onClick={() => setIsOpen(!isOpen)}
-				className="fixed top-6 right-6 z-[60] lg:hidden bg-gray-900/90 backdrop-blur-md border border-gray-700 text-white p-3 rounded-lg hover:bg-gray-800 transition-colors"
+				className="fixed top-6 right-6 z-[60] lg:hidden bg-[var(--color-bg-2)]/90 backdrop-blur-md border border-[var(--color-border)] text-[var(--color-text-primary)] p-3 rounded-lg hover:bg-[var(--color-primary)]/40 transition-all duration-200"
 				aria-label="Toggle menu"
 			>
 				<svg
@@ -85,7 +62,7 @@ const Navigation = () => {
 								className={`
 									relative px-4 py-2 font-bold rounded-lg
 									border-2 transition-all duration-200
-									${getColorClasses(item.color, isActive)}
+									${getColorClasses(isActive)}
 									${isActive ? 'shadow-lg scale-105' : 'hover:scale-105'}
 								`}
 							>
@@ -122,10 +99,10 @@ const Navigation = () => {
 							animate={{ x: 0 }}
 							exit={{ x: "100%" }}
 							transition={{ type: "spring", damping: 25, stiffness: 200 }}
-							className="fixed top-0 right-0 bottom-0 w-80 bg-gray-900/95 backdrop-blur-lg border-l border-gray-800 z-[60] lg:hidden overflow-y-auto"
+							className="fixed top-0 right-0 bottom-0 w-80 bg-[var(--color-bg-1)]/95 backdrop-blur-lg border-l border-[var(--color-border)] z-[60] lg:hidden overflow-y-auto"
 						>
 							<div className="p-6 pt-20">
-								<h2 className="text-2xl font-bold text-white mb-6">Menu</h2>
+								<h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-6">Menu</h2>
 								<div className="flex flex-col gap-3">
 									{navItems.map((item) => {
 										const isActive = pathname === item.href;
@@ -137,7 +114,7 @@ const Navigation = () => {
 												className={`
 													relative px-6 py-4 font-bold rounded-lg
 													border-2 transition-all duration-200
-													${getColorClasses(item.color, isActive)}
+													${getColorClasses(isActive)}
 													${isActive ? 'shadow-lg' : ''}
 												`}
 											>
