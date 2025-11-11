@@ -4,7 +4,6 @@ import { useState, useMemo } from 'react';
 import useSWR from 'swr';
 import fetcher from '@/lib/fetcher';
 import { motion } from 'framer-motion';
-import Navigation from "@/components/Interface/Navigation";
 import DateRangePicker from "@/components/DateRangePicker";
 
 export default function StatsPage() {
@@ -98,7 +97,6 @@ export default function StatsPage() {
 
   return (
     <div className="min-h-screen text-white p-8">
-      <Navigation />
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">

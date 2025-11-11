@@ -5,7 +5,6 @@ import dynamic from 'next/dynamic';
 import useSWR from 'swr';
 import fetcher from '@/lib/fetcher';
 import { motion, AnimatePresence } from 'framer-motion';
-import Navigation from "@/components/Interface/Navigation";
 
 // Dynamically import 3D components to avoid SSR
 const Scene = dynamic(() => import('@/components/3D/Scene'), { ssr: false });
@@ -47,7 +46,6 @@ export default function Tracks3DPage() {
 
   return (
     <div className="relative h-screen bg-gradient-to-b from-black via-gray-900 to-black overflow-hidden">
-      <Navigation />
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/80 to-transparent p-6">
         <div className="max-w-7xl mx-auto">

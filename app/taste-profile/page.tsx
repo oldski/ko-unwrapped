@@ -4,7 +4,6 @@ import { useState } from 'react';
 import useSWR from 'swr';
 import fetcher from '@/lib/fetcher';
 import { motion } from 'framer-motion';
-import Navigation from "@/components/Interface/Navigation";
 
 export default function TasteProfilePage() {
   const [timeRange, setTimeRange] = useState<'short_term' | 'medium_term' | 'long_term'>('short_term');
@@ -40,7 +39,6 @@ export default function TasteProfilePage() {
 
   return (
     <div className="min-h-screen text-white p-8">
-      <Navigation />
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">

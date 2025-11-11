@@ -1,6 +1,5 @@
 'use client';
 
-import Navigation from "@/components/Interface/Navigation";
 import CalendarHeatmap from "@/components/CalendarHeatmap";
 import TasteEvolution from "@/components/TasteEvolution";
 import OnThisDay from "@/components/OnThisDay";
@@ -12,7 +11,6 @@ export default function InsightsPage() {
 	
   return (
     <div className="min-h-screen text-white p-8">
-      <Navigation />
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <motion.div

@@ -4,7 +4,6 @@ import { useState } from 'react';
 import useSWR from 'swr';
 import fetcher from '@/lib/fetcher';
 import { motion } from 'framer-motion';
-import Navigation from "@/components/Interface/Navigation";
 
 interface AudioFeature {
   name: string;
@@ -108,7 +107,6 @@ export default function AudioFeaturesPage() {
 
   return (
     <div className="min-h-screen text-white p-8">
-      <Navigation />
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">

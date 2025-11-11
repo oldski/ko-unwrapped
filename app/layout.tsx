@@ -3,6 +3,10 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import SyncProvider from "@/components/SyncProvider";
 import DynamicBackground from "@/components/DynamicBackground";
+import AmbientLayer from "@/components/AmbientLayer";
+import Hero from "@/components/Hero";
+import Navigation from "@/components/Interface/Navigation";
+import VisualizationLayer from "@/components/VisualizationLayer";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,8 +24,14 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <DynamicBackground />
+        <VisualizationLayer />
+        <AmbientLayer />
         <SyncProvider>
-          {children}
+	        <Navigation />
+	        <Hero />
+          <div className="relative z-10">
+            {children}
+          </div>
         </SyncProvider>
       </body>
     </html>

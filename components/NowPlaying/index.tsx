@@ -2,20 +2,31 @@
 import fetcher from "@/lib/fetcher";
 import useSWR from "swr";
 import Image from "next/image";
-import React, { useEffect, useState } from "react";
-import useColorThief from "use-color-thief";
-import { motion } from "framer-motion";
-import { FaMusic, FaSpotify } from "react-icons/fa6";
-import { clsx } from "clsx";
+import React, { useEffect, useState, useRef } from "react";
+import { FaSpotify } from "react-icons/fa6";
+import { usePathname } from "next/navigation";
+import { gsap } from "@/lib/gsap";
 
 interface NowPlayingProps {
 	getIsPlaying: (isPlaying: boolean) => void;
 }
 
 export const NowPlaying: React.FC<NowPlayingProps> = ({ getIsPlaying }) => {
-	const [isExpanded, setIsExpanded] = useState(false);
-	const [imgSrc, setImgSrc] = useState<string>('');
+	const pathname = usePathname();
+	const isHomePage = pathname === '/';
 	const [bpm, setBpm] = useState<number>(120);
+
+	// GSAP refs for animations
+	const titleRef = useRef<HTMLHeadingElement>(null);
+	const albumArtRef = useRef<HTMLDivElement>(null);
+	const albumGlowRef = useRef<HTMLDivElement>(null);
+	const albumImageRef = useRef<HTMLDivElement>(null);
+	const textContainerRef = useRef<HTMLDivElement>(null);
+	const trackTitleRef = useRef<HTMLHeadingElement>(null);
+	const artistRef = useRef<HTMLHeadingElement>(null);
+
+	// Mouse position state for parallax
+	const mousePos = useRef({ x: 0, y: 0 });
 
 	const { data, error } = useSWR(
 		`${process.env.NEXT_PUBLIC_HOST}/api/now-playing`,
@@ -23,22 +34,8 @@ export const NowPlaying: React.FC<NowPlayingProps> = ({ getIsPlaying }) => {
 		{ refreshInterval: 5000 }
 	);
 
-	const { color: clr, palette: colors } = useColorThief(imgSrc, {
-		format: 'hex',
-		quality: 10,
-		colorCount: 6
-	});
-
-	// Ensure colors are strings for TypeScript
-	const primaryColor = (clr as string) || '#1DB954';
-	const backgroundColor = (colors?.[2] as string) || '#1DB954';
-	const textColor = (colors?.[2] as string) || '#191414';
-
-	const onExpand = () => setIsExpanded(!isExpanded);
-
 	useEffect(() => {
 		if (data && data?.isPlaying !== undefined) {
-			setImgSrc(data.albumImageUrl);
 			getIsPlaying(data?.isPlaying);
 
 			if (data?.audioFeatures?.tempo) {
@@ -47,145 +44,278 @@ export const NowPlaying: React.FC<NowPlayingProps> = ({ getIsPlaying }) => {
 		}
 	}, [data, getIsPlaying]);
 
+	// GSAP: Looping animations (BPM-synced)
+	useEffect(() => {
+		if (!data?.isPlaying || !isHomePage) return;
+
+		const animations: gsap.core.Tween[] = [];
+		const beatDuration = 60 / bpm; // Duration of one beat in seconds
+
+		// Title breathing animation (synced to BPM - 2 beats)
+		if (titleRef.current) {
+			animations.push(gsap.to(titleRef.current, {
+				opacity: 0.7,
+				duration: beatDuration * 2,
+				ease: "power1.inOut",
+				yoyo: true,
+				repeat: -1
+			}));
+		}
+
+		// Album glow pulse (synced to BPM - 1 beat)
+		if (albumGlowRef.current) {
+			animations.push(gsap.to(albumGlowRef.current, {
+				scale: 1.1,
+				duration: beatDuration,
+				ease: "power1.inOut",
+				yoyo: true,
+				repeat: -1
+			}));
+		}
+
+		// Album art subtle pulse (synced to BPM - 1 beat)
+		if (albumArtRef.current) {
+			animations.push(gsap.to(albumArtRef.current, {
+				scale: 1.02,
+				duration: beatDuration,
+				ease: "power1.inOut",
+				yoyo: true,
+				repeat: -1
+			}));
+		}
+
+		// Track title opacity animation (synced to BPM - 4 beats)
+		if (trackTitleRef.current) {
+			animations.push(gsap.to(trackTitleRef.current, {
+				opacity: 0.8,
+				duration: beatDuration * 4,
+				ease: "power1.inOut",
+				yoyo: true,
+				repeat: -1,
+				delay: beatDuration * 0.5
+			}));
+		}
+
+		// Artist letter-spacing animation (synced to BPM - 3 beats)
+		if (artistRef.current) {
+			animations.push(gsap.to(artistRef.current, {
+				letterSpacing: '0.02em',
+				duration: beatDuration * 3,
+				ease: "power1.inOut",
+				yoyo: true,
+				repeat: -1
+			}));
+		}
+
+		// Text container subtle float (synced to BPM - 8 beats)
+		if (textContainerRef.current) {
+			animations.push(gsap.to(textContainerRef.current, {
+				y: -10,
+				duration: beatDuration * 8,
+				ease: "sine.inOut",
+				yoyo: true,
+				repeat: -1
+			}));
+		}
+
+		// Cleanup function
+		return () => {
+			animations.forEach(anim => anim.kill());
+		};
+	}, [data?.isPlaying, bpm, isHomePage]);
+
+	// GSAP: Mouse parallax effect
+	useEffect(() => {
+		const handleMouseMove = (e: MouseEvent) => {
+			if (!isHomePage) return;
+
+			const x = (e.clientX / window.innerWidth) - 0.5;
+			const y = (e.clientY / window.innerHeight) - 0.5;
+
+			mousePos.current = { x, y };
+
+			// Parallax for title
+			if (titleRef.current) {
+				gsap.to(titleRef.current, {
+					y: y * 40,
+					duration: 0.5,
+					ease: "power2.out"
+				});
+			}
+
+			// Parallax for album art (3D rotation)
+			if (albumArtRef.current) {
+				gsap.to(albumArtRef.current, {
+					rotateX: -y * 20,
+					rotateY: x * 20,
+					duration: 0.5,
+					ease: "power2.out"
+				});
+			}
+
+			// Parallax for album glow
+			if (albumGlowRef.current) {
+				gsap.to(albumGlowRef.current, {
+					rotateX: -y * 20,
+					rotateY: x * 20,
+					duration: 0.5,
+					ease: "power2.out"
+				});
+			}
+
+			// Parallax for album image
+			if (albumImageRef.current) {
+				gsap.to(albumImageRef.current, {
+					rotateX: -y * 20,
+					rotateY: x * 20,
+					duration: 0.5,
+					ease: "power2.out"
+				});
+			}
+
+			// Parallax for text container
+			if (textContainerRef.current) {
+				gsap.to(textContainerRef.current, {
+					x: x * 30,
+					y: y * 20,
+					duration: 0.5,
+					ease: "power2.out"
+				});
+			}
+		};
+
+		window.addEventListener('mousemove', handleMouseMove);
+		return () => window.removeEventListener('mousemove', handleMouseMove);
+	}, [isHomePage]);
+
 	if (error) {
 		return <div>Error loading data</div>;
 	}
-	
-	return (
-		<div>
-			{data?.isPlaying ? (
-					<div className={
-						clsx(
-							isExpanded ? (
-								'h-screen w-screen fixed top-0 bg-transparent p-5 duration-300 transition-all'
-							) : (
-								'absolute top-20 right-20 p-2 w-24 h-24 transition-all duration-300'
-							)
-						)}
-					  onClick={onExpand}
-					>
-						
-						<motion.div
-							className="h-full w-full rounded rounded-r-3xl rounded-tl-3xl"
-							style={isExpanded ? {
-								backgroundColor: 'transparent',
-								backgroundImage: `radial-gradient(transparent 1px, ${backgroundColor} 1px)`,
-								backgroundSize: '4px 4px',
-								backdropFilter: 'blur(3px)',
-								opacity: 1,
-							} : {
-								color: primaryColor,
-								backgroundColor: backgroundColor
-							}}
-							animate={!isExpanded ? {
-								scale: [1, 1.1, 1],
-							} : {}}
-							transition={{
-								duration: 60 / bpm,
-								repeat: Infinity,
-								ease: "easeInOut"
+
+	// Render homepage version (full screen, parallax, BPM-synced)
+	if (isHomePage && data?.isPlaying) {
+		return (
+			<div className="h-screen w-screen fixed top-0 left-0 duration-300 transition-all pointer-events-none z-20">
+				<div className="flex flex-col items-center justify-center w-full h-full p-10 gap-4 opacity-100">
+					<div className="flex items-center justify-center gap-10">
+						{/* 3D Tilting Album Art */}
+						<div
+							className="relative"
+							style={{
+								perspective: '1000px',
 							}}
 						>
-							<motion.div
-								className={clsx(!isExpanded ? 'w-full h-full opacity-100 transition-all duration-300 flex items-center justify-center' : 'hidden transition-all duration-300')}
-								animate={!isExpanded ? {
-									scale: [1, 1.1, 1],
-								} : {}}
-								transition={{
-									duration: 60 / bpm,
-									repeat: Infinity,
-									ease: "easeInOut"
+							<div
+								ref={albumGlowRef}
+								className="absolute -inset-4 rounded-3xl bg-[var(--color-primary)]/30"
+							/>
+							<div
+								ref={albumImageRef}
+								style={{
+									transformStyle: 'preserve-3d',
 								}}
 							>
-								<FaMusic className="w-3/4 h-3/4"/>
-							</motion.div>
-							{isExpanded && (
-								<div className="flex flex-col items-center justify-center w-full h-full p-10 gap-8">
-									<h2 className="text-8xl font-extrabold italic inline drop-shadow-md text-[var(--color-primary)]">Now Playing</h2>
-
-									<div className="flex items-center justify-center gap-10">
-										{/* Pulsing Album Art */}
-										<div className="relative">
-											<motion.div
-												className="absolute -inset-4 rounded-3xl bg-[var(--color-primary)]/30"
-												animate={{
-													scale: [1, 1.1, 1],
-												}}
-												transition={{
-													duration: 60 / bpm, // Pulse based on BPM
-													repeat: Infinity,
-													ease: "easeInOut"
-												}}
-											/>
-											<Image
-												src={data?.albumImageUrl || "/default-image.jpg"}
-												alt={`${data?.title || "No Title"} [${data?.artist || "No Artist"}]`}
-												width={300}
-												height={300}
-												className="relative rounded-2xl shadow-2xl"
-											/>
-										</div>
-
-										<div className="flex flex-col gap-4">
-											<div>
-												<h4 className="text-3xl font-bold text-[var(--color-text-primary)]">{data?.artist || "Unknown Artist"}</h4>
-												<h4 className="text-2xl font-light text-[var(--color-text-secondary)]">
-													{data?.title || "Unknown Title"}
-												</h4>
-											</div>
-
-											{/* Audio Features */}
-											{data?.audioFeatures && (
-												<div className="grid grid-cols-2 gap-4 mt-4">
-													<div className="bg-[var(--color-bg-2)]/30 backdrop-blur-sm rounded-lg p-4 border border-[var(--color-border)]">
-														<p className="text-sm text-[var(--color-text-secondary)]">Tempo</p>
-														<p className="text-3xl font-bold text-[var(--color-primary)]">
-															{Math.round(data.audioFeatures.tempo)}
-														</p>
-														<p className="text-xs text-[var(--color-text-secondary)]/50">BPM</p>
-													</div>
-													<div className="bg-[var(--color-bg-2)]/30 backdrop-blur-sm rounded-lg p-4 border border-[var(--color-border)]">
-														<p className="text-sm text-[var(--color-text-secondary)]">Energy</p>
-														<p className="text-3xl font-bold text-[var(--color-accent)]">
-															{Math.round(data.audioFeatures.energy * 100)}%
-														</p>
-													</div>
-													<div className="bg-[var(--color-bg-2)]/30 backdrop-blur-sm rounded-lg p-4 border border-[var(--color-border)]">
-														<p className="text-sm text-[var(--color-text-secondary)]">Danceability</p>
-														<p className="text-3xl font-bold text-[var(--color-secondary)]">
-															{Math.round(data.audioFeatures.danceability * 100)}%
-														</p>
-													</div>
-													<div className="bg-[var(--color-bg-2)]/30 backdrop-blur-sm rounded-lg p-4 border border-[var(--color-border)]">
-														<p className="text-sm text-[var(--color-text-secondary)]">Valence</p>
-														<p className="text-3xl font-bold text-[var(--color-primary)]">
-															{Math.round(data.audioFeatures.valence * 100)}%
-														</p>
-													</div>
-												</div>
-											)}
-
-											{/* Spotify Link */}
-											<a
-												href={data?.songUrl}
-												target="_blank"
-												rel="noopener noreferrer"
-												className="flex items-center gap-2 px-6 py-3 rounded-lg font-bold transition-all mt-4 bg-[var(--color-primary)] text-[var(--color-text-primary)] hover:bg-[var(--color-accent)] border-2 border-[var(--color-border)]"
-											>
-												<FaSpotify size={24} />
-												Open in Spotify
-											</a>
-										</div>
-									</div>
+								<div ref={albumArtRef}>
+									<Image
+										src={data?.albumImageUrl || "/default-image.jpg"}
+										alt={`${data?.title || "No Title"} [${data?.artist || "No Artist"}]`}
+										width={450}
+										height={450}
+										className="relative rounded-2xl shadow-2xl"
+										style={{
+											transform: 'translateZ(50px)',
+										}}
+									/>
 								</div>
-							)}
-						</motion.div>
+							</div>
+						</div>
+
+						<div
+							ref={textContainerRef}
+							className="flex flex-col gap-4"
+						>
+							<h2
+								ref={titleRef}
+								className="text-4xl font-extrabold italic inline drop-shadow-md text-[var(--color-primary)]"
+							>
+								Now Playing
+							</h2>
+							<div>
+								<h2
+									ref={trackTitleRef}
+									className="text-6xl font-light text-[var(--color-text-primary)]"
+								>
+									{data?.title || "Unknown Title"}
+								</h2>
+								<h4
+									ref={artistRef}
+									className="text-3xl font-bold text-[var(--color-text-secondary)]"
+								>
+									{data?.artist || "Unknown Artist"}
+								</h4>
+							</div>
+
+							{/* Spotify Link with hover effect */}
+							<a
+								href={data?.songUrl}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="group flex items-center gap-0 px-2 py-2 rounded-lg transition-all mt-4 bg-[var(--color-primary)]/80 hover:bg-[var(--color-primary)] hover:gap-2 hover:px-4 border border-[var(--color-border)] pointer-events-auto w-fit"
+							>
+								<FaSpotify size={20} className="text-[var(--color-text-primary)] flex-shrink-0" />
+								<span className="text-sm font-medium text-[var(--color-text-primary)] opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-xs overflow-hidden transition-all duration-300 whitespace-nowrap">
+									Open in Spotify
+								</span>
+							</a>
+						</div>
 					</div>
-			) : (
-				<div>Shhh</div>
-			)}
-		</div>
-	);
+				</div>
+			</div>
+		);
+	}
+
+	// Render internal pages version (minimal, bottom-right corner)
+	if (!isHomePage && data?.isPlaying) {
+		return (
+			<div className="fixed bottom-6 right-6 pointer-events-none z-5">
+				<div className="flex items-center gap-3 bg-black/20 backdrop-blur-md rounded-xl p-3 border border-[var(--color-border)]/30">
+					{/* Mini Album Art */}
+					<div className="relative w-12 h-12 rounded-lg overflow-hidden">
+						<Image
+							src={data?.albumImageUrl || "/default-image.jpg"}
+							alt={`${data?.title || "No Title"}`}
+							width={48}
+							height={48}
+							className="object-cover"
+						/>
+					</div>
+
+					{/* Mini Track Info */}
+					<div className="flex flex-col max-w-[200px]">
+						<p className="text-xs font-medium text-[var(--color-text-secondary)] truncate opacity-70">
+							{data?.title || "Unknown Title"}
+						</p>
+						<p className="text-[10px] text-[var(--color-text-primary)]/60 truncate">
+							{data?.artist || "Unknown Artist"}
+						</p>
+					</div>
+
+					{/* Mini Spotify Link */}
+					<a
+						href={data?.songUrl}
+						target="_blank"
+						rel="noopener noreferrer"
+						className="group pointer-events-auto p-2 rounded-lg hover:bg-[var(--color-primary)]/20 transition-all"
+						title="Open in Spotify"
+					>
+						<FaSpotify size={16} className="text-[var(--color-primary)]/60 group-hover:text-[var(--color-primary)] transition-colors" />
+					</a>
+				</div>
+			</div>
+		);
+	}
+
+	return null;
 };
 
 export default NowPlaying;
