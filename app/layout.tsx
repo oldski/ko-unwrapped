@@ -7,6 +7,7 @@ import AmbientLayer from "@/components/AmbientLayer";
 import Hero from "@/components/Hero";
 import Navigation from "@/components/Interface/Navigation";
 import VisualizationLayer from "@/components/VisualizationLayer";
+import FABContainer from "@/components/FABContainer";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -32,6 +33,7 @@ export default function RootLayout({
           <div className="relative z-10">
             {children}
           </div>
+          <FABContainer />
         </SyncProvider>
       </body>
     </html>

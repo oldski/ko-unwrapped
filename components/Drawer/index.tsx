@@ -46,7 +46,7 @@ export default function Drawer({ isOpen, onClose, children, title }: DrawerProps
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70]"
             onClick={onClose}
           />
 
@@ -56,7 +56,7 @@ export default function Drawer({ isOpen, onClose, children, title }: DrawerProps
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed right-0 top-0 bottom-0 w-full md:w-[80%] lg:w-[70%] bg-gray-900/95 backdrop-blur-xl border-l border-gray-800 shadow-2xl z-50 overflow-y-auto"
+            className="fixed right-0 top-0 bottom-0 w-full md:w-[80%] lg:w-[70%] bg-gray-900/95 backdrop-blur-xl border-l border-gray-800 shadow-2xl z-[80] overflow-y-auto"
           >
             {/* Header */}
             <div className="sticky top-0 bg-gray-900/95 backdrop-blur-xl border-b border-gray-800 px-6 py-4 flex items-center justify-between z-10">

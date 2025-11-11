@@ -1,9 +1,7 @@
-import FABContainer from "@/components/FABContainer";
-
 export default function Home() {
   return (
     <main className="w-screen min-h-screen">
-      <FABContainer />
+      {/* FABContainer is now in layout.tsx for global access */}
     </main>
   );
 }

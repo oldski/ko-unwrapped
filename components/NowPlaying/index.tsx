@@ -196,18 +196,19 @@ export const NowPlaying: React.FC<NowPlayingProps> = ({ getIsPlaying }) => {
 	if (isHomePage && data?.isPlaying) {
 		return (
 			<div className="h-screen w-screen fixed top-0 left-0 duration-300 transition-all pointer-events-none z-20">
-				<div className="flex flex-col items-center justify-center w-full h-full p-10 gap-4 opacity-100">
-					<div className="flex items-center justify-center gap-10">
+				<div className="flex flex-col items-center justify-center w-full h-full p-4 sm:p-6 md:p-10 gap-4 opacity-100">
+					{/* Desktop: horizontal layout, Mobile/Tablet: vertical layout */}
+					<div className="flex flex-col lg:flex-row items-center justify-center gap-6 md:gap-8 lg:gap-10 w-full max-w-7xl">
 						{/* 3D Tilting Album Art */}
 						<div
-							className="relative"
+							className="relative flex-shrink-0"
 							style={{
 								perspective: '1000px',
 							}}
 						>
 							<div
 								ref={albumGlowRef}
-								className="absolute -inset-4 rounded-3xl bg-[var(--color-primary)]/30"
+								className="absolute -inset-2 sm:-inset-3 lg:-inset-4 rounded-2xl lg:rounded-3xl bg-[var(--color-primary)]/30"
 							/>
 							<div
 								ref={albumImageRef}
@@ -221,7 +222,7 @@ export const NowPlaying: React.FC<NowPlayingProps> = ({ getIsPlaying }) => {
 										alt={`${data?.title || "No Title"} [${data?.artist || "No Artist"}]`}
 										width={450}
 										height={450}
-										className="relative rounded-2xl shadow-2xl"
+										className="relative rounded-xl sm:rounded-2xl shadow-2xl w-[280px] h-[280px] sm:w-[320px] sm:h-[320px] md:w-[380px] md:h-[380px] lg:w-[450px] lg:h-[450px]"
 										style={{
 											transform: 'translateZ(50px)',
 										}}
@@ -232,24 +233,24 @@ export const NowPlaying: React.FC<NowPlayingProps> = ({ getIsPlaying }) => {
 
 						<div
 							ref={textContainerRef}
-							className="flex flex-col gap-4"
+							className="flex flex-col gap-3 md:gap-4 text-center lg:text-left items-center lg:items-start max-w-xl lg:max-w-none"
 						>
 							<h2
 								ref={titleRef}
-								className="text-4xl font-extrabold italic inline drop-shadow-md text-[var(--color-primary)]"
+								className="text-2xl sm:text-3xl lg:text-4xl font-extrabold italic inline drop-shadow-md text-[var(--color-primary)]"
 							>
 								Now Playing
 							</h2>
-							<div>
+							<div className="w-full">
 								<h2
 									ref={trackTitleRef}
-									className="text-6xl font-light text-[var(--color-text-primary)]"
+									className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light text-[var(--color-text-primary)] leading-tight break-words"
 								>
 									{data?.title || "Unknown Title"}
 								</h2>
 								<h4
 									ref={artistRef}
-									className="text-3xl font-bold text-[var(--color-text-secondary)]"
+									className="text-xl sm:text-2xl md:text-2xl lg:text-3xl font-bold text-[var(--color-text-secondary)] break-words"
 								>
 									{data?.artist || "Unknown Artist"}
 								</h4>
@@ -260,7 +261,7 @@ export const NowPlaying: React.FC<NowPlayingProps> = ({ getIsPlaying }) => {
 								href={data?.songUrl}
 								target="_blank"
 								rel="noopener noreferrer"
-								className="group flex items-center gap-0 px-2 py-2 rounded-lg transition-all mt-4 bg-[var(--color-primary)]/80 hover:bg-[var(--color-primary)] hover:gap-2 hover:px-4 border border-[var(--color-border)] pointer-events-auto w-fit"
+								className="group flex items-center gap-0 px-2 py-2 rounded-lg transition-all mt-2 md:mt-4 bg-[var(--color-primary)]/80 hover:bg-[var(--color-primary)] hover:gap-2 hover:px-4 border border-[var(--color-border)] pointer-events-auto w-fit"
 							>
 								<FaSpotify size={20} className="text-[var(--color-text-primary)] flex-shrink-0" />
 								<span className="text-sm font-medium text-[var(--color-text-primary)] opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-xs overflow-hidden transition-all duration-300 whitespace-nowrap">
