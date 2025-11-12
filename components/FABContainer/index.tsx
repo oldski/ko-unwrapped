@@ -39,7 +39,7 @@ export default function FABContainer() {
   return (
     <>
       {/* FAB Buttons - Fixed Right Side (Desktop) / Bottom (Mobile/Tablet) */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 lg:left-auto lg:right-6 lg:top-1/2 lg:translate-x-0 lg:translate-y-8 z-30 flex flex-row lg:flex-col gap-3 lg:gap-4">
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 lg:left-auto lg:right-6 lg:top-1/2 lg:translate-x-0 lg:translate-y-8 z-40 flex flex-row lg:flex-col gap-3 lg:gap-4">
         {/* Calendar FAB */}
         <motion.button
           whileHover={{ scale: 1.05 }}

@@ -8,6 +8,8 @@ import Hero from "@/components/Hero";
 import Navigation from "@/components/Interface/Navigation";
 import VisualizationLayer from "@/components/VisualizationLayer";
 import FABContainer from "@/components/FABContainer";
+import PageTransition from "@/components/PageTransition";
+import { VisualizerProvider } from "@/contexts/VisualizerContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,16 +27,20 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <DynamicBackground />
-        <VisualizationLayer />
-        <AmbientLayer />
-        <SyncProvider>
-	        <Navigation />
-	        <Hero />
-          <div className="relative z-10">
-            {children}
-          </div>
-          <FABContainer />
-        </SyncProvider>
+        <VisualizerProvider>
+          <VisualizationLayer />
+          <AmbientLayer />
+          <SyncProvider>
+            <Navigation />
+            <Hero />
+            <div className="relative z-10">
+              <PageTransition>
+                {children}
+              </PageTransition>
+            </div>
+            {/*<FABContainer />*/}
+          </SyncProvider>
+        </VisualizerProvider>
       </body>
     </html>
   );

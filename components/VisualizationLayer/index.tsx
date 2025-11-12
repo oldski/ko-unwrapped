@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from 'react';
 import useSWR from 'swr';
 import fetcher from '@/lib/fetcher';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useVisualizer } from '@/contexts/VisualizerContext';
 
 // Import all visualizers
 import RetroPixelated from '@/components/visualizers/RetroPixelated';
@@ -31,12 +32,20 @@ const VISUALIZERS: VisualizerType[] = ['retro', 'waveform', 'radar', 'matrix', '
 
 export default function VisualizationLayer() {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [bpm, setBpm] = useState(120);
-  const [energy, setEnergy] = useState(0.5);
-  const [danceability, setDanceability] = useState(0.5);
   const [valence, setValence] = useState(0.5);
-  const [activeVisualizer, setActiveVisualizer] = useState<VisualizerType>('retro');
   const previousTrackRef = useRef<string>('');
+
+  // Use shared visualizer context
+  const {
+    activeVisualizer,
+    setActiveVisualizer,
+    bpm,
+    setBpm,
+    energy,
+    setEnergy,
+    danceability,
+    setDanceability,
+  } = useVisualizer();
 
   const { data } = useSWR<NowPlayingData>(
     `${process.env.NEXT_PUBLIC_HOST}/api/now-playing`,

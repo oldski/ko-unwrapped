@@ -44,6 +44,42 @@ export const NowPlaying: React.FC<NowPlayingProps> = ({ getIsPlaying }) => {
 		}
 	}, [data, getIsPlaying]);
 
+	// GSAP: Initial entrance animation
+	useEffect(() => {
+		if (!data?.isPlaying || !isHomePage) return;
+
+		// Set initial states
+		gsap.set([titleRef.current, albumArtRef.current, textContainerRef.current], {
+			opacity: 0,
+			y: 30
+		});
+
+		// Staggered entrance animation with delay
+		const tl = gsap.timeline({ delay: 1.5 }); // Delay to let page transition finish
+		tl.to(albumArtRef.current, {
+			opacity: 1,
+			y: 0,
+			duration: 0.8,
+			ease: "power3.out"
+		})
+		.to(titleRef.current, {
+			opacity: 1,
+			y: 0,
+			duration: 0.6,
+			ease: "power3.out"
+		}, "-=0.4")
+		.to(textContainerRef.current, {
+			opacity: 1,
+			y: 0,
+			duration: 0.6,
+			ease: "power3.out"
+		}, "-=0.4");
+
+		return () => {
+			tl.kill();
+		};
+	}, [data?.isPlaying, isHomePage]);
+
 	// GSAP: Looping animations (BPM-synced)
 	useEffect(() => {
 		if (!data?.isPlaying || !isHomePage) return;
@@ -195,10 +231,10 @@ export const NowPlaying: React.FC<NowPlayingProps> = ({ getIsPlaying }) => {
 	// Render homepage version (full screen, parallax, BPM-synced)
 	if (isHomePage && data?.isPlaying) {
 		return (
-			<div className="h-screen w-screen fixed top-0 left-0 duration-300 transition-all pointer-events-none z-20">
-				<div className="flex flex-col items-center justify-center w-full h-full p-4 sm:p-6 md:p-10 gap-4 opacity-100">
+			<div className="h-screen w-screen duration-300 transition-all pointer-events-none z-20">
+				<div className="flex flex-col justify-center items-center w-full h-full p-4 sm:p-6 md:p-10 gap-4 opacity-100">
 					{/* Desktop: horizontal layout, Mobile/Tablet: vertical layout */}
-					<div className="flex flex-col lg:flex-row items-center justify-center gap-6 md:gap-8 lg:gap-10 w-full max-w-7xl">
+					<div className="flex flex-col lg:flex-row items-center justify-start gap-6 md:gap-8 lg:gap-10 space-x-10 w-full max-w-6xl">
 						{/* 3D Tilting Album Art */}
 						<div
 							className="relative flex-shrink-0"
@@ -237,20 +273,20 @@ export const NowPlaying: React.FC<NowPlayingProps> = ({ getIsPlaying }) => {
 						>
 							<h2
 								ref={titleRef}
-								className="text-2xl sm:text-3xl lg:text-4xl font-extrabold italic inline drop-shadow-md text-[var(--color-primary)]"
+								className="text-2xl sm:text-3xl lg:text-4xl font-extrabold italic inline drop-shadow-md text-[var(--color-secondary)]"
 							>
 								Now Playing
 							</h2>
 							<div className="w-full">
 								<h2
 									ref={trackTitleRef}
-									className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light text-[var(--color-text-primary)] leading-tight break-words"
+									className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light text-[var(--color-primary)] leading-tight break-words"
 								>
 									{data?.title || "Unknown Title"}
 								</h2>
 								<h4
 									ref={artistRef}
-									className="text-xl sm:text-2xl md:text-2xl lg:text-3xl font-bold text-[var(--color-text-secondary)] break-words"
+									className="text-xl sm:text-2xl md:text-2xl lg:text-3xl font-bold text-[var(--color-accent)] break-words"
 								>
 									{data?.artist || "Unknown Artist"}
 								</h4>

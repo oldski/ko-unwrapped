@@ -240,7 +240,7 @@ const DynamicBackground = () => {
             <motion.div
               className="absolute inset-0"
               style={{
-                background: gradientStyle,
+                backgroundImage: gradientStyle,
                 backgroundSize: '200% 200%',
               }}
               animate={{

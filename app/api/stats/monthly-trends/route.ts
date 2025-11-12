@@ -11,6 +11,7 @@ export async function GET(request: Request) {
     // Calculate start date (X months ago)
     const startDate = new Date();
     startDate.setMonth(startDate.getMonth() - months);
+    const startDateISO = startDate.toISOString();
 
     // Get all plays in the date range
     const plays = await db
@@ -24,7 +25,7 @@ export async function GET(request: Request) {
       .innerJoin(tracks, eq(playHistory.trackId, tracks.id))
       .innerJoin(trackArtists, eq(trackArtists.trackId, tracks.id))
       .innerJoin(artists, eq(trackArtists.artistId, artists.id))
-      .where(sql`${playHistory.playedAt} >= ${startDate}`)
+      .where(sql`${playHistory.playedAt} >= ${startDateISO}`)
       .orderBy(desc(playHistory.playedAt));
 
     // Group by month and calculate stats

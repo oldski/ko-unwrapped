@@ -59,7 +59,12 @@ export default function Drawer({ isOpen, onClose, children, title }: DrawerProps
             className="fixed right-0 top-0 bottom-0 w-full md:w-[80%] lg:w-[70%] bg-gray-900/95 backdrop-blur-xl border-l border-gray-800 shadow-2xl z-[80] overflow-y-auto"
           >
             {/* Header */}
-            <div className="sticky top-0 bg-gray-900/95 backdrop-blur-xl border-b border-gray-800 px-6 py-4 flex items-center justify-between z-10">
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.3 }}
+              className="sticky top-0 bg-gray-900/95 backdrop-blur-xl border-b border-gray-800 px-6 py-4 flex items-center justify-between z-10"
+            >
               {title && (
                 <h2 className="text-2xl font-bold text-[var(--color-primary)]">
                   {title}
@@ -72,12 +77,17 @@ export default function Drawer({ isOpen, onClose, children, title }: DrawerProps
               >
                 <IoClose size={24} />
               </button>
-            </div>
+            </motion.div>
 
             {/* Content */}
-            <div className="p-6">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.4 }}
+              className="p-6"
+            >
               {children}
-            </div>
+            </motion.div>
           </motion.div>
         </>
       )}

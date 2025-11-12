@@ -28,7 +28,8 @@ export async function GET() {
 		const features = await getAudioFeatures([trackId]);
 		audioFeatures = features.audio_features?.[0] || null;
 	} catch (error) {
-		console.error('Failed to fetch audio features for now playing:', error);
+		// Silently fail - audio features are optional enhancement
+		// The app will still work with default BPM/energy values
 	}
 
 	return NextResponse.json({
