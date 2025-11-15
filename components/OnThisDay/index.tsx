@@ -29,7 +29,7 @@ export default function OnThisDay() {
 
   if (isLoading) {
     return (
-      <div className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/50 rounded-2xl p-8">
+      <div className="bg-gradient-to-br from-purple-500/80 to-pink-500/50 border border-purple-500/50 rounded-2xl p-8">
         <div className="flex items-center justify-center h-32">
           <div className="text-center">
             <div className="w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
@@ -42,7 +42,7 @@ export default function OnThisDay() {
 
   if (!plays.length) {
     return (
-      <div className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/50 rounded-2xl p-8">
+      <div className="bg-gradient-to-br from-[var(--color-5)]/75  to-pink-500/50 border border-purple-500/50 rounded-2xl p-8">
         <h2 className="text-2xl font-bold mb-2 text-purple-400">
           On This Day 📅
         </h2>
@@ -57,7 +57,7 @@ export default function OnThisDay() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/50 rounded-2xl p-8">
+    <div className="bg-gradient-to-br from-[var(--color-5)]/75 to-[var(--color-7)]/75 border border-[var(--color-border)]/50 rounded-2xl p-8">
       <h2 className="text-2xl font-bold mb-2 text-purple-400">
         On This Day 📅
       </h2>

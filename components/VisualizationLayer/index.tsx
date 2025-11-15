@@ -4,14 +4,38 @@ import useSWR from 'swr';
 import fetcher from '@/lib/fetcher';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useVisualizer } from '@/contexts/VisualizerContext';
+import dynamic from 'next/dynamic';
 
-// Import all visualizers
-import RetroPixelated from '@/components/visualizers/RetroPixelated';
-import WaveformOscilloscope from '@/components/visualizers/WaveformOscilloscope';
-import RadarCircular from '@/components/visualizers/RadarCircular';
-import MatrixRain from '@/components/visualizers/MatrixRain';
-import GridTunnel from '@/components/visualizers/GridTunnel';
-import SpectrumOrbs from '@/components/visualizers/SpectrumOrbs';
+// Lazy-load visualizers for better performance
+const RetroPixelated = dynamic(() => import('@/components/visualizers/RetroPixelated'), {
+  ssr: false,
+  loading: () => <div className="fixed inset-0 bg-gray-900/20" />,
+});
+
+const WaveformOscilloscope = dynamic(() => import('@/components/visualizers/WaveformOscilloscope'), {
+  ssr: false,
+  loading: () => <div className="fixed inset-0 bg-gray-900/20" />,
+});
+
+const RadarCircular = dynamic(() => import('@/components/visualizers/RadarCircular'), {
+  ssr: false,
+  loading: () => <div className="fixed inset-0 bg-gray-900/20" />,
+});
+
+const MatrixRain = dynamic(() => import('@/components/visualizers/MatrixRain'), {
+  ssr: false,
+  loading: () => <div className="fixed inset-0 bg-gray-900/20" />,
+});
+
+const GridTunnel = dynamic(() => import('@/components/visualizers/GridTunnel'), {
+  ssr: false,
+  loading: () => <div className="fixed inset-0 bg-gray-900/20" />,
+});
+
+const SpectrumOrbs = dynamic(() => import('@/components/visualizers/SpectrumOrbs'), {
+  ssr: false,
+  loading: () => <div className="fixed inset-0 bg-gray-900/20" />,
+});
 
 interface AudioFeatures {
   tempo: number;

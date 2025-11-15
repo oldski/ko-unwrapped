@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import {currentlyPlayingSong, getAudioFeatures} from "@/lib/spotify";
+import { getAudioFeaturesOrMock } from "@/lib/mockAudioFeatures";
 
 export async function GET() {
 	const response = await currentlyPlayingSong();
@@ -21,6 +22,8 @@ export async function GET() {
 	const albumImageUrl = song.item.album.images[0].url;
 	const songUrl = song.item.external_urls.spotify;
 	const trackId = song.item.id;
+	const popularity = song.item.popularity;
+	const durationMs = song.item.duration_ms;
 
 	// Fetch audio features for the currently playing track
 	let audioFeatures = null;
@@ -28,9 +31,17 @@ export async function GET() {
 		const features = await getAudioFeatures([trackId]);
 		audioFeatures = features.audio_features?.[0] || null;
 	} catch (error) {
-		// Silently fail - audio features are optional enhancement
-		// The app will still work with default BPM/energy values
+		// Silently fail - will use mock features below
 	}
+
+	// Use real features if available, otherwise generate intelligent mock features
+	const enhancedAudioFeatures = getAudioFeaturesOrMock(audioFeatures, {
+		trackId,
+		popularity,
+		durationMs,
+		trackName: title,
+		artistName: artist,
+	});
 
 	return NextResponse.json({
 		album,
@@ -40,6 +51,6 @@ export async function GET() {
 		songUrl,
 		title,
 		trackId,
-		audioFeatures,
+		audioFeatures: enhancedAudioFeatures,
 	}, { status: 200 });
 }

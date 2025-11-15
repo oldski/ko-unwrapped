@@ -5,13 +5,9 @@ import Image from "next/image";
 import React, { useEffect, useState, useRef } from "react";
 import { FaSpotify } from "react-icons/fa6";
 import { usePathname } from "next/navigation";
-import { gsap } from "@/lib/gsap";
+import { gsap, ScrollTrigger } from "@/lib/gsap";
 
-interface NowPlayingProps {
-	getIsPlaying: (isPlaying: boolean) => void;
-}
-
-export const NowPlaying: React.FC<NowPlayingProps> = ({ getIsPlaying }) => {
+export const NowPlaying: React.FC = () => {
 	const pathname = usePathname();
 	const isHomePage = pathname === '/';
 	const [bpm, setBpm] = useState<number>(120);
@@ -24,6 +20,7 @@ export const NowPlaying: React.FC<NowPlayingProps> = ({ getIsPlaying }) => {
 	const textContainerRef = useRef<HTMLDivElement>(null);
 	const trackTitleRef = useRef<HTMLHeadingElement>(null);
 	const artistRef = useRef<HTMLHeadingElement>(null);
+	const nowPlayingContainerRef = useRef<HTMLDivElement>(null);
 
 	// Mouse position state for parallax
 	const mousePos = useRef({ x: 0, y: 0 });
@@ -36,13 +33,11 @@ export const NowPlaying: React.FC<NowPlayingProps> = ({ getIsPlaying }) => {
 
 	useEffect(() => {
 		if (data && data?.isPlaying !== undefined) {
-			getIsPlaying(data?.isPlaying);
-
 			if (data?.audioFeatures?.tempo) {
 				setBpm(data.audioFeatures.tempo);
 			}
 		}
-	}, [data, getIsPlaying]);
+	}, [data]);
 
 	// GSAP: Initial entrance animation
 	useEffect(() => {
@@ -224,6 +219,46 @@ export const NowPlaying: React.FC<NowPlayingProps> = ({ getIsPlaying }) => {
 		return () => window.removeEventListener('mousemove', handleMouseMove);
 	}, [isHomePage]);
 
+	// GSAP: Scroll-linked scale down and fade to top left
+	useEffect(() => {
+		if (!data?.isPlaying || !isHomePage || !nowPlayingContainerRef.current) return;
+
+		// Reset transform when coming to home page
+		gsap.set(nowPlayingContainerRef.current, {
+			scale: 1,
+			x: 0,
+			y: 0,
+			opacity: 1,
+			clearProps: 'transform,opacity' // Clear any previous transforms
+		});
+
+		const tl = gsap.timeline({
+			scrollTrigger: {
+				trigger: nowPlayingContainerRef.current,
+				start: 'top top',
+				end: '+=600', // Scroll 600px to complete animation
+				scrub: 1.5, // Smooth scroll-linked animation
+			}
+		});
+
+		tl.to(nowPlayingContainerRef.current, {
+			scale: 0.4,
+			x: '-35vw', // Move to left
+			y: '-35vh', // Move to top
+			opacity: 0,
+			ease: 'none'
+		});
+
+		return () => {
+			tl.kill();
+			ScrollTrigger.getAll().forEach(st => {
+				if (st.trigger === nowPlayingContainerRef.current) {
+					st.kill();
+				}
+			});
+		};
+	}, [data?.isPlaying, isHomePage]);
+
 	if (error) {
 		return <div>Error loading data</div>;
 	}
@@ -231,8 +266,11 @@ export const NowPlaying: React.FC<NowPlayingProps> = ({ getIsPlaying }) => {
 	// Render homepage version (full screen, parallax, BPM-synced)
 	if (isHomePage && data?.isPlaying) {
 		return (
-			<div className="h-screen w-screen duration-300 transition-all pointer-events-none z-20">
-				<div className="flex flex-col justify-center items-center w-full h-full p-4 sm:p-6 md:p-10 gap-4 opacity-100">
+			<div className="h-screen w-screen duration-300 transition-all pointer-events-none isolate will-change-transform z-50">
+				<div
+					ref={nowPlayingContainerRef}
+					className="flex flex-col justify-center items-center w-full h-full p-4 sm:p-6 md:p-10 gap-4 opacity-100"
+				>
 					{/* Desktop: horizontal layout, Mobile/Tablet: vertical layout */}
 					<div className="flex flex-col lg:flex-row items-center justify-start gap-6 md:gap-8 lg:gap-10 space-x-10 w-full max-w-6xl">
 						{/* 3D Tilting Album Art */}
@@ -273,20 +311,20 @@ export const NowPlaying: React.FC<NowPlayingProps> = ({ getIsPlaying }) => {
 						>
 							<h2
 								ref={titleRef}
-								className="text-2xl sm:text-3xl lg:text-4xl font-extrabold italic inline drop-shadow-md text-[var(--color-secondary)]"
+								className="text-xl sm:text-2xl lg:text-3xl font-extrabold italic inline drop-shadow-md text-[var(--color-secondary)]"
 							>
 								Now Playing
 							</h2>
 							<div className="w-full">
 								<h2
 									ref={trackTitleRef}
-									className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light text-[var(--color-primary)] leading-tight break-words"
+									className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-[var(--color-vibrant)] leading-tight break-words"
 								>
 									{data?.title || "Unknown Title"}
 								</h2>
 								<h4
 									ref={artistRef}
-									className="text-xl sm:text-2xl md:text-2xl lg:text-3xl font-bold text-[var(--color-accent)] break-words"
+									className="text-xl sm:text-2xl md:text-2xl lg:text-3xl font-semibold text-[var(--color-vibrant)] break-words"
 								>
 									{data?.artist || "Unknown Artist"}
 								</h4>
