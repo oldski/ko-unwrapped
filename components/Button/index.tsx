@@ -109,7 +109,7 @@ export default function Button({
         whileTap={{ scale: 0.98 }}
         className={baseClasses}
         disabled={disabled || loading}
-        {...props}
+        {...(props as any)}
       >
         {buttonContent}
       </motion.button>

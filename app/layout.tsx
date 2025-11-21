@@ -43,7 +43,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
 	
-	const ambianceLevel = Math.floor(Math.random() * 6) + 1;
+	const ambianceLevel = (Math.floor(Math.random() * 6) + 1) as 1 | 2 | 3 | 4 | 5 | 6;
 	
   return (
     <html lang="en">
