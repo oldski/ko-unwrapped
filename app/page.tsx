@@ -1,6 +1,7 @@
 'use client';
 
 import OnThisDay from '@/components/OnThisDay';
+import AnimatedCard from '@/components/AnimatedCard';
 import Link from 'next/link';
 import useSWR from 'swr';
 import fetcher from '@/lib/fetcher';
@@ -200,47 +201,43 @@ export default function Home() {
         {quickStats && (
           <div className="flex flex-col gap-4 md:gap-6 parallax-section">
             <Link href="/stats" className="group w-full">
-              <div
-                ref={(el) => { statsCardsRef.current[0] = el; }}
-                className="bg-[var(--color-4)]/75 backdrop-blur-md border border-[var(--color-primary)]/30 rounded-2xl p-6 hover:bg-[var(--color-primary)]/20 transition-all hover:scale-105 hover:border-[var(--color-primary)]/50">
-                <p className="text-[var(--color-text-secondary)] text-3xl mb-1">Recent Plays</p>
-                <p className="text-9xl font-bold text-[var(--color-vibrant)] mb-2">{quickStats.recentPlays}</p>
-                <p className="text-[var(--color-text-secondary)]/70 text-2xl group-hover:text-[var(--color-primary)] transition-colors">
-                  View full history →
-                </p>
+              <div ref={(el) => { statsCardsRef.current[0] = el; }}>
+                <AnimatedCard opacity="bold" weight="medium" className="hover:scale-105 transition-transform">
+                  <AnimatedCard.Stat
+                    label="Recent Plays"
+                    value={quickStats.recentPlays}
+                    trend="View full history →"
+                  />
+                </AnimatedCard>
               </div>
             </Link>
 
             <Link href="/insights" className="group w-full">
-              <div
-                ref={(el) => { statsCardsRef.current[2] = el; }}
-                className="bg-[var(--color-6)]/75 backdrop-blur-md border border-[var(--color-accent)]/30 rounded-2xl p-6 hover:bg-[var(--color-accent)]/20 transition-all hover:scale-105 hover:border-[var(--color-accent)]/50">
-                <p className="text-[var(--color-text-secondary)] text-3xl mb-1">Current Streak</p>
-                <div className="flex items-baseline gap-2 mb-2">
-                  <p className="text-9xl font-bold text-[var(--color-vibrant)]">{quickStats.currentStreak}</p>
-                  <p className="text-9xl text-[var(--color-accent)]/70">{quickStats.currentStreak >= 3 ? '🔥' : '🎵'}</p>
-                </div>
-                <p className="text-[var(--color-text-secondary)]/70 text-2xl group-hover:text-[var(--color-accent)] transition-colors">
-                  See insights →
-                </p>
+              <div ref={(el) => { statsCardsRef.current[2] = el; }}>
+                <AnimatedCard opacity="bold" weight="medium" className="hover:scale-105 transition-transform">
+                  <AnimatedCard.Stat
+                    label="Current Streak"
+                    value={quickStats.currentStreak}
+                    trend="See insights →"
+                    icon={quickStats.currentStreak >= 3 ? '🔥' : '🎵'}
+                  />
+                </AnimatedCard>
               </div>
             </Link>
 
             <Link href="/artists" className="group w-full">
-              <div
-                ref={(el) => { statsCardsRef.current[1] = el; }}
-                className="bg-[var(--color-5)]/75 backdrop-blur-md border border-[var(--color-secondary)]/30 rounded-2xl p-6 hover:bg-[var(--color-secondary)]/20 transition-all hover:scale-105 hover:border-[var(--color-secondary)]/50 flex flex-col justify-between min-h-[400px]">
-                <div>
-                  <p className="text-[var(--color-text-secondary)] text-3xl mb-1">Artists Explored</p>
-                  <p className="text-9xl font-bold text-[var(--color-vibrant)] mb-2">{quickStats.uniqueArtists}</p>
-                  <p className="text-[var(--color-text-secondary)]/70 text-2xl group-hover:text-[var(--color-secondary)] transition-colors">
-                    Discover more →
-                  </p>
-                </div>
-                {/* Space for future images/content */}
-                <div className="mt-4 flex-grow flex items-end justify-end opacity-20">
-                  <p className="text-xs text-[var(--color-text-secondary)]">✨ Coming soon...</p>
-                </div>
+              <div ref={(el) => { statsCardsRef.current[1] = el; }}>
+                <AnimatedCard opacity="bold" weight="medium" className="hover:scale-105 transition-transform min-h-[400px] flex flex-col justify-between">
+                  <AnimatedCard.Stat
+                    label="Artists Explored"
+                    value={quickStats.uniqueArtists}
+                    trend="Discover more →"
+                  />
+                  {/* Space for future images/content */}
+                  <div className="mt-4 flex-grow flex items-end justify-end opacity-20">
+                    <p className="text-xs text-[var(--color-text-secondary)]">✨ Coming soon...</p>
+                  </div>
+                </AnimatedCard>
               </div>
             </Link>
           </div>

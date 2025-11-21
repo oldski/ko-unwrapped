@@ -3,6 +3,8 @@ import useSWR from 'swr';
 import fetcher from '@/lib/fetcher';
 import { motion } from 'framer-motion';
 import { useMemo } from 'react';
+import AnimatedCard from '@/components/AnimatedCard';
+import Spinner from '@/components/Spinner';
 
 export default function ListeningStreaks() {
   // Fetch all history to calculate streaks
@@ -103,25 +105,24 @@ export default function ListeningStreaks() {
 
   if (isLoading) {
     return (
-      <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-2xl p-8">
+      <AnimatedCard>
         <div className="flex items-center justify-center h-48">
           <div className="text-center">
-            <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-            <p className="text-gray-400 text-sm">Calculating streaks...</p>
+            <Spinner size="lg" className="mx-auto mb-3" />
+            <p className="text-[var(--color-text-secondary)] text-sm">Calculating streaks...</p>
           </div>
         </div>
-      </div>
+      </AnimatedCard>
     );
   }
 
   return (
-    <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-2xl p-8">
-      <h2 className="text-2xl font-bold mb-2 text-orange-400">
-        Listening Streaks 🔥
-      </h2>
-      <p className="text-gray-400 mb-6">
-        Track your daily listening consistency
-      </p>
+    <AnimatedCard>
+      <AnimatedCard.Header
+        title="Listening Streaks"
+        description="Track your daily listening consistency"
+        icon="🔥"
+      />
 
       {/* Main Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -253,6 +254,6 @@ export default function ListeningStreaks() {
           ))}
         </div>
       </div>
-    </div>
+    </AnimatedCard>
   );
 }

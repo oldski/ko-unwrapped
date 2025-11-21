@@ -1,9 +1,22 @@
 'use client';
 
-import { useEffect, useState, useMemo, useRef } from 'react';
+import { useEffect, useState, useMemo, useRef, createContext, useContext } from 'react';
 import useSWR from 'swr';
 import fetcher from '@/lib/fetcher';
 import useColorThief from 'use-color-thief';
+
+// Context for ambient theme settings
+interface AmbientThemeContextType {
+  variant: 1 | 2 | 3 | 4 | 5 | 6;
+  isPlaying: boolean;
+}
+
+const AmbientThemeContext = createContext<AmbientThemeContextType>({
+  variant: 1,
+  isPlaying: false,
+});
+
+export const useAmbientTheme = () => useContext(AmbientThemeContext);
 
 interface AudioFeatures {
   tempo: number;
@@ -62,6 +75,7 @@ interface ColorPalette {
 const ColorThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const [imgSrc, setImgSrc] = useState<string>('');
   const previousTrackRef = useRef<string>('');
+  const [variant, setVariant] = useState<1 | 2 | 3 | 4 | 5 | 6>(1);
 
   const { data, error } = useSWR<NowPlayingData>(
     `${process.env.NEXT_PUBLIC_HOST}/api/now-playing`,
@@ -76,12 +90,15 @@ const ColorThemeProvider = ({ children }: { children: React.ReactNode }) => {
     colorCount: 8, // Extract 8 colors
   });
 
-  // Update image source when track changes
+  // Update image source and variant when track changes
   useEffect(() => {
     if (data?.isPlaying && data.albumImageUrl) {
       if (data.albumImageUrl !== previousTrackRef.current) {
         previousTrackRef.current = data.albumImageUrl;
         setImgSrc(data.albumImageUrl);
+        // Generate random variant (1-6) for new song
+        const randomVariant = (Math.floor(Math.random() * 6) + 1) as 1 | 2 | 3 | 4 | 5 | 6;
+        setVariant(randomVariant);
       }
     }
   }, [data?.albumImageUrl, data?.isPlaying]);
@@ -317,6 +334,12 @@ const ColorThemeProvider = ({ children }: { children: React.ReactNode }) => {
       // Complementary
       root.style.setProperty('--color-complementary-1', colorPalette.complementary1);
       root.style.setProperty('--color-complementary-2', colorPalette.complementary2);
+
+      // Safe variants (mixed with text-primary for guaranteed readability)
+      root.style.setProperty('--color-vibrant-safe', `color-mix(in srgb, ${colorPalette.vibrant} 75%, ${colorPalette.textPrimary} 25%)`);
+      root.style.setProperty('--color-accent-safe', `color-mix(in srgb, ${colorPalette.accent} 75%, ${colorPalette.textPrimary} 25%)`);
+      root.style.setProperty('--color-primary-safe', `color-mix(in srgb, ${colorPalette.primary} 75%, ${colorPalette.textPrimary} 25%)`);
+      root.style.setProperty('--color-secondary-safe', `color-mix(in srgb, ${colorPalette.secondary} 75%, ${colorPalette.textPrimary} 25%)`);
     } else {
       // Reset to defaults when not playing
       root.style.setProperty('--color-1', '#0f172a');
@@ -344,10 +367,20 @@ const ColorThemeProvider = ({ children }: { children: React.ReactNode }) => {
       root.style.setProperty('--color-border', '#374151');
       root.style.setProperty('--color-complementary-1', '#fbbf24');
       root.style.setProperty('--color-complementary-2', '#f97316');
+
+      // Safe variants (defaults)
+      root.style.setProperty('--color-vibrant-safe', 'color-mix(in srgb, #f59e0b 75%, #ffffff 25%)');
+      root.style.setProperty('--color-accent-safe', 'color-mix(in srgb, #ec4899 75%, #ffffff 25%)');
+      root.style.setProperty('--color-primary-safe', 'color-mix(in srgb, #06b6d4 75%, #ffffff 25%)');
+      root.style.setProperty('--color-secondary-safe', 'color-mix(in srgb, #8b5cf6 75%, #ffffff 25%)');
     }
   }, [colorPalette, data?.isPlaying]);
 
-  return <>{children}</>;
+  return (
+    <AmbientThemeContext.Provider value={{ variant, isPlaying: data?.isPlaying || false }}>
+      {children}
+    </AmbientThemeContext.Provider>
+  );
 };
 
 export default ColorThemeProvider;

@@ -1,8 +1,9 @@
 'use client';
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import useSWR from 'swr';
 import fetcher from '@/lib/fetcher';
+import AnimatedCard from '@/components/AnimatedCard';
+import Button from '@/components/Button';
 
 type ExportFormat = 'json' | 'csv';
 
@@ -128,13 +129,12 @@ export default function ExportData() {
   };
 
   return (
-    <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-2xl p-8">
-      <h2 className="text-2xl font-bold mb-2 text-cyan-400">
-        Export Your Data 📊
-      </h2>
-      <p className="text-gray-400 mb-6">
-        Download your listening history in CSV or JSON format
-      </p>
+    <AnimatedCard>
+      <AnimatedCard.Header
+        title="Export Your Data"
+        description="Download your listening history in CSV or JSON format"
+        icon="📊"
+      />
 
       {/* Date Range Selector */}
       <div className="mb-6">
@@ -146,17 +146,15 @@ export default function ExportData() {
             { value: '90d', label: 'Last 90 Days' },
             { value: '1y', label: 'Last Year' },
           ].map((option) => (
-            <button
+            <Button
               key={option.value}
+              variant="secondary"
+              size="sm"
+              isActive={dateRange === option.value}
               onClick={() => setDateRange(option.value as any)}
-              className={`px-4 py-2 rounded-lg font-semibold transition-all ${
-                dateRange === option.value
-                  ? 'bg-cyan-500 text-black'
-                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-              }`}
             >
               {option.label}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -174,24 +172,24 @@ export default function ExportData() {
             </div>
           </div>
           <div className="flex gap-2">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            <Button
+              variant="success"
+              size="sm"
+              fullWidth
+              loading={isExporting}
               onClick={() => handleExport('csv', 'history')}
-              disabled={isExporting}
-              className="flex-1 px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isExporting ? 'Exporting...' : 'Export CSV'}
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              Export CSV
+            </Button>
+            <Button
+              variant="accent"
+              size="sm"
+              fullWidth
+              loading={isExporting}
               onClick={() => handleExport('json', 'history')}
-              disabled={isExporting}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isExporting ? 'Exporting...' : 'Export JSON'}
-            </motion.button>
+              Export JSON
+            </Button>
           </div>
         </div>
 
@@ -206,24 +204,24 @@ export default function ExportData() {
             </div>
           </div>
           <div className="flex gap-2">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            <Button
+              variant="success"
+              size="sm"
+              fullWidth
+              loading={isExporting}
               onClick={() => handleExport('csv', 'top-tracks')}
-              disabled={isExporting}
-              className="flex-1 px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isExporting ? 'Exporting...' : 'Export CSV'}
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              Export CSV
+            </Button>
+            <Button
+              variant="accent"
+              size="sm"
+              fullWidth
+              loading={isExporting}
               onClick={() => handleExport('json', 'top-tracks')}
-              disabled={isExporting}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isExporting ? 'Exporting...' : 'Export JSON'}
-            </motion.button>
+              Export JSON
+            </Button>
           </div>
         </div>
 
@@ -238,24 +236,24 @@ export default function ExportData() {
             </div>
           </div>
           <div className="flex gap-2">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            <Button
+              variant="success"
+              size="sm"
+              fullWidth
+              loading={isExporting}
               onClick={() => handleExport('csv', 'top-artists')}
-              disabled={isExporting}
-              className="flex-1 px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isExporting ? 'Exporting...' : 'Export CSV'}
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              Export CSV
+            </Button>
+            <Button
+              variant="accent"
+              size="sm"
+              fullWidth
+              loading={isExporting}
               onClick={() => handleExport('json', 'top-artists')}
-              disabled={isExporting}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isExporting ? 'Exporting...' : 'Export JSON'}
-            </motion.button>
+              Export JSON
+            </Button>
           </div>
         </div>
       </div>
@@ -267,6 +265,6 @@ export default function ExportData() {
           programmatic access and data science projects.
         </p>
       </div>
-    </div>
+    </AnimatedCard>
   );
 }

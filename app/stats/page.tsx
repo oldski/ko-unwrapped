@@ -5,6 +5,9 @@ import useSWR from 'swr';
 import fetcher from '@/lib/fetcher';
 import { motion } from 'framer-motion';
 import DateRangePicker from "@/components/DateRangePicker";
+import AnimatedCard from '@/components/AnimatedCard';
+import Button from '@/components/Button';
+import Spinner from '@/components/Spinner';
 
 export default function StatsPage() {
   const [selectedView, setSelectedView] = useState<'timeline' | 'patterns'>('timeline');
@@ -120,34 +123,28 @@ export default function StatsPage() {
 
         {/* View Selector */}
         <div className="flex gap-2 mb-8">
-          <button
+          <Button
+            variant="secondary"
+            isActive={selectedView === 'timeline'}
             onClick={() => setSelectedView('timeline')}
-            className={`px-6 py-3 rounded-lg font-semibold transition-all border-2 ${
-              selectedView === 'timeline'
-                ? 'bg-[var(--color-primary)] text-[var(--color-text-primary)] border-[var(--color-accent)]'
-                : 'bg-[var(--color-bg-2)] text-[var(--color-text-secondary)] border-[var(--color-border)] hover:bg-[var(--color-primary)]/20'
-            }`}
           >
             Timeline
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="secondary"
+            isActive={selectedView === 'patterns'}
             onClick={() => setSelectedView('patterns')}
-            className={`px-6 py-3 rounded-lg font-semibold transition-all border-2 ${
-              selectedView === 'patterns'
-                ? 'bg-[var(--color-primary)] text-[var(--color-text-primary)] border-[var(--color-accent)]'
-                : 'bg-[var(--color-bg-2)] text-[var(--color-text-secondary)] border-[var(--color-border)] hover:bg-[var(--color-primary)]/20'
-            }`}
           >
             Patterns
-          </button>
+          </Button>
         </div>
 
         {/* Loading State */}
         {isLoading && (
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
-              <div className="w-16 h-16 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-              <p className="text-gray-400">Loading your listening history...</p>
+              <Spinner size="xl" className="mx-auto mb-4" />
+              <p className="text-[var(--color-text-secondary)]">Loading your listening history...</p>
             </div>
           </div>
         )}
@@ -159,60 +156,42 @@ export default function StatsPage() {
               <div className="space-y-6">
                 {/* Stats Overview */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-[var(--color-primary)]/20 backdrop-blur-sm border border-[var(--color-primary)]/50 rounded-2xl p-6"
-                  >
-                    <p className="text-[var(--color-text-secondary)] text-sm mb-1">Tracks Played</p>
-                    <p className="text-4xl font-bold text-[var(--color-primary)]">{patterns.totalTracks}</p>
-                    <p className="text-[var(--color-text-secondary)] text-sm mt-1">in selected period</p>
-                  </motion.div>
+                  <AnimatedCard size="compact" opacity="bold" weight="light">
+                    <AnimatedCard.Stat
+                      label="Tracks Played"
+                      value={patterns.totalTracks}
+                      trend="in selected period"
+                    />
+                  </AnimatedCard>
 
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="bg-[var(--color-secondary)]/20 backdrop-blur-sm border border-[var(--color-secondary)]/50 rounded-2xl p-6"
-                  >
-                    <p className="text-[var(--color-text-secondary)] text-sm mb-1">Peak Listening Time</p>
-                    <p className="text-4xl font-bold text-[var(--color-secondary)]">
-                      {patterns.peakHour > 12 ? patterns.peakHour - 12 : patterns.peakHour || 12}
-                      {patterns.peakHour >= 12 ? 'PM' : 'AM'}
-                    </p>
-                    <p className="text-[var(--color-text-secondary)] text-sm mt-1">{getTimeOfDay(patterns.peakHour)}</p>
-                  </motion.div>
+                  <AnimatedCard size="compact" opacity="bold" weight="light">
+                    <AnimatedCard.Stat
+                      label="Peak Listening Time"
+                      value={`${patterns.peakHour > 12 ? patterns.peakHour - 12 : patterns.peakHour || 12}${patterns.peakHour >= 12 ? 'PM' : 'AM'}`}
+                      trend={getTimeOfDay(patterns.peakHour)}
+                    />
+                  </AnimatedCard>
 
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="bg-[var(--color-accent)]/20 backdrop-blur-sm border border-[var(--color-accent)]/50 rounded-2xl p-6"
-                  >
-                    <p className="text-[var(--color-text-secondary)] text-sm mb-1">Favorite Day</p>
-                    <p className="text-4xl font-bold text-[var(--color-accent)]">
-                      {dayNames[patterns.peakDay]}
-                    </p>
-                    <p className="text-[var(--color-text-secondary)] text-sm mt-1">Most active listening day</p>
-                  </motion.div>
+                  <AnimatedCard size="compact" opacity="bold" weight="light">
+                    <AnimatedCard.Stat
+                      label="Favorite Day"
+                      value={dayNames[patterns.peakDay]}
+                      trend="Most active listening day"
+                    />
+                  </AnimatedCard>
 
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="bg-[var(--color-primary)]/20 backdrop-blur-sm border border-[var(--color-primary)]/50 rounded-2xl p-6"
-                  >
-                    <p className="text-[var(--color-text-secondary)] text-sm mb-1">Total Listening Time</p>
-                    <p className="text-4xl font-bold text-[var(--color-primary)]">
-                      {patterns.totalHours}h
-                    </p>
-                    <p className="text-[var(--color-text-secondary)] text-sm mt-1">{patterns.totalMinutes} minutes</p>
-                  </motion.div>
+                  <AnimatedCard size="compact" opacity="bold" weight="light">
+                    <AnimatedCard.Stat
+                      label="Total Listening Time"
+                      value={`${patterns.totalHours}h`}
+                      trend={`${patterns.totalMinutes} minutes`}
+                    />
+                  </AnimatedCard>
                 </div>
 
                 {/* Recently Played Timeline */}
-                <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-2xl p-8">
-                  <h2 className="text-2xl font-bold mb-6 text-cyan-400">Recent History</h2>
+                <AnimatedCard opacity="bold" weight="medium">
+                  <AnimatedCard.Header title="Recent History" />
                   <div className="space-y-3 max-h-[600px] overflow-y-auto">
                     {recentTracks.slice(0, 50).map((item: any, index: number) => {
                       const playedDate = new Date(item.playedAt);
@@ -233,24 +212,25 @@ export default function StatsPage() {
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: index * 0.02 }}
-                          className="flex items-center gap-4 bg-gray-800/50 p-4 rounded-xl hover:bg-gray-800 transition-colors group"
+                          whileHover={{ scale: 1.02, x: 4 }}
+                          className="flex items-center gap-4 bg-[var(--color-bg-2)]/30 border border-[var(--color-border)]/10 p-4 rounded-xl hover:bg-[var(--color-bg-2)]/50 hover:border-[var(--color-accent)]/30 transition-all group cursor-pointer"
                         >
                           <img
                             src={item.track.albumImage}
                             alt={item.track.albumName}
-                            className="w-16 h-16 rounded-lg shadow-lg"
+                            className="w-16 h-16 rounded-lg shadow-lg group-hover:shadow-xl transition-shadow"
                           />
                           <div className="flex-1 min-w-0">
-                            <p className="font-bold text-white truncate group-hover:text-cyan-400 transition-colors">
+                            <p className="font-bold text-[var(--color-text-primary)] truncate group-hover:text-[var(--color-vibrant-safe)] transition-colors">
                               {item.track.name}
                             </p>
-                            <p className="text-sm text-gray-400 truncate">
+                            <p className="text-sm text-[var(--color-text-secondary)] truncate">
                               {item.track.artists?.map((a: any) => a.name).join(', ')}
                             </p>
                           </div>
                           <div className="text-right">
-                            <p className="text-sm text-cyan-400 font-semibold">{timeAgo}</p>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-sm text-[var(--color-accent-safe)] font-semibold">{timeAgo}</p>
+                            <p className="text-xs text-[var(--color-text-secondary)]/70">
                               {playedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </p>
                           </div>
@@ -258,15 +238,15 @@ export default function StatsPage() {
                       );
                     })}
                   </div>
-                </div>
+                </AnimatedCard>
               </div>
             )}
 
             {selectedView === 'patterns' && (
               <div className="space-y-8">
                 {/* Listening by Hour */}
-                <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-2xl p-8">
-                  <h2 className="text-2xl font-bold mb-6 text-cyan-400">Listening by Hour</h2>
+                <AnimatedCard opacity="bold" weight="medium">
+                  <AnimatedCard.Header title="Listening by Hour" />
                   <div className="grid grid-cols-12 gap-2">
                     {patterns.hourCounts.map((count, hour) => {
                       const maxCount = Math.max(...patterns.hourCounts);
@@ -293,11 +273,11 @@ export default function StatsPage() {
                       );
                     })}
                   </div>
-                </div>
+                </AnimatedCard>
 
                 {/* Day of Week Distribution */}
-                <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-2xl p-8">
-                  <h2 className="text-2xl font-bold mb-6 text-cyan-400">Listening by Day</h2>
+                <AnimatedCard opacity="bold" weight="medium">
+                  <AnimatedCard.Header title="Listening by Day" />
                   <div className="grid grid-cols-7 gap-4">
                     {patterns.dayOfWeekCounts.map((count, day) => {
                       const maxCount = Math.max(...patterns.dayOfWeekCounts);
@@ -324,11 +304,11 @@ export default function StatsPage() {
                       );
                     })}
                   </div>
-                </div>
+                </AnimatedCard>
 
                 {/* Top Artists */}
-                <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-2xl p-8">
-                  <h2 className="text-2xl font-bold mb-6 text-cyan-400">Most Played Artists</h2>
+                <AnimatedCard opacity="bold" weight="medium">
+                  <AnimatedCard.Header title="Most Played Artists" />
                   <div className="space-y-4">
                     {patterns.topArtists.map((artist, index) => {
                       const maxCount = patterns.topArtists[0].count;
@@ -358,7 +338,7 @@ export default function StatsPage() {
                       );
                     })}
                   </div>
-                </div>
+                </AnimatedCard>
               </div>
             )}
           </>

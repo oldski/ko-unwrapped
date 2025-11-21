@@ -3,6 +3,8 @@ import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import useSWR from 'swr';
 import fetcher from '@/lib/fetcher';
+import AnimatedCard from '@/components/AnimatedCard';
+import Button from '@/components/Button';
 
 type ViewMode = 'plays' | 'mood';
 
@@ -91,35 +93,31 @@ export default function CalendarHeatmap() {
   }
 
   return (
-    <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-2xl p-8">
+    <AnimatedCard>
       <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-2xl font-bold text-cyan-400">Listening Calendar</h2>
-          <p className="text-gray-400 text-sm mt-1">Last 365 days of your listening activity</p>
-        </div>
+        <AnimatedCard.Header
+          title="Listening Calendar"
+          description="Last 365 days of your listening activity"
+        />
 
         {/* View Mode Toggle */}
         <div className="flex gap-2">
-          <button
+          <Button
+            variant="secondary"
+            size="sm"
+            isActive={viewMode === 'plays'}
             onClick={() => setViewMode('plays')}
-            className={`px-4 py-2 rounded-lg font-semibold transition-all ${
-              viewMode === 'plays'
-                ? 'bg-cyan-500 text-black'
-                : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-            }`}
           >
             Play Count
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            isActive={viewMode === 'mood'}
             onClick={() => setViewMode('mood')}
-            className={`px-4 py-2 rounded-lg font-semibold transition-all ${
-              viewMode === 'mood'
-                ? 'bg-green-500 text-black'
-                : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-            }`}
           >
             Mood
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -221,6 +219,6 @@ export default function CalendarHeatmap() {
           <p className="text-gray-500 text-sm mt-1">Start listening to see your calendar fill up!</p>
         </div>
       )}
-    </div>
+    </AnimatedCard>
   );
 }

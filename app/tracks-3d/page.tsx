@@ -5,6 +5,9 @@ import dynamic from 'next/dynamic';
 import useSWR from 'swr';
 import fetcher from '@/lib/fetcher';
 import { motion, AnimatePresence } from 'framer-motion';
+import AnimatedCard from '@/components/AnimatedCard';
+import Button from '@/components/Button';
+import Spinner from '@/components/Spinner';
 
 // Dynamically import 3D components to avoid SSR
 const Scene = dynamic(() => import('@/components/3D/Scene'), { ssr: false });
@@ -45,7 +48,7 @@ export default function Tracks3DPage() {
   };
 
   return (
-    <div className="relative h-screen bg-gradient-to-b from-black via-gray-900 to-black overflow-hidden">
+    <div className="relative h-screen overflow-hidden">
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/80 to-transparent p-6">
         <div className="max-w-7xl mx-auto">
@@ -57,17 +60,15 @@ export default function Tracks3DPage() {
           {/* Time Range Selector */}
           <div className="flex gap-2 mt-4">
             {(['short_term', 'medium_term', 'long_term'] as const).map((range) => (
-              <button
+              <Button
                 key={range}
+                variant="secondary"
+                size="sm"
+                isActive={timeRange === range}
                 onClick={() => setTimeRange(range)}
-                className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
-                  timeRange === range
-                    ? 'bg-cyan-500 text-black'
-                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                }`}
               >
                 {timeRangeLabels[range]}
-              </button>
+              </Button>
             ))}
           </div>
 
@@ -82,8 +83,8 @@ export default function Tracks3DPage() {
       {isLoading && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="text-center">
-            <div className="w-16 h-16 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-white text-lg">Loading your tracks...</p>
+            <Spinner size="xl" variant="vibrant" className="mx-auto mb-4" />
+            <p className="text-[var(--color-text-primary)] text-lg">Loading your tracks...</p>
           </div>
         </div>
       )}
@@ -117,82 +118,87 @@ export default function Tracks3DPage() {
               initial={{ scale: 0.8, y: 50 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.8, y: 50 }}
-              className="bg-gray-900 rounded-xl border border-gray-800 max-w-2xl w-full overflow-hidden"
+              className="max-w-2xl w-full"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex gap-6 p-6">
-                {/* Album Art */}
-                <div className="flex-shrink-0">
-                  <img
-                    src={selectedTrack.album.images[0]?.url}
-                    alt={selectedTrack.album.name}
-                    className="w-48 h-48 rounded-lg shadow-2xl"
-                  />
-                </div>
+              <AnimatedCard opacity="bold" weight="heavy">
+                <div className="flex gap-6">
+                  {/* Album Art */}
+                  <div className="flex-shrink-0">
+                    <img
+                      src={selectedTrack.album.images[0]?.url}
+                      alt={selectedTrack.album.name}
+                      className="w-48 h-48 rounded-lg shadow-2xl"
+                    />
+                  </div>
 
-                {/* Track Info */}
-                <div className="flex-1 flex flex-col">
-                  <h2 className="text-3xl font-bold text-white mb-2">
-                    {selectedTrack.name}
-                  </h2>
-                  <p className="text-xl text-cyan-400 mb-4">
-                    {selectedTrack.artists.map((a: any) => a.name).join(', ')}
-                  </p>
+                  {/* Track Info */}
+                  <div className="flex-1 flex flex-col">
+                    <h2 className="text-3xl font-bold text-[var(--color-text-primary)] mb-2">
+                      {selectedTrack.name}
+                    </h2>
+                    <p className="text-xl text-[var(--color-vibrant-safe)] mb-4">
+                      {selectedTrack.artists.map((a: any) => a.name).join(', ')}
+                    </p>
 
-                  <div className="space-y-2 text-sm mb-4">
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Album</span>
-                      <span className="text-white">{selectedTrack.album.name}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Release Date</span>
-                      <span className="text-white">{selectedTrack.album.release_date}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Popularity</span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-32 h-2 bg-gray-700 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-cyan-500 rounded-full"
-                            style={{ width: `${selectedTrack.popularity}%` }}
-                          />
+                    <div className="space-y-2 text-sm mb-4">
+                      <div className="flex justify-between">
+                        <span className="text-[var(--color-text-secondary)]">Album</span>
+                        <span className="text-[var(--color-text-primary)]">{selectedTrack.album.name}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[var(--color-text-secondary)]">Release Date</span>
+                        <span className="text-[var(--color-text-primary)]">{selectedTrack.album.release_date}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[var(--color-text-secondary)]">Popularity</span>
+                        <div className="flex items-center gap-2">
+                          <div className="w-32 h-2 bg-gray-700 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-[var(--color-vibrant-safe)] rounded-full"
+                              style={{ width: `${selectedTrack.popularity}%` }}
+                            />
+                          </div>
+                          <span className="text-[var(--color-text-primary)]">{selectedTrack.popularity}%</span>
                         </div>
-                        <span className="text-white">{selectedTrack.popularity}%</span>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="mt-auto flex gap-3">
-                    <a
-                      href={selectedTrack.external_urls.spotify}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-6 py-3 bg-cyan-500 text-black font-bold rounded-lg hover:bg-cyan-400 transition-colors flex items-center gap-2"
-                    >
-                      <span>🎵</span>
-                      Open in Spotify
-                    </a>
-                    <button
-                      onClick={() => setSelectedTrack(null)}
-                      className="px-6 py-3 bg-gray-800 text-white font-bold rounded-lg hover:bg-gray-700 transition-colors"
-                    >
-                      Close
-                    </button>
+                    <div className="mt-auto flex gap-3">
+                      <a
+                        href={selectedTrack.external_urls.spotify}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1"
+                      >
+                        <Button variant="success" fullWidth leftIcon="🎵">
+                          Open in Spotify
+                        </Button>
+                      </a>
+                      <Button
+                        variant="ghost"
+                        onClick={() => setSelectedTrack(null)}
+                      >
+                        Close
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </AnimatedCard>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Stats Panel */}
-      <div className="absolute bottom-4 right-4 bg-gray-900/80 backdrop-blur-sm border border-gray-800 rounded-lg p-4 text-white">
-        <h3 className="font-bold mb-2 text-cyan-400">Stats</h3>
-        <div className="text-sm space-y-1 text-gray-300">
-          <p>Tracks Loaded: <span className="text-white font-bold">{tracks.length}</span></p>
-          <p>Time Range: <span className="text-white font-bold">{timeRangeLabels[timeRange]}</span></p>
-        </div>
+      <div className="absolute bottom-4 right-4">
+        <AnimatedCard size="compact" opacity="bold" weight="medium">
+          <h3 className="font-bold mb-2 text-[var(--color-vibrant-safe)]">Stats</h3>
+          <div className="text-sm space-y-1 text-[var(--color-text-secondary)]">
+            <p>Tracks Loaded: <span className="text-[var(--color-text-primary)] font-bold">{tracks.length}</span></p>
+            <p>Time Range: <span className="text-[var(--color-text-primary)] font-bold">{timeRangeLabels[timeRange]}</span></p>
+          </div>
+        </AnimatedCard>
       </div>
     </div>
   );

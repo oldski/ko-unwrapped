@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import Button from '@/components/Button';
 
 interface DateRangePickerProps {
   onRangeChange: (start: string | null, end: string | null) => void;
@@ -38,19 +38,15 @@ export default function DateRangePicker({ onRangeChange, defaultPreset = '30d' }
   return (
     <div className="flex gap-2 flex-wrap">
       {presets.map((preset) => (
-        <motion.button
+        <Button
           key={preset.value}
+          variant="secondary"
+          size="sm"
+          isActive={selectedPreset === preset.value}
           onClick={() => handlePresetClick(preset)}
-          className={`px-4 py-2 rounded-lg font-semibold transition-all ${
-            selectedPreset === preset.value
-              ? 'bg-cyan-500 text-black'
-              : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-          }`}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
         >
           {preset.label}
-        </motion.button>
+        </Button>
       ))}
     </div>
   );

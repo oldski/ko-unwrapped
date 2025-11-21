@@ -4,6 +4,22 @@ import { useState } from 'react';
 import useSWR from 'swr';
 import fetcher from '@/lib/fetcher';
 import { motion } from 'framer-motion';
+import AnimatedCard from '@/components/AnimatedCard';
+import Button from '@/components/Button';
+import Spinner from '@/components/Spinner';
+
+// Add style for artist hover effect - circular glow
+const artistHoverStyles = `
+  .artist-image-wrapper {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  .artist-image-wrapper:hover {
+    box-shadow:
+      0 0 20px color-mix(in srgb, var(--color-accent) 60%, transparent),
+      0 0 40px color-mix(in srgb, var(--color-accent) 40%, transparent),
+      0 0 60px color-mix(in srgb, var(--color-accent) 20%, transparent);
+  }
+`;
 
 export default function TasteProfilePage() {
   const [timeRange, setTimeRange] = useState<'short_term' | 'medium_term' | 'long_term'>('short_term');
@@ -39,6 +55,7 @@ export default function TasteProfilePage() {
 
   return (
     <div className="min-h-screen text-white p-8">
+      <style>{artistHoverStyles}</style>
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -54,17 +71,14 @@ export default function TasteProfilePage() {
         {/* Time Range Selector */}
         <div className="flex gap-2 mb-8">
           {(['short_term', 'medium_term', 'long_term'] as const).map((range) => (
-            <button
+            <Button
               key={range}
+              variant="secondary"
+              isActive={timeRange === range}
               onClick={() => setTimeRange(range)}
-              className={`px-6 py-3 rounded-lg font-semibold transition-all ${
-                timeRange === range
-                  ? 'bg-cyan-500 text-black'
-                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-              }`}
             >
               {timeRangeLabels[range]}
-            </button>
+            </Button>
           ))}
         </div>
 
@@ -72,8 +86,8 @@ export default function TasteProfilePage() {
         {isLoading && (
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
-              <div className="w-16 h-16 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-              <p className="text-gray-400">Loading your taste profile...</p>
+              <Spinner size="xl" className="mx-auto mb-4" />
+              <p className="text-[var(--color-text-secondary)]">Loading your taste profile...</p>
             </div>
           </div>
         )}
@@ -83,44 +97,34 @@ export default function TasteProfilePage() {
           <>
             {/* Stats Overview */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-cyan-500/50 rounded-2xl p-6"
-              >
-                <p className="text-gray-400 text-sm mb-1">Average Popularity</p>
-                <p className="text-4xl font-bold text-cyan-400">{avgPopularity}%</p>
-                <p className="text-gray-400 text-sm mt-1">
-                  {avgPopularity > 70 ? 'Mainstream taste' : avgPopularity > 40 ? 'Balanced taste' : 'Underground explorer'}
-                </p>
-              </motion.div>
+              <AnimatedCard size="compact" opacity="bold" weight="light">
+                <AnimatedCard.Stat
+                  label="Average Popularity"
+                  value={`${avgPopularity}%`}
+                  trend={avgPopularity > 70 ? 'Mainstream taste' : avgPopularity > 40 ? 'Balanced taste' : 'Underground explorer'}
+                />
+              </AnimatedCard>
 
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/50 rounded-2xl p-6"
-              >
-                <p className="text-gray-400 text-sm mb-1">Unique Artists</p>
-                <p className="text-4xl font-bold text-purple-400">{uniqueArtists}</p>
-                <p className="text-gray-400 text-sm mt-1">in your top tracks</p>
-              </motion.div>
+              <AnimatedCard size="compact" opacity="bold" weight="light">
+                <AnimatedCard.Stat
+                  label="Unique Artists"
+                  value={uniqueArtists}
+                  trend="in your top tracks"
+                />
+              </AnimatedCard>
 
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/50 rounded-2xl p-6"
-              >
-                <p className="text-gray-400 text-sm mb-1">Top Tracks</p>
-                <p className="text-4xl font-bold text-green-400">{tracks.length}</p>
-                <p className="text-gray-400 text-sm mt-1">{timeRangeLabels[timeRange].toLowerCase()}</p>
-              </motion.div>
+              <AnimatedCard size="compact" opacity="bold" weight="light">
+                <AnimatedCard.Stat
+                  label="Top Tracks"
+                  value={tracks.length}
+                  trend={timeRangeLabels[timeRange].toLowerCase()}
+                />
+              </AnimatedCard>
             </div>
 
             {/* Top Artists Grid */}
-            <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-2xl p-8 mb-8">
-              <h2 className="text-2xl font-bold mb-6 text-cyan-400">Your Top Artists</h2>
+            <AnimatedCard opacity="subtle" weight="light" className="mb-8">
+              <AnimatedCard.Header title="Your Top Artists" />
               <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
                 {artists.slice(0, 10).map((artist: any, index: number) => (
                   <motion.div
@@ -128,27 +132,29 @@ export default function TasteProfilePage() {
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: index * 0.05 }}
-                    className="text-center group"
+                    className="text-center group cursor-pointer"
                   >
                     {artist.coverImage && (
-                      <img
-                        src={artist.coverImage.url}
-                        alt={artist.name}
-                        className="w-full aspect-square rounded-full mb-3 shadow-lg group-hover:shadow-cyan-500/50 transition-shadow"
-                      />
+                      <div className="artist-image-wrapper relative mb-3 transition-all duration-300 rounded-full overflow-hidden">
+                        <img
+                          src={artist.coverImage.url}
+                          alt={artist.name}
+                          className="w-full aspect-square"
+                        />
+                      </div>
                     )}
-                    <p className="font-semibold text-sm group-hover:text-cyan-400 transition-colors">
+                    <p className="font-semibold text-sm group-hover:text-[var(--color-accent)] transition-colors">
                       {artist.name}
                     </p>
-                    <p className="text-xs text-gray-500">#{index + 1}</p>
+                    <p className="text-xs text-[var(--color-text-secondary)]">#{index + 1}</p>
                   </motion.div>
                 ))}
               </div>
-            </div>
+            </AnimatedCard>
 
             {/* Popularity Distribution */}
-            <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-2xl p-8 mb-8">
-              <h2 className="text-2xl font-bold mb-6 text-cyan-400">Track Popularity Distribution</h2>
+            <AnimatedCard opacity="bold" weight="medium" className="mb-8">
+              <AnimatedCard.Header title="Track Popularity Distribution" />
               <div className="space-y-3">
                 {tracks.map((track: any, index: number) => (
                   <motion.div
@@ -186,11 +192,11 @@ export default function TasteProfilePage() {
                   </motion.div>
                 ))}
               </div>
-            </div>
+            </AnimatedCard>
 
             {/* Album Collage */}
-            <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-2xl p-8">
-              <h2 className="text-2xl font-bold mb-6 text-cyan-400">Your Musical Universe</h2>
+            <AnimatedCard opacity="bold" weight="medium">
+              <AnimatedCard.Header title="Your Musical Universe" />
               <div className="grid grid-cols-4 md:grid-cols-10 gap-2">
                 {tracks.map((track: any, index: number) => (
                   <motion.div
@@ -211,7 +217,7 @@ export default function TasteProfilePage() {
                   </motion.div>
                 ))}
               </div>
-            </div>
+            </AnimatedCard>
           </>
         )}
       </div>

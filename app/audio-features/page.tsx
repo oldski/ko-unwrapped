@@ -4,6 +4,9 @@ import { useState } from 'react';
 import useSWR from 'swr';
 import fetcher from '@/lib/fetcher';
 import { motion } from 'framer-motion';
+import AnimatedCard from '@/components/AnimatedCard';
+import Button from '@/components/Button';
+import Spinner from '@/components/Spinner';
 
 interface AudioFeature {
   name: string;
@@ -122,17 +125,14 @@ export default function AudioFeaturesPage() {
         {/* Time Range Selector */}
         <div className="flex gap-2 mb-8">
           {(['short_term', 'medium_term', 'long_term'] as const).map((range) => (
-            <button
+            <Button
               key={range}
+              variant="secondary"
+              isActive={timeRange === range}
               onClick={() => setTimeRange(range)}
-              className={`px-6 py-3 rounded-lg font-semibold transition-all ${
-                timeRange === range
-                  ? 'bg-cyan-500 text-black'
-                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-              }`}
             >
               {timeRangeLabels[range]}
-            </button>
+            </Button>
           ))}
         </div>
 
@@ -140,8 +140,8 @@ export default function AudioFeaturesPage() {
         {isLoading && (
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
-              <div className="w-16 h-16 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-              <p className="text-gray-400">Analyzing your music...</p>
+              <Spinner size="xl" className="mx-auto mb-4" />
+              <p className="text-[var(--color-text-secondary)]">Analyzing your music...</p>
             </div>
           </div>
         )}
@@ -152,8 +152,8 @@ export default function AudioFeaturesPage() {
             {/* Radar Chart Area */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
               {/* Large Feature Bars */}
-              <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-2xl p-8">
-                <h2 className="text-2xl font-bold mb-6 text-cyan-400">Audio Profile</h2>
+              <AnimatedCard opacity="bold" weight="medium">
+                <AnimatedCard.Header title="Audio Profile" />
                 <div className="space-y-6">
                   {features.map((feature, index) => (
                     <motion.div
@@ -187,23 +187,19 @@ export default function AudioFeaturesPage() {
                     </motion.div>
                   ))}
                 </div>
-              </div>
+              </AnimatedCard>
 
               {/* Stats Cards */}
               <div className="space-y-4">
                 {/* Tempo Card */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-cyan-500/50 rounded-2xl p-8"
-                >
+                <AnimatedCard opacity="bold" weight="medium">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-gray-400 text-sm mb-1">Average Tempo</p>
-                      <p className="text-5xl font-bold text-cyan-400">
-                        {Math.round(averages.tempo)}
-                      </p>
-                      <p className="text-gray-400 text-sm mt-1">BPM</p>
+                      <AnimatedCard.Stat
+                        label="Average Tempo"
+                        value={Math.round(averages.tempo)}
+                        trend="BPM"
+                      />
                     </div>
                     <div className="w-24 h-24 relative">
                       <motion.div
@@ -221,57 +217,49 @@ export default function AudioFeaturesPage() {
                       <div className="absolute inset-4 bg-cyan-500 rounded-full" />
                     </div>
                   </div>
-                </motion.div>
+                </AnimatedCard>
 
                 {/* Mood Indicator */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                  className="bg-gray-900/50 border border-gray-800 rounded-2xl p-8"
-                >
-                  <h3 className="text-xl font-bold mb-4">Your Mood</h3>
+                <AnimatedCard opacity="bold" weight="medium">
+                  <h3 className="text-xl font-bold mb-4 text-[var(--color-vibrant-safe)]">Your Mood</h3>
                   <div className="space-y-4">
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-gray-400">Energy Level</span>
-                        <span className="font-bold text-red-400">
+                        <span className="text-[var(--color-text-secondary)]">Energy Level</span>
+                        <span className="font-bold text-[var(--color-accent)]">
                           {averages.energy > 0.7 ? 'High' : averages.energy > 0.4 ? 'Medium' : 'Low'}
                         </span>
                       </div>
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-gray-400">Vibe</span>
-                        <span className="font-bold text-green-400">
+                        <span className="text-[var(--color-text-secondary)]">Vibe</span>
+                        <span className="font-bold text-[var(--color-accent)]">
                           {averages.valence > 0.6 ? 'Positive' : averages.valence > 0.4 ? 'Neutral' : 'Melancholic'}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-400">Style</span>
-                        <span className="font-bold text-blue-400">
+                        <span className="text-[var(--color-text-secondary)]">Style</span>
+                        <span className="font-bold text-[var(--color-accent)]">
                           {averages.acousticness > 0.5 ? 'Acoustic' : 'Electronic'}
                         </span>
                       </div>
                     </div>
                   </div>
-                </motion.div>
+                </AnimatedCard>
 
                 {/* Track Count */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="bg-gray-900/50 border border-gray-800 rounded-2xl p-8"
-                >
-                  <p className="text-gray-400 text-sm mb-1">Tracks Analyzed</p>
-                  <p className="text-4xl font-bold text-white">{audioFeatures.filter((f: any) => f !== null).length}</p>
-                  <p className="text-gray-500 text-sm mt-1">from {timeRangeLabels[timeRange].toLowerCase()}</p>
-                </motion.div>
+                <AnimatedCard size="compact" opacity="bold" weight="light">
+                  <AnimatedCard.Stat
+                    label="Tracks Analyzed"
+                    value={audioFeatures.filter((f: any) => f !== null).length}
+                    trend={`from ${timeRangeLabels[timeRange].toLowerCase()}`}
+                  />
+                </AnimatedCard>
               </div>
             </div>
 
             {/* Feature Distribution */}
-            <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-2xl p-8">
-              <h2 className="text-2xl font-bold mb-6 text-cyan-400">Feature Comparison</h2>
+            <AnimatedCard opacity="bold" weight="medium">
+              <AnimatedCard.Header title="Feature Comparison" />
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                 {features.map((feature) => (
                   <motion.div
@@ -316,7 +304,7 @@ export default function AudioFeaturesPage() {
                   </motion.div>
                 ))}
               </div>
-            </div>
+            </AnimatedCard>
           </>
         )}
       </div>

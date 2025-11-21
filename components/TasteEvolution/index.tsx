@@ -2,6 +2,9 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import useSWR from 'swr';
 import fetcher from '@/lib/fetcher';
+import AnimatedCard from '@/components/AnimatedCard';
+import Spinner from '@/components/Spinner';
+import { motion } from 'framer-motion';
 
 interface TasteEvolutionProps {
   months?: number;
@@ -25,19 +28,17 @@ export default function TasteEvolution({ months = 12 }: TasteEvolutionProps) {
   }));
 
   return (
-    <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-2xl p-8">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-cyan-400">Taste Evolution</h2>
-        <p className="text-gray-400 text-sm mt-1">
-          How your music taste has changed over time
-        </p>
-      </div>
+    <AnimatedCard>
+      <AnimatedCard.Header
+        title="Taste Evolution"
+        description="How your music taste has changed over time"
+      />
 
       {isLoading && (
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <div className="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-            <p className="text-gray-400 text-sm">Loading trends...</p>
+            <Spinner size="lg" className="mx-auto mb-3" />
+            <p className="text-[var(--color-text-secondary)] text-sm">Loading trends...</p>
           </div>
         </div>
       )}
@@ -55,28 +56,43 @@ export default function TasteEvolution({ months = 12 }: TasteEvolutionProps) {
         <>
           {/* Stats Summary */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-gray-800/50 rounded-lg p-4">
-              <p className="text-gray-400 text-sm mb-1">Total Plays</p>
-              <p className="text-2xl font-bold text-cyan-400">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="bg-[var(--color-bg-2)]/30 border border-[var(--color-border)]/20 rounded-lg p-4 hover:bg-[var(--color-bg-2)]/50 transition-all hover:scale-105"
+            >
+              <p className="text-[var(--color-text-secondary)] text-sm mb-1">Total Plays</p>
+              <p className="text-2xl font-bold text-[var(--color-primary-safe)]">
                 {formattedData.reduce((sum: number, m: any) => sum + m.totalPlays, 0)}
               </p>
-            </div>
-            <div className="bg-gray-800/50 rounded-lg p-4">
-              <p className="text-gray-400 text-sm mb-1">Avg Popularity</p>
-              <p className="text-2xl font-bold text-purple-400">
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="bg-[var(--color-bg-2)]/30 border border-[var(--color-border)]/20 rounded-lg p-4 hover:bg-[var(--color-bg-2)]/50 transition-all hover:scale-105"
+            >
+              <p className="text-[var(--color-text-secondary)] text-sm mb-1">Avg Popularity</p>
+              <p className="text-2xl font-bold text-[var(--color-accent-safe)]">
                 {Math.round(
                   formattedData.reduce((sum: number, m: any) => sum + m.avgPopularity, 0) /
                     formattedData.length
                 )}
               </p>
-            </div>
-            <div className="bg-gray-800/50 rounded-lg p-4">
-              <p className="text-gray-400 text-sm mb-1">Unique Artists</p>
-              <p className="text-2xl font-bold text-pink-400">
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="bg-[var(--color-bg-2)]/30 border border-[var(--color-border)]/20 rounded-lg p-4 hover:bg-[var(--color-bg-2)]/50 transition-all hover:scale-105"
+            >
+              <p className="text-[var(--color-text-secondary)] text-sm mb-1">Unique Artists</p>
+              <p className="text-2xl font-bold text-[var(--color-vibrant-safe)]">
                 {Math.max(...formattedData.map((m: any) => m.uniqueArtists))}
               </p>
-              <p className="text-gray-500 text-xs mt-1">Peak in a month</p>
-            </div>
+              <p className="text-[var(--color-text-secondary)]/70 text-xs mt-1">Peak in a month</p>
+            </motion.div>
           </div>
 
           {/* Chart */}
@@ -136,9 +152,14 @@ export default function TasteEvolution({ months = 12 }: TasteEvolutionProps) {
           </ResponsiveContainer>
 
           {/* Insights */}
-          <div className="mt-6 p-4 bg-cyan-500/10 border border-cyan-500/30 rounded-lg">
-            <h3 className="text-lg font-semibold text-cyan-400 mb-2">Insights</h3>
-            <ul className="space-y-2 text-sm text-gray-300">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="mt-6 p-4 bg-[var(--color-accent)]/10 border border-[var(--color-accent)]/30 rounded-lg"
+          >
+            <h3 className="text-lg font-semibold text-[var(--color-accent-safe)] mb-2">Insights</h3>
+            <ul className="space-y-2 text-sm text-[var(--color-text-secondary)]">
               {formattedData.length > 1 && (
                 <>
                   <li>
@@ -172,9 +193,9 @@ export default function TasteEvolution({ months = 12 }: TasteEvolutionProps) {
                 </>
               )}
             </ul>
-          </div>
+          </motion.div>
         </>
       )}
-    </div>
+    </AnimatedCard>
   );
 }

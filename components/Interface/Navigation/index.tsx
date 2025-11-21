@@ -20,9 +20,9 @@ const Navigation = () => {
 
 	const getColorClasses = (isActive: boolean) => {
 		if (isActive) {
-			return "bg-[var(--color-primary)] text-[var(--color-text-primary)] border-[var(--color-accent)]";
+			return "bg-[var(--color-primary)] text-[var(--color-text-primary)] border-[var(--color-accent)] shadow-layered-accent";
 		}
-		return "bg-[var(--color-primary)]/20 text-[var(--color-text-secondary)] border-[var(--color-border)] hover:bg-[var(--color-primary)]/40 hover:border-[var(--color-accent)]";
+		return "bg-[var(--color-primary)]/20 text-[var(--color-text-secondary)] border-[var(--color-border)] hover:bg-[var(--color-primary)]/40 hover:border-[var(--color-accent)] hover:shadow-layered-sm";
 	};
 
 	return (
@@ -63,7 +63,7 @@ const Navigation = () => {
 									relative px-4 py-2 font-bold rounded-lg
 									border-2 transition-all duration-200
 									${getColorClasses(isActive)}
-									${isActive ? 'shadow-lg scale-105' : 'hover:scale-105'}
+									// ${isActive ? 'shadow-lg scale-105' : 'hover:scale-105'}
 								`}
 							>
 								{item.label}

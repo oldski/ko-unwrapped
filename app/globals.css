@@ -35,7 +35,8 @@
     background-color 2s ease-in-out,
     border-color 2s ease-in-out,
     fill 2s ease-in-out,
-    stroke 2s ease-in-out;
+    stroke 2s ease-in-out,
+    box-shadow 0.3s ease-in-out;
 }
 
 body {
@@ -54,5 +55,77 @@ body {
   }
   .animation-delay-4000 {
     animation-delay: 4s;
+  }
+
+  /* Layered shadow using theme colors - hover only */
+  .shadow-layered-hover {
+    transition: box-shadow 0.3s ease-in-out;
+  }
+
+  .shadow-layered-hover:hover {
+    box-shadow:
+      5px 5px 0 0 color-mix(in srgb, var(--color-primary) 40%, transparent),
+      10px 10px 0 0 color-mix(in srgb, var(--color-primary) 30%, transparent),
+      15px 15px 0 0 color-mix(in srgb, var(--color-primary) 20%, transparent),
+      20px 20px 0 0 color-mix(in srgb, var(--color-primary) 10%, transparent),
+      25px 25px 0 0 color-mix(in srgb, var(--color-primary) 5%, transparent);
+  }
+
+  /* Layered shadow using theme colors */
+  .shadow-layered {
+    box-shadow:
+      5px 5px 0 0 color-mix(in srgb, var(--color-primary) 40%, transparent),
+      10px 10px 0 0 color-mix(in srgb, var(--color-primary) 30%, transparent),
+      15px 15px 0 0 color-mix(in srgb, var(--color-primary) 20%, transparent),
+      20px 20px 0 0 color-mix(in srgb, var(--color-primary) 10%, transparent),
+      25px 25px 0 0 color-mix(in srgb, var(--color-primary) 5%, transparent);
+  }
+
+  /* Layered shadow - vibrant variant */
+  .shadow-layered-vibrant {
+    box-shadow:
+      5px 5px 0 0 color-mix(in srgb, var(--color-vibrant) 40%, transparent),
+      10px 10px 0 0 color-mix(in srgb, var(--color-vibrant) 30%, transparent),
+      15px 15px 0 0 color-mix(in srgb, var(--color-vibrant) 20%, transparent),
+      20px 20px 0 0 color-mix(in srgb, var(--color-vibrant) 10%, transparent),
+      25px 25px 0 0 color-mix(in srgb, var(--color-vibrant) 5%, transparent);
+  }
+
+  /* Layered shadow - accent variant */
+  .shadow-layered-accent {
+    box-shadow:
+      5px 5px 0 0 color-mix(in srgb, var(--color-accent) 40%, transparent),
+      10px 10px 0 0 color-mix(in srgb, var(--color-accent) 30%, transparent),
+      15px 15px 0 0 color-mix(in srgb, var(--color-accent) 20%, transparent),
+      20px 20px 0 0 color-mix(in srgb, var(--color-accent) 10%, transparent),
+      25px 25px 0 0 color-mix(in srgb, var(--color-accent) 5%, transparent);
+  }
+
+  /* Smaller layered shadow */
+  .shadow-layered-sm {
+    box-shadow:
+      3px 3px 0 0 color-mix(in srgb, var(--color-primary) 40%, transparent),
+      6px 6px 0 0 color-mix(in srgb, var(--color-primary) 30%, transparent),
+      9px 9px 0 0 color-mix(in srgb, var(--color-primary) 20%, transparent),
+      12px 12px 0 0 color-mix(in srgb, var(--color-primary) 10%, transparent);
+  }
+
+  /* Larger layered shadow */
+  .shadow-layered-lg {
+    box-shadow:
+      7px 7px 0 0 color-mix(in srgb, var(--color-primary) 50%, transparent),
+      14px 14px 0 0 color-mix(in srgb, var(--color-primary) 40%, transparent),
+      21px 21px 0 0 color-mix(in srgb, var(--color-primary) 30%, transparent),
+      28px 28px 0 0 color-mix(in srgb, var(--color-primary) 20%, transparent),
+      35px 35px 0 0 color-mix(in srgb, var(--color-primary) 10%, transparent);
+  }
+
+  /* Animated background pattern on hover */
+  .pattern-animated {
+    transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), background-position 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .group:hover .pattern-animated {
+    background-position: 20px 20px !important;
   }
 }

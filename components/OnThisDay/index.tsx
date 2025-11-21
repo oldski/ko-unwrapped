@@ -1,8 +1,8 @@
 'use client';
 import useSWR from 'swr';
 import fetcher from '@/lib/fetcher';
-import { motion } from 'framer-motion';
 import { useMemo } from 'react';
+import AnimatedCard from '@/components/AnimatedCard';
 
 export default function OnThisDay() {
   const today = new Date();
@@ -29,111 +29,93 @@ export default function OnThisDay() {
 
   if (isLoading) {
     return (
-      <div className="bg-gradient-to-br from-purple-500/80 to-pink-500/50 border border-purple-500/50 rounded-2xl p-8">
+      <AnimatedCard opacity="bold" weight="medium">
         <div className="flex items-center justify-center h-32">
-          <div className="text-center">
-            <div className="w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-            <p className="text-gray-400 text-sm">Loading memories...</p>
-          </div>
+          <p className="text-[var(--color-text-secondary)]">Loading...</p>
         </div>
-      </div>
+      </AnimatedCard>
     );
   }
 
   if (!plays.length) {
     return (
-      <div className="bg-gradient-to-br from-[var(--color-5)]/75  to-pink-500/50 border border-purple-500/50 rounded-2xl p-8">
-        <h2 className="text-2xl font-bold mb-2 text-purple-400">
-          On This Day 📅
-        </h2>
-        <p className="text-gray-400">
-          No listening history for {today.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} yet
-        </p>
-        <p className="text-gray-500 text-sm mt-2">
-          Come back next year to see what you were listening to!
-        </p>
-      </div>
+      <AnimatedCard opacity="bold" weight="medium">
+        <AnimatedCard.Header
+          title="On This Day"
+          icon="📅"
+          description={`No listening history for ${today.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} yet`}
+        />
+      </AnimatedCard>
     );
   }
 
   return (
-    <div className="bg-gradient-to-br from-[var(--color-5)]/75 to-[var(--color-7)]/75 border border-[var(--color-border)]/50 rounded-2xl p-8">
-      <h2 className="text-2xl font-bold mb-2 text-purple-400">
-        On This Day 📅
-      </h2>
-      <p className="text-gray-400 mb-6">
-        Here's what you were listening to on {today.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} in previous years
-      </p>
+    <AnimatedCard opacity="bold" weight="medium">
+      <AnimatedCard.Header
+        title="On This Day"
+        icon="📅"
+        description={today.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
+      />
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-purple-500/10 rounded-lg p-3">
-          <p className="text-purple-300 text-xs mb-1">Total Plays</p>
-          <p className="text-2xl font-bold text-white">{plays.length}</p>
+        <div className="bg-[var(--color-bg-2)]/30 border border-[var(--color-border)]/20 rounded p-3">
+          <p className="text-[var(--color-text-secondary)] text-xs mb-1">Total Plays</p>
+          <p className="text-2xl font-bold text-[var(--color-vibrant-safe)]">{plays.length}</p>
         </div>
-        <div className="bg-pink-500/10 rounded-lg p-3">
-          <p className="text-pink-300 text-xs mb-1">Years</p>
-          <p className="text-2xl font-bold text-white">{years.length}</p>
+        <div className="bg-[var(--color-bg-2)]/30 border border-[var(--color-border)]/20 rounded p-3">
+          <p className="text-[var(--color-text-secondary)] text-xs mb-1">Years</p>
+          <p className="text-2xl font-bold text-[var(--color-vibrant-safe)]">{years.length}</p>
         </div>
-        <div className="bg-purple-500/10 rounded-lg p-3">
-          <p className="text-purple-300 text-xs mb-1">First Year</p>
-          <p className="text-2xl font-bold text-white">{Math.min(...years)}</p>
+        <div className="bg-[var(--color-bg-2)]/30 border border-[var(--color-border)]/20 rounded p-3">
+          <p className="text-[var(--color-text-secondary)] text-xs mb-1">First Year</p>
+          <p className="text-2xl font-bold text-[var(--color-vibrant-safe)]">{Math.min(...years)}</p>
         </div>
-        <div className="bg-pink-500/10 rounded-lg p-3">
-          <p className="text-pink-300 text-xs mb-1">Latest Year</p>
-          <p className="text-2xl font-bold text-white">{Math.max(...years)}</p>
+        <div className="bg-[var(--color-bg-2)]/30 border border-[var(--color-border)]/20 rounded p-3">
+          <p className="text-[var(--color-text-secondary)] text-xs mb-1">Latest Year</p>
+          <p className="text-2xl font-bold text-[var(--color-vibrant-safe)]">{Math.max(...years)}</p>
         </div>
       </div>
 
-      {/* Highlighted Tracks */}
+      {/* Tracks */}
       <div className="space-y-3">
-        {highlightedPlays.map((play: any, index: number) => {
+        {highlightedPlays.map((play: any) => {
           const year = new Date(play.playedAt).getFullYear();
           const yearsAgo = today.getFullYear() - year;
 
           return (
-            <motion.div
-              key={play.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="flex items-center gap-4 bg-gray-800/50 p-4 rounded-xl hover:bg-gray-800 transition-colors group"
-            >
+            <div key={play.id} className="flex items-center gap-4">
               <img
                 src={play.track.albumImage}
                 alt={play.track.albumName}
-                className="w-16 h-16 rounded-lg shadow-lg"
+                className="w-16 h-16 rounded border border-[var(--color-border)]/30"
               />
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-white truncate group-hover:text-purple-400 transition-colors">
+                <p className="font-bold text-[var(--color-text-primary)] truncate">
                   {play.track.name}
                 </p>
-                <p className="text-sm text-gray-400 truncate">
+                <p className="text-sm text-[var(--color-text-secondary)] truncate">
                   {play.track.artists?.map((a: any) => a.name).join(', ')}
-                </p>
-                <p className="text-xs text-purple-300 mt-1">
-                  {play.track.albumName}
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-lg font-bold text-purple-400">{year}</p>
-                <p className="text-xs text-gray-400">
+                <p className="text-lg font-bold text-[var(--color-vibrant-safe)]">{year}</p>
+                <p className="text-xs text-[var(--color-text-secondary)]">
                   {yearsAgo === 0 ? 'This year' : yearsAgo === 1 ? '1 year ago' : `${yearsAgo} years ago`}
                 </p>
               </div>
-            </motion.div>
+            </div>
           );
         })}
       </div>
 
-      {/* View All Link */}
       {plays.length > highlightedPlays.length && (
         <div className="mt-4 text-center">
-          <p className="text-gray-400 text-sm">
-            And {plays.length - highlightedPlays.length} more {plays.length - highlightedPlays.length === 1 ? 'track' : 'tracks'} on this day
+          <p className="text-[var(--color-text-secondary)] text-sm">
+	          + {plays.length - highlightedPlays.length} more {plays.length - highlightedPlays.length === 1 ? 'track' : 'tracks'} on this day
           </p>
         </div>
       )}
-    </div>
+    </AnimatedCard>
   );
 }

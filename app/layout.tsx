@@ -42,6 +42,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+	
+	const ambianceLevel = Math.floor(Math.random() * 6) + 1;
+	
   return (
     <html lang="en">
       <body className={jetbrainsMono.className}>
@@ -87,7 +90,7 @@ export default function RootLayout({
                 componentName="Ambient Layer"
                 fallback={<div />}
               >
-                <AmbientLayer />
+                <AmbientLayer variant={ambianceLevel} />
               </ErrorBoundary>
             </VisualizerProvider>
           </ErrorBoundary>

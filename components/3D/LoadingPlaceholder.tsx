@@ -11,20 +11,20 @@ export default function LoadingPlaceholder() {
 
   return (
     <Html center>
-      <div className="flex flex-col items-center gap-3 bg-black/50 backdrop-blur-sm px-6 py-4 rounded-lg border border-cyan-500/30">
+      <div className="flex flex-col items-center gap-3 bg-black/50 backdrop-blur-sm px-6 py-4 rounded-lg border border-[var(--color-accent)]/30">
         <div className="relative w-16 h-16">
           {/* Spinning ring */}
-          <div className="absolute inset-0 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+          <div className="absolute inset-0 border-4 border-[var(--color-accent)] border-t-transparent rounded-full animate-spin" />
 
           {/* Progress percentage */}
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-cyan-400 font-bold text-sm">
+            <span className="text-[var(--color-accent)] font-bold text-sm">
               {progress.toFixed(0)}%
             </span>
           </div>
         </div>
 
-        <p className="text-white text-sm font-medium">Loading 3D scene...</p>
+        <p className="text-[var(--color-text-primary)] text-sm font-medium">Loading 3D scene...</p>
       </div>
     </Html>
   );

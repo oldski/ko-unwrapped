@@ -6,6 +6,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { FaSpotify } from "react-icons/fa6";
 import { usePathname } from "next/navigation";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
+import useMouseShadow from "@/hooks/useMouseShadow";
 
 export const NowPlaying: React.FC = () => {
 	const pathname = usePathname();
@@ -174,15 +175,15 @@ export const NowPlaying: React.FC = () => {
 				});
 			}
 
-			// Parallax for album art (3D rotation)
-			if (albumArtRef.current) {
-				gsap.to(albumArtRef.current, {
-					rotateX: -y * 20,
-					rotateY: x * 20,
-					duration: 0.5,
-					ease: "power2.out"
-				});
-			}
+			// Parallax for album art (3D rotation) - DISABLED to allow shadow effect to work
+			// if (albumArtRef.current) {
+			// 	gsap.to(albumArtRef.current, {
+			// 		rotateX: -y * 20,
+			// 		rotateY: x * 20,
+			// 		duration: 0.5,
+			// 		ease: "power2.out"
+			// 	});
+			// }
 
 			// Parallax for album glow
 			if (albumGlowRef.current) {
@@ -194,15 +195,16 @@ export const NowPlaying: React.FC = () => {
 				});
 			}
 
-			// Parallax for album image
-			if (albumImageRef.current) {
-				gsap.to(albumImageRef.current, {
-					rotateX: -y * 20,
-					rotateY: x * 20,
-					duration: 0.5,
-					ease: "power2.out"
-				});
-			}
+			// Parallax for album image - DISABLED to allow shadow effect to work
+			// The useMouseShadow hook provides the interactive effect instead
+			// if (albumImageRef.current) {
+			// 	gsap.to(albumImageRef.current, {
+			// 		rotateX: -y * 20,
+			// 		rotateY: x * 20,
+			// 		duration: 0.5,
+			// 		ease: "power2.out"
+			// 	});
+			// }
 
 			// Parallax for text container
 			if (textContainerRef.current) {
@@ -248,7 +250,7 @@ export const NowPlaying: React.FC = () => {
 			opacity: 0,
 			ease: 'none'
 		});
-
+		
 		return () => {
 			tl.kill();
 			ScrollTrigger.getAll().forEach(st => {
@@ -258,7 +260,11 @@ export const NowPlaying: React.FC = () => {
 			});
 		};
 	}, [data?.isPlaying, isHomePage]);
-
+	
+	
+	// Apply mouse-driven shadow effect
+	useMouseShadow(albumImageRef, { colorVar: '--color-bg-3', intensity: 20 });
+	
 	if (error) {
 		return <div>Error loading data</div>;
 	}
@@ -275,17 +281,14 @@ export const NowPlaying: React.FC = () => {
 					<div className="flex flex-col lg:flex-row items-center justify-start gap-6 md:gap-8 lg:gap-10 space-x-10 w-full max-w-6xl">
 						{/* 3D Tilting Album Art */}
 						<div
-							className="relative flex-shrink-0"
+							className="relative flex-shrink-0 pointer-events-auto"
 							style={{
 								perspective: '1000px',
 							}}
 						>
 							<div
-								ref={albumGlowRef}
-								className="absolute -inset-2 sm:-inset-3 lg:-inset-4 rounded-2xl lg:rounded-3xl bg-[var(--color-primary)]/30"
-							/>
-							<div
 								ref={albumImageRef}
+								className="pointer-events-auto rounded-4xl"
 								style={{
 									transformStyle: 'preserve-3d',
 								}}
@@ -296,7 +299,7 @@ export const NowPlaying: React.FC = () => {
 										alt={`${data?.title || "No Title"} [${data?.artist || "No Artist"}]`}
 										width={450}
 										height={450}
-										className="relative rounded-xl sm:rounded-2xl shadow-2xl w-[280px] h-[280px] sm:w-[320px] sm:h-[320px] md:w-[380px] md:h-[380px] lg:w-[450px] lg:h-[450px]"
+										className="relative shadow-2xl w-[280px] h-[280px] sm:w-[320px] sm:h-[320px] md:w-[380px] md:h-[380px] lg:w-[450px] lg:h-[450px] rounded-4xl"
 										style={{
 											transform: 'translateZ(50px)',
 										}}
@@ -318,13 +321,13 @@ export const NowPlaying: React.FC = () => {
 							<div className="w-full">
 								<h2
 									ref={trackTitleRef}
-									className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-[var(--color-vibrant)] leading-tight break-words"
+									className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-[var(--color-vibrant-safe)] leading-tight break-words"
 								>
 									{data?.title || "Unknown Title"}
 								</h2>
 								<h4
 									ref={artistRef}
-									className="text-xl sm:text-2xl md:text-2xl lg:text-3xl font-semibold text-[var(--color-vibrant)] break-words"
+									className="text-xl sm:text-2xl md:text-2xl lg:text-3xl font-semibold text-[var(--color-vibrant-safe)] break-words"
 								>
 									{data?.artist || "Unknown Artist"}
 								</h4>
