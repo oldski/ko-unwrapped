@@ -160,37 +160,81 @@ export default function TasteEvolution({ months = 12 }: TasteEvolutionProps) {
           >
             <h3 className="text-lg font-semibold text-[var(--color-accent-safe)] mb-2">Insights</h3>
             <ul className="space-y-2 text-sm text-[var(--color-text-secondary)]">
-              {formattedData.length > 1 && (
-                <>
-                  <li>
-                    • Your average track popularity {
-                      formattedData[formattedData.length - 1].avgPopularity >
-                      formattedData[0].avgPopularity
-                        ? 'increased'
-                        : 'decreased'
-                    } from {formattedData[0].avgPopularity} to{' '}
-                    {formattedData[formattedData.length - 1].avgPopularity} over this period.
-                  </li>
-                  <li>
-                    • You discovered {formattedData[formattedData.length - 1].uniqueArtists} unique
-                    artists in {formattedData[formattedData.length - 1].monthLabel}.
-                  </li>
-                  <li>
-                    • Your most active month was{' '}
-                    {
-                      formattedData.reduce((max: any, m: any) =>
-                        m.totalPlays > max.totalPlays ? m : max
-                      ).monthLabel
-                    }{' '}
-                    with{' '}
-                    {
-                      formattedData.reduce((max: any, m: any) =>
-                        m.totalPlays > max.totalPlays ? m : max
-                      ).totalPlays
-                    }{' '}
-                    plays.
-                  </li>
-                </>
+              {formattedData.length === 1 ? (
+                // Single month insights
+                (() => {
+                  const month = formattedData[0];
+                  const playsPerDay = Math.round(month.totalPlays / 30);
+                  const discoveryRate = ((month.uniqueArtists / month.totalPlays) * 100).toFixed(1);
+                  const tasteProfile = month.avgPopularity >= 70 ? 'mainstream'
+                    : month.avgPopularity >= 45 ? 'balanced'
+                    : month.avgPopularity >= 25 ? 'indie-leaning'
+                    : 'deep cuts enthusiast';
+
+                  return (
+                    <>
+                      <li>
+                        • You averaged <span className="text-[var(--color-primary-safe)] font-medium">{playsPerDay} plays per day</span> this month
+                        {playsPerDay >= 50 ? ' — a power listener!' : playsPerDay >= 20 ? ' — solid listening habits.' : '.'}
+                      </li>
+                      <li>
+                        • Your taste profile is <span className="text-[var(--color-accent-safe)] font-medium">{tasteProfile}</span> with
+                        an average popularity score of {month.avgPopularity}/100.
+                      </li>
+                      <li>
+                        • Discovery rate: <span className="text-[var(--color-vibrant-safe)] font-medium">{discoveryRate}%</span> —
+                        {parseFloat(discoveryRate) >= 50 ? " you're exploring lots of different artists!"
+                          : parseFloat(discoveryRate) >= 30 ? " a healthy mix of favorites and new discoveries."
+                          : " you tend to stick with artists you love."}
+                      </li>
+                      <li>
+                        • You listened to <span className="text-[var(--color-primary-safe)] font-medium">{month.uniqueArtists} unique artists</span> across {month.totalPlays} plays.
+                      </li>
+                    </>
+                  );
+                })()
+              ) : (
+                // Multi-month trend insights
+                (() => {
+                  const first = formattedData[0];
+                  const last = formattedData[formattedData.length - 1];
+                  const popularityChange = last.avgPopularity - first.avgPopularity;
+                  const mostActive = formattedData.reduce((max: any, m: any) => m.totalPlays > max.totalPlays ? m : max);
+                  const leastActive = formattedData.reduce((min: any, m: any) => m.totalPlays < min.totalPlays ? m : min);
+                  const avgPlays = Math.round(formattedData.reduce((sum: number, m: any) => sum + m.totalPlays, 0) / formattedData.length);
+                  const artistTrend = last.uniqueArtists - first.uniqueArtists;
+
+                  // Calculate consistency (standard deviation as percentage of mean)
+                  const playsArray = formattedData.map((m: any) => m.totalPlays);
+                  const variance = playsArray.reduce((sum: number, p: number) => sum + Math.pow(p - avgPlays, 2), 0) / playsArray.length;
+                  const stdDev = Math.sqrt(variance);
+                  const consistency = 100 - Math.min(100, (stdDev / avgPlays) * 100);
+
+                  return (
+                    <>
+                      <li>
+                        • Your popularity trend is <span className="text-[var(--color-accent-safe)] font-medium">
+                          {popularityChange > 5 ? 'shifting mainstream' : popularityChange < -5 ? 'going more indie' : 'staying consistent'}
+                        </span>
+                        {popularityChange !== 0 && ` (${popularityChange > 0 ? '+' : ''}${popularityChange} points)`}.
+                      </li>
+                      <li>
+                        • Most active: <span className="text-[var(--color-primary-safe)] font-medium">{mostActive.monthLabel}</span> ({mostActive.totalPlays} plays)
+                        vs least active: <span className="text-[var(--color-text-secondary)]">{leastActive.monthLabel}</span> ({leastActive.totalPlays} plays).
+                      </li>
+                      <li>
+                        • Artist variety is <span className="text-[var(--color-vibrant-safe)] font-medium">
+                          {artistTrend > 20 ? 'expanding' : artistTrend < -20 ? 'narrowing' : 'stable'}
+                        </span> —
+                        {artistTrend > 0 ? `discovering ${artistTrend} more artists per month.` : artistTrend < 0 ? `${Math.abs(artistTrend)} fewer artists per month.` : 'steady exploration rate.'}
+                      </li>
+                      <li>
+                        • Listening consistency: <span className="text-[var(--color-primary-safe)] font-medium">{Math.round(consistency)}%</span>
+                        {consistency >= 80 ? ' — very steady habits!' : consistency >= 50 ? ' — some variation month to month.' : ' — listening varies a lot!'}
+                      </li>
+                    </>
+                  );
+                })()
               )}
             </ul>
           </motion.div>

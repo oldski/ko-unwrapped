@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
-import { playHistory, tracks, artists, trackArtists } from '@/db/schema';
+import { playHistory, tracks, artists, trackArtists, audioFeatures } from '@/db/schema';
 import { desc, and, gte, lte, eq } from 'drizzle-orm';
 
 export async function GET(request: Request) {
@@ -21,7 +21,7 @@ export async function GET(request: Request) {
       conditions.push(lte(playHistory.playedAt, new Date(endDate)));
     }
 
-    // Query play history with track details and artists
+    // Query play history with track details, audio features, and artists
     const query = db
       .select({
         id: playHistory.id,
@@ -36,9 +36,19 @@ export async function GET(request: Request) {
           popularity: tracks.popularity,
           durationMs: tracks.durationMs,
         },
+        audioFeatures: {
+          energy: audioFeatures.energy,
+          danceability: audioFeatures.danceability,
+          valence: audioFeatures.valence,
+          tempo: audioFeatures.tempo,
+          acousticness: audioFeatures.acousticness,
+          instrumentalness: audioFeatures.instrumentalness,
+          speechiness: audioFeatures.speechiness,
+        },
       })
       .from(playHistory)
       .innerJoin(tracks, eq(playHistory.trackId, tracks.id))
+      .leftJoin(audioFeatures, eq(tracks.id, audioFeatures.trackId))
       .orderBy(desc(playHistory.playedAt))
       .limit(limit);
 

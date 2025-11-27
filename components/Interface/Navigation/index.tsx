@@ -15,7 +15,7 @@ const Navigation = () => {
 		{ href: "/tracks-3d", label: "3D Tracks", color: "cyan" },
 		{ href: "/taste-profile", label: "Taste", color: "pink" },
 		{ href: "/stats", label: "Stats", color: "green" },
-		{ href: "/audio-features", label: "Audio", color: "orange" },
+		{ href: "/top-tracks", label: "Top Tracks", color: "orange" },
 	];
 
 	const getColorClasses = (isActive: boolean) => {

@@ -24,9 +24,7 @@ export async function GET(request: Request) {
             );
         }
 
-        console.log('Fetching audio features for:', trackIds);
         const audioFeatures = await getAudioFeatures(trackIds);
-        console.log('Audio features response:', audioFeatures);
 
         return NextResponse.json(audioFeatures);
     } catch (error: any) {

@@ -33,7 +33,14 @@ const getAccessToken = async (): Promise<SpotifyAccessToken> => {
             refresh_token: refresh_token!,
         }),
     });
-    
+
+    // Check if the response was successful
+    if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[Spotify] Token refresh failed:', response.status, errorText);
+        throw new Error(`Failed to refresh Spotify token: ${response.status} - ${errorText}`);
+    }
+
     // Return the JSON response from the API
     return response.json();
 };
@@ -202,4 +209,16 @@ export async function getTopTracksTimeRange(
  */
 export async function getArtists(artistIds: string[]): Promise<{ artists: IArtistsAPIResponse[] }> {
 	return spotifyApi(`/v1/artists?ids=${artistIds.join(',')}`);
+}
+
+/**
+ * Get top artists with time range options
+ * @param timeRange - short_term (4 weeks), medium_term (6 months), or long_term (years)
+ * @param limit - Number of artists to return (max 50)
+ */
+export async function getTopArtistsTimeRange(
+	timeRange: 'short_term' | 'medium_term' | 'long_term',
+	limit = 50
+): Promise<{ items: IArtistsAPIResponse[] }> {
+	return spotifyApi(`/v1/me/top/artists?limit=${limit}&time_range=${timeRange}`);
 }

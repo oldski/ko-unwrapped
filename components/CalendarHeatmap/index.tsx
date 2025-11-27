@@ -5,19 +5,23 @@ import useSWR from 'swr';
 import fetcher from '@/lib/fetcher';
 import AnimatedCard from '@/components/AnimatedCard';
 import Button from '@/components/Button';
+import Spinner from '@/components/Spinner';
 
-type ViewMode = 'plays' | 'mood';
+type ViewMode = 'plays' | 'popularity';
 
 export default function CalendarHeatmap() {
   const [viewMode, setViewMode] = useState<ViewMode>('plays');
-  const [hoveredDay, setHoveredDay] = useState<{ date: string; count: number; avgValence?: number; tracks: any[] } | null>(null);
+  const [hoveredDay, setHoveredDay] = useState<{ date: string; count: number; avgPopularity?: number; tracks: any[] } | null>(null);
 
-  // Fetch all history (last 365 days)
-  const startDate = new Date();
-  startDate.setDate(startDate.getDate() - 365);
+  // Memoize the start date to prevent SWR from re-fetching on every render
+  const startDateStr = useMemo(() => {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 365);
+    return startDate.toISOString().split('T')[0]; // Use just the date part (YYYY-MM-DD)
+  }, []);
 
-  const { data: historyData } = useSWR(
-    `/api/stats/history?start=${startDate.toISOString()}&limit=10000`,
+  const { data: historyData, error, isLoading } = useSWR(
+    `/api/stats/history?start=${startDateStr}&limit=10000`,
     fetcher
   );
 
@@ -27,22 +31,17 @@ export default function CalendarHeatmap() {
     if (history.length === 0) return [];
 
     // Group plays by day
-    const dayMap = new Map<string, { count: number; totalValence: number; tracks: any[] }>();
+    const dayMap = new Map<string, { count: number; totalPopularity: number; tracks: any[] }>();
 
     history.forEach((play: any) => {
       const day = new Date(play.playedAt).toISOString().split('T')[0];
       if (!dayMap.has(day)) {
-        dayMap.set(day, { count: 0, totalValence: 0, tracks: [] });
+        dayMap.set(day, { count: 0, totalPopularity: 0, tracks: [] });
       }
       const dayData = dayMap.get(day)!;
       dayData.count++;
       dayData.tracks.push(play.track);
-
-      // Calculate mood (valence) based on track popularity as a proxy
-      // In a real scenario, we'd use actual audio features from Spotify
-      // Higher popularity = slightly higher valence (0-1 scale)
-      const mockValence = (play.track.popularity || 50) / 100;
-      dayData.totalValence += mockValence;
+      dayData.totalPopularity += play.track.popularity || 50;
     });
 
     // Create grid for last 365 days
@@ -58,7 +57,7 @@ export default function CalendarHeatmap() {
       days.push({
         date: dateStr,
         count: dayData?.count || 0,
-        avgValence: dayData ? dayData.totalValence / dayData.count : 0.5,
+        avgPopularity: dayData ? Math.round(dayData.totalPopularity / dayData.count) : 0,
         tracks: dayData?.tracks || [],
       });
     }
@@ -77,12 +76,13 @@ export default function CalendarHeatmap() {
       const lightness = 70 - intensity * 40; // 70% to 30%
       return `hsl(180, 100%, ${lightness}%)`;
     } else {
-      // Mood view: green (happy) to blue (calm/sad)
-      const valence = day.avgValence;
-      // Valence 0-1: 0 = blue (sad/calm), 1 = green (happy/energetic)
-      const hue = 200 + valence * 100; // 200 (blue) to 300 (green)
-      const saturation = 70 + day.count / maxCount * 30; // More plays = more saturated
-      return `hsl(${hue}, ${saturation}%, 50%)`;
+      // Popularity view: purple (niche/indie) to pink (mainstream)
+      const popularity = (day.avgPopularity || 50) / 100; // 0-1 scale
+      // 0 = purple (niche), 1 = pink (mainstream)
+      const hue = 280 - popularity * 40; // 280 (purple) to 240 (more pink/magenta)
+      const saturation = 60 + popularity * 30; // More popular = more saturated
+      const lightness = 40 + popularity * 20; // More popular = brighter
+      return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
     }
   };
 
@@ -113,107 +113,124 @@ export default function CalendarHeatmap() {
           <Button
             variant="secondary"
             size="sm"
-            isActive={viewMode === 'mood'}
-            onClick={() => setViewMode('mood')}
+            isActive={viewMode === 'popularity'}
+            onClick={() => setViewMode('popularity')}
           >
-            Mood
+            Popularity
           </Button>
         </div>
       </div>
 
-      {/* Legend */}
-      <div className="mb-4 flex items-center gap-4 text-sm text-gray-400">
-        {viewMode === 'plays' ? (
-          <>
-            <span>Less</span>
-            <div className="flex gap-1">
-              {[0.2, 0.4, 0.6, 0.8, 1.0].map((intensity) => (
-                <div
-                  key={intensity}
-                  className="w-4 h-4 rounded-sm"
-                  style={{
-                    backgroundColor: `hsl(180, 100%, ${70 - intensity * 40}%)`,
-                  }}
-                />
-              ))}
-            </div>
-            <span>More</span>
-          </>
-        ) : (
-          <>
-            <span>Calm/Sad</span>
-            <div className="flex gap-1">
-              {[0.0, 0.25, 0.5, 0.75, 1.0].map((valence) => {
-                const hue = 200 + valence * 100;
-                return (
-                  <div
-                    key={valence}
-                    className="w-4 h-4 rounded-sm"
-                    style={{
-                      backgroundColor: `hsl(${hue}, 80%, 50%)`,
-                    }}
-                  />
-                );
-              })}
-            </div>
-            <span>Happy/Energetic</span>
-          </>
-        )}
-      </div>
+      {/* Legend and Heatmap - hide while loading */}
+      {!isLoading && heatmapData.length > 0 && (
+        <>
+          <div className="mb-4 flex items-center gap-4 text-sm text-gray-400">
+            {viewMode === 'plays' ? (
+              <>
+                <span>Less</span>
+                <div className="flex gap-1">
+                  {[0.2, 0.4, 0.6, 0.8, 1.0].map((intensity) => (
+                    <div
+                      key={intensity}
+                      className="w-4 h-4 rounded-sm"
+                      style={{
+                        backgroundColor: `hsl(180, 100%, ${70 - intensity * 40}%)`,
+                      }}
+                    />
+                  ))}
+                </div>
+                <span>More</span>
+              </>
+            ) : (
+              <>
+                <span>Niche</span>
+                <div className="flex gap-1">
+                  {[0.0, 0.25, 0.5, 0.75, 1.0].map((popularity) => {
+                    const hue = 280 - popularity * 40;
+                    const saturation = 60 + popularity * 30;
+                    const lightness = 40 + popularity * 20;
+                    return (
+                      <div
+                        key={popularity}
+                        className="w-4 h-4 rounded-sm"
+                        style={{
+                          backgroundColor: `hsl(${hue}, ${saturation}%, ${lightness}%)`,
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+                <span>Mainstream</span>
+              </>
+            )}
+          </div>
 
-      {/* Heatmap Grid */}
-      <div className="relative">
-        <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${Math.ceil(heatmapData.length / 7)}, minmax(0, 1fr))` }}>
-          {weeks.map((week, weekIndex) => (
-            <div key={weekIndex} className="grid gap-1 grid-rows-7">
-              {week.map((day, dayIndex) => (
-                <motion.div
-                  key={day.date}
-                  initial={{ opacity: 0, scale: 0 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: (weekIndex * 7 + dayIndex) * 0.001 }}
-                  className="aspect-square rounded-sm cursor-pointer relative"
-                  style={{
-                    backgroundColor: getColor(day),
-                  }}
-                  onMouseEnter={() => setHoveredDay(day)}
-                  onMouseLeave={() => setHoveredDay(null)}
-                  whileHover={{ scale: 1.5, zIndex: 10 }}
-                />
+          {/* Heatmap Grid */}
+          <div className="relative">
+            <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${Math.ceil(heatmapData.length / 7)}, minmax(0, 1fr))` }}>
+              {weeks.map((week, weekIndex) => (
+                <div key={weekIndex} className="grid gap-1 grid-rows-7">
+                  {week.map((day, dayIndex) => (
+                    <motion.div
+                      key={day.date}
+                      initial={{ opacity: 0, scale: 0 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: (weekIndex * 7 + dayIndex) * 0.001 }}
+                      className="aspect-square rounded-sm cursor-pointer relative"
+                      style={{
+                        backgroundColor: getColor(day),
+                      }}
+                      onMouseEnter={() => setHoveredDay(day)}
+                      onMouseLeave={() => setHoveredDay(null)}
+                      whileHover={{ scale: 1.5, zIndex: 10 }}
+                    />
+                  ))}
+                </div>
               ))}
             </div>
-          ))}
+
+            {/* Tooltip */}
+            {hoveredDay && hoveredDay.count > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-gray-800 border border-gray-700 rounded-lg p-3 shadow-xl z-20 pointer-events-none"
+                style={{ minWidth: '200px' }}
+              >
+                <p className="font-bold text-white mb-1">{hoveredDay.date}</p>
+                <p className="text-cyan-400 text-sm">
+                  {hoveredDay.count} {hoveredDay.count === 1 ? 'play' : 'plays'}
+                </p>
+                {viewMode === 'popularity' && hoveredDay.avgPopularity !== undefined && (
+                  <p className="text-purple-400 text-sm mt-1">
+                    Avg Popularity: {hoveredDay.avgPopularity}/100
+                    <span className="text-gray-500 ml-1">
+                      ({hoveredDay.avgPopularity >= 70 ? 'Mainstream' : hoveredDay.avgPopularity >= 40 ? 'Mid-tier' : 'Niche'})
+                    </span>
+                  </p>
+                )}
+                {hoveredDay.tracks.length > 0 && (
+                  <div className="mt-2 pt-2 border-t border-gray-700">
+                    <p className="text-gray-400 text-xs mb-1">Top track:</p>
+                    <p className="text-white text-sm truncate">{hoveredDay.tracks[0].name}</p>
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* Loading State */}
+      {isLoading && (
+        <div className="flex flex-col items-center justify-center py-12 gap-3">
+          <Spinner size="lg" variant="accent" />
+          <p className="text-gray-400 text-sm">Loading listening history...</p>
         </div>
-
-        {/* Tooltip */}
-        {hoveredDay && hoveredDay.count > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-gray-800 border border-gray-700 rounded-lg p-3 shadow-xl z-20 pointer-events-none"
-            style={{ minWidth: '200px' }}
-          >
-            <p className="font-bold text-white mb-1">{hoveredDay.date}</p>
-            <p className="text-cyan-400 text-sm">
-              {hoveredDay.count} {hoveredDay.count === 1 ? 'play' : 'plays'}
-            </p>
-            {viewMode === 'mood' && hoveredDay.avgValence !== undefined && (
-              <p className="text-green-400 text-sm mt-1">
-                Mood: {hoveredDay.avgValence > 0.6 ? 'Happy' : hoveredDay.avgValence > 0.4 ? 'Neutral' : 'Calm'}
-              </p>
-            )}
-            {hoveredDay.tracks.length > 0 && (
-              <div className="mt-2 pt-2 border-t border-gray-700">
-                <p className="text-gray-400 text-xs mb-1">Top track:</p>
-                <p className="text-white text-sm truncate">{hoveredDay.tracks[0].name}</p>
-              </div>
-            )}
-          </motion.div>
-        )}
-      </div>
+      )}
 
       {/* Empty State */}
-      {heatmapData.length === 0 && (
+      {!isLoading && heatmapData.length === 0 && (
         <div className="text-center py-12">
           <p className="text-gray-400">No listening data available yet</p>
           <p className="text-gray-500 text-sm mt-1">Start listening to see your calendar fill up!</p>

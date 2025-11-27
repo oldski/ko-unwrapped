@@ -287,14 +287,14 @@ export default function Home() {
           </Link>
 
           <Link
-            href="/audio-features"
+            href="/top-tracks"
             className="group"
             ref={(el) => { quickLinksRef.current[3] = el; }}
           >
             <div className="bg-gray-900/30 backdrop-blur-md border border-gray-700/50 rounded-xl p-6 hover:bg-gray-900/50 transition-all hover:border-cyan-500/50 text-center">
-              <div className="text-3xl mb-2">🎚️</div>
-              <p className="text-[var(--color-text-primary)] font-semibold group-hover:text-cyan-400 transition-colors">Features</p>
-              <p className="text-[var(--color-text-secondary)]/70 text-xs mt-1">Audio Analysis</p>
+              <div className="text-3xl mb-2">🏆</div>
+              <p className="text-[var(--color-text-primary)] font-semibold group-hover:text-cyan-400 transition-colors">Top Tracks</p>
+              <p className="text-[var(--color-text-secondary)]/70 text-xs mt-1">Your Top 100</p>
             </div>
           </Link>
         </div>

@@ -20,7 +20,7 @@ export default function InsightsPage() {
         >
           <h1 className="text-5xl font-bold mb-2 text-[var(--color-text-primary)]">
             Your Listening
-            <span className="text-[var(--color-primary)]"> Insights</span>
+            <span className="text-[var(--color-vibrant-safe)]"> Insights</span>
           </h1>
           <p className="text-[var(--color-text-secondary)] text-lg">
             Deep dive into your music journey with historical data and trends

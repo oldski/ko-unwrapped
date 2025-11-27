@@ -13,20 +13,39 @@ export async function GET(request: Request) {
     startDate.setMonth(startDate.getMonth() - months);
     const startDateISO = startDate.toISOString();
 
-    // Get all plays in the date range
+    // Get all plays in the date range (without artist join to avoid duplicates)
     const plays = await db
       .select({
+        playId: playHistory.id,
         playedAt: playHistory.playedAt,
         trackId: tracks.id,
         popularity: tracks.popularity,
-        artistId: artists.id,
       })
       .from(playHistory)
       .innerJoin(tracks, eq(playHistory.trackId, tracks.id))
-      .innerJoin(trackArtists, eq(trackArtists.trackId, tracks.id))
-      .innerJoin(artists, eq(trackArtists.artistId, artists.id))
       .where(sql`${playHistory.playedAt} >= ${startDateISO}`)
       .orderBy(desc(playHistory.playedAt));
+
+    // Get unique track IDs to fetch their artists
+    const trackIds = [...new Set(plays.map(p => p.trackId))];
+
+    // Fetch all track-artist relationships for these tracks
+    const trackArtistData = await db
+      .select({
+        trackId: trackArtists.trackId,
+        artistId: trackArtists.artistId,
+      })
+      .from(trackArtists)
+      .where(sql`${trackArtists.trackId} IN ${trackIds}`);
+
+    // Create a map of trackId -> artistIds
+    const trackArtistMap = new Map<string, Set<string>>();
+    trackArtistData.forEach((ta) => {
+      if (!trackArtistMap.has(ta.trackId)) {
+        trackArtistMap.set(ta.trackId, new Set());
+      }
+      trackArtistMap.get(ta.trackId)!.add(ta.artistId);
+    });
 
     // Group by month and calculate stats
     const monthlyStats = new Map<string, {
@@ -35,7 +54,6 @@ export async function GET(request: Request) {
       avgPopularity: number;
       uniqueArtists: Set<string>;
       totalPopularity: number;
-      totalListeningTime: number;
     }>();
 
     plays.forEach((play) => {
@@ -49,14 +67,18 @@ export async function GET(request: Request) {
           avgPopularity: 0,
           uniqueArtists: new Set(),
           totalPopularity: 0,
-          totalListeningTime: 0,
         });
       }
 
       const stats = monthlyStats.get(monthKey)!;
       stats.totalPlays++;
       stats.totalPopularity += play.popularity || 0;
-      stats.uniqueArtists.add(play.artistId);
+
+      // Add all artists for this track to the unique artists set
+      const artistIds = trackArtistMap.get(play.trackId);
+      if (artistIds) {
+        artistIds.forEach(artistId => stats.uniqueArtists.add(artistId));
+      }
     });
 
     // Calculate averages and convert to array

@@ -3,7 +3,13 @@ import {currentlyPlayingSong, getAudioFeatures} from "@/lib/spotify";
 import { getAudioFeaturesOrMock } from "@/lib/mockAudioFeatures";
 
 export async function GET() {
-	const response = await currentlyPlayingSong();
+	let response;
+	try {
+		response = await currentlyPlayingSong();
+	} catch (error) {
+		console.error('[now-playing] Failed to fetch currently playing:', error);
+		return NextResponse.json({ isPlaying: false, error: 'Token refresh failed' }, { status: 200 });
+	}
 
 	if (response.status === 204 || response.status > 400) {
 		return NextResponse.json({ isPlaying: false }, { status: 200 });

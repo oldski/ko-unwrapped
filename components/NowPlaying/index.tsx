@@ -3,7 +3,7 @@ import fetcher from "@/lib/fetcher";
 import useSWR from "swr";
 import Image from "next/image";
 import React, { useEffect, useState, useRef } from "react";
-import { FaSpotify } from "react-icons/fa6";
+import { FaSpotify, FaPlay, FaXmark } from "react-icons/fa6";
 import { usePathname } from "next/navigation";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
 import useMouseShadow from "@/hooks/useMouseShadow";
@@ -12,6 +12,7 @@ export const NowPlaying: React.FC = () => {
 	const pathname = usePathname();
 	const isHomePage = pathname === '/';
 	const [bpm, setBpm] = useState<number>(120);
+	const [showPlayer, setShowPlayer] = useState<boolean>(false);
 
 	// GSAP refs for animations
 	const titleRef = useRef<HTMLHeadingElement>(null);
@@ -40,41 +41,46 @@ export const NowPlaying: React.FC = () => {
 		}
 	}, [data]);
 
+	// Track if entrance animation has completed for this homepage visit
+	const [hasAnimated, setHasAnimated] = useState(false);
+
+	// Reset animation state when leaving homepage
+	useEffect(() => {
+		if (!isHomePage) {
+			setHasAnimated(false);
+		}
+	}, [isHomePage]);
+
 	// GSAP: Initial entrance animation
 	useEffect(() => {
 		if (!data?.isPlaying || !isHomePage) return;
+		if (hasAnimated) return; // Only run once per homepage visit
 
-		// Set initial states
-		gsap.set([titleRef.current, albumArtRef.current, textContainerRef.current], {
-			opacity: 0,
-			y: 30
+		// Staggered entrance animation with delay using fromTo for robustness
+		const tl = gsap.timeline({
+			delay: 0.5, // Shorter delay for returning visits
+			onComplete: () => setHasAnimated(true)
 		});
 
-		// Staggered entrance animation with delay
-		const tl = gsap.timeline({ delay: 1.5 }); // Delay to let page transition finish
-		tl.to(albumArtRef.current, {
-			opacity: 1,
-			y: 0,
-			duration: 0.8,
-			ease: "power3.out"
-		})
-		.to(titleRef.current, {
-			opacity: 1,
-			y: 0,
-			duration: 0.6,
-			ease: "power3.out"
-		}, "-=0.4")
-		.to(textContainerRef.current, {
-			opacity: 1,
-			y: 0,
-			duration: 0.6,
-			ease: "power3.out"
-		}, "-=0.4");
+		tl.fromTo(albumArtRef.current,
+			{ opacity: 0, y: 30 },
+			{ opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }
+		)
+		.fromTo(titleRef.current,
+			{ opacity: 0, y: 30 },
+			{ opacity: 1, y: 0, duration: 0.6, ease: "power3.out" },
+			"-=0.4"
+		)
+		.fromTo(textContainerRef.current,
+			{ opacity: 0, y: 30 },
+			{ opacity: 1, y: 0, duration: 0.6, ease: "power3.out" },
+			"-=0.4"
+		);
 
 		return () => {
 			tl.kill();
 		};
-	}, [data?.isPlaying, isHomePage]);
+	}, [data?.isPlaying, isHomePage, hasAnimated]);
 
 	// GSAP: Looping animations (BPM-synced)
 	useEffect(() => {
@@ -262,8 +268,8 @@ export const NowPlaying: React.FC = () => {
 	}, [data?.isPlaying, isHomePage]);
 	
 	
-	// Apply mouse-driven shadow effect
-	useMouseShadow(albumImageRef, { colorVar: '--color-bg-3', intensity: 20 });
+	// Apply mouse-driven shadow effect with BPM-synced pulsing
+	useMouseShadow(albumImageRef, { colorVar: '--color-accent', intensity: 20, bpm });
 	
 	if (error) {
 		return <div>Error loading data</div>;
@@ -333,18 +339,56 @@ export const NowPlaying: React.FC = () => {
 								</h4>
 							</div>
 
-							{/* Spotify Link with hover effect */}
-							<a
-								href={data?.songUrl}
-								target="_blank"
-								rel="noopener noreferrer"
-								className="group flex items-center gap-0 px-2 py-2 rounded-lg transition-all mt-2 md:mt-4 bg-[var(--color-primary)]/80 hover:bg-[var(--color-primary)] hover:gap-2 hover:px-4 border border-[var(--color-border)] pointer-events-auto w-fit"
-							>
-								<FaSpotify size={20} className="text-[var(--color-text-primary)] flex-shrink-0" />
-								<span className="text-sm font-medium text-[var(--color-text-primary)] opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-xs overflow-hidden transition-all duration-300 whitespace-nowrap">
-									Open in Spotify
-								</span>
-							</a>
+							{/* Action buttons */}
+							<div className="flex flex-col gap-3 mt-2 md:mt-4 w-full lg:w-auto">
+								<div className="flex items-center gap-2">
+									{/* Spotify Link with hover effect */}
+									{/*<a*/}
+									{/*	href={data?.songUrl}*/}
+									{/*	target="_blank"*/}
+									{/*	rel="noopener noreferrer"*/}
+									{/*	className="group flex items-center gap-0 px-2 py-2 rounded-lg transition-all bg-[var(--color-primary)]/80 hover:bg-[var(--color-primary)] hover:gap-2 hover:px-4 border border-[var(--color-border)] pointer-events-auto w-fit"*/}
+									{/*>*/}
+									{/*	<FaSpotify size={20} className="text-[var(--color-text-primary)] flex-shrink-0" />*/}
+									{/*	<span className="text-sm font-medium text-[var(--color-text-primary)] opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-xs overflow-hidden transition-all duration-300 whitespace-nowrap">*/}
+									{/*		Open in Spotify*/}
+									{/*	</span>*/}
+									{/*</a>*/}
+
+									{/* Listen Now button */}
+									<button
+										onClick={() => setShowPlayer(!showPlayer)}
+										className="group flex items-center gap-0 px-2 py-2 rounded-lg transition-all bg-[var(--color-secondary)]/80 hover:bg-[var(--color-secondary)] hover:gap-2 hover:px-4 border border-[var(--color-border)] pointer-events-auto w-fit"
+									>
+										{showPlayer ? (
+											<FaXmark size={20} className="text-[var(--color-text-primary)] flex-shrink-0" />
+										) : (
+											<FaPlay size={16} className="text-[var(--color-text-primary)] flex-shrink-0" />
+										)}
+										<span className="text-sm font-medium text-[var(--color-text-primary)] opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-xs overflow-hidden transition-all duration-300 whitespace-nowrap">
+											{showPlayer ? 'Close Player' : 'Listen Now'}
+										</span>
+									</button>
+								</div>
+
+								{/* Compact Spotify Embed */}
+								<div
+									className={`overflow-hidden transition-all duration-300 ease-out pointer-events-auto ${
+										showPlayer ? 'max-h-24 opacity-100' : 'max-h-0 opacity-0'
+									}`}
+								>
+									{showPlayer && data?.trackId && (
+										<iframe
+											src={`https://open.spotify.com/embed/track/${data.trackId}?utm_source=generator&theme=0`}
+											width="100%"
+											height="80"
+											className="rounded-lg border-0"
+											allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+											loading="lazy"
+										/>
+									)}
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>

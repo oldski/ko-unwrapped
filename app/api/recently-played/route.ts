@@ -9,9 +9,7 @@ export async function GET(request: Request) {
         const limitParam = searchParams.get('limit');
         const limit = limitParam ? parseInt(limitParam) : 50;
 
-        console.log('Fetching recently played with limit:', limit);
         const recentlyPlayed = await getRecentlyPlayed(limit);
-        console.log('Recently played response:', recentlyPlayed);
 
         return NextResponse.json(recentlyPlayed);
     } catch (error: any) {

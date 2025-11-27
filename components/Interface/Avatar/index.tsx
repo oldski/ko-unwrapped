@@ -3,7 +3,6 @@ import Image from "next/image";
 const Avatar = (data: any): any => {
 	
 	const avatar = {...data.data}
-	console.log(2, avatar)
 	return(
 		<>
 			<Image id="avatarButton" src={avatar?.images[0].url} alt={avatar.display_name} width={avatar.images[0].width} height={avatar.images[0].height}  data-dropdown-toggle="userDropdown" data-dropdown-placement="bottom-start" className="w-10 h-10 rounded-full cursor-pointer" />

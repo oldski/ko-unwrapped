@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect, ReactNode } from 'react';
+import { useRef, useEffect, useState, ReactNode } from 'react';
 import { gsap } from '@/lib/gsap';
 import { useAmbientTheme } from '@/components/ColorThemeProvider';
 
@@ -54,6 +54,8 @@ interface AnimatedCardProps {
   size?: SizeVariant;
   disabled?: boolean;
   enableHoverEffect?: boolean;
+  /** Enable opacity transition on hover. Pass true for default (to: 1) or a number for custom 'to' value. 'from' uses the opacity prop value. */
+  hoverOpacity?: boolean | number;
 }
 
 interface HeaderProps {
@@ -93,10 +95,18 @@ const AnimatedCardBase: React.FC<AnimatedCardProps> = ({
   size = 'default',
   disabled = false,
   enableHoverEffect = true,
+  hoverOpacity,
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const patternRef = useRef<HTMLDivElement>(null);
   const { variant: themeVariant } = useAmbientTheme();
+
+  // Track if component has mounted (for hydration-safe rendering)
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   // Opacity preset mappings
   const opacityValues: Record<OpacityPreset, number> = {
@@ -107,6 +117,14 @@ const AnimatedCardBase: React.FC<AnimatedCardProps> = ({
   };
 
   const glassOpacity = opacityValues[opacity];
+
+  // Hover opacity configuration - 'from' uses glassOpacity, 'to' is specified or defaults to 1
+  const hoverOpacityConfig = hoverOpacity
+    ? {
+        from: glassOpacity,
+        to: typeof hoverOpacity === 'number' ? hoverOpacity : 1,
+      }
+    : null;
 
   // Weight configurations
   const weightConfig = {
@@ -139,8 +157,9 @@ const AnimatedCardBase: React.FC<AnimatedCardProps> = ({
   const currentWeight = weightConfig[weight];
 
   // Detect if theme is dark or light based on textPrimary
+  // Always returns true for SSR consistency, client will update after mount
   const isDarkTheme = () => {
-    if (typeof window === 'undefined') return true;
+    if (!hasMounted) return true;
     const textPrimary = getComputedStyle(document.documentElement)
       .getPropertyValue('--color-text-primary')
       .trim();
@@ -219,10 +238,12 @@ const AnimatedCardBase: React.FC<AnimatedCardProps> = ({
 
     // Entrance animation (lighter weights = more playful)
     const entranceDistance = weight === 'light' ? 30 : weight === 'medium' ? 20 : 15;
+    // If hoverOpacity is enabled, animate to the 'from' value instead of 1
+    const targetOpacity = hoverOpacityConfig ? hoverOpacityConfig.from : 1;
     gsap.fromTo(
       card,
       { opacity: 0, y: entranceDistance },
-      { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }
+      { opacity: targetOpacity, y: 0, duration: 0.6, ease: 'power3.out' }
     );
 
     // Variant-specific looping animations (reduced for heavy weight)
@@ -283,9 +304,22 @@ const AnimatedCardBase: React.FC<AnimatedCardProps> = ({
 
   // Hover effects
   const handleMouseEnter = () => {
-    if (!cardRef.current || !enableHoverEffect || disabled) return;
+    if (!cardRef.current || disabled) return;
 
     const card = cardRef.current;
+
+    // Handle hover opacity transition (independent of other hover effects)
+    if (hoverOpacityConfig) {
+      gsap.to(card, {
+        opacity: hoverOpacityConfig.to,
+        duration: 0.25,
+        ease: 'power2.out',
+        overwrite: 'auto',
+      });
+    }
+
+    // Skip other effects if hover effects are disabled
+    if (!enableHoverEffect) return;
 
     switch (variant) {
       case 'lift':
@@ -333,9 +367,23 @@ const AnimatedCardBase: React.FC<AnimatedCardProps> = ({
   };
 
   const handleMouseLeave = () => {
-    if (!cardRef.current || !enableHoverEffect || disabled) return;
+    if (!cardRef.current || disabled) return;
 
     const card = cardRef.current;
+
+    // Handle hover opacity transition back to 'from' value
+    if (hoverOpacityConfig) {
+      gsap.to(card, {
+        opacity: hoverOpacityConfig.from,
+        duration: 0.25,
+        ease: 'power2.out',
+        overwrite: 'auto',
+      });
+    }
+
+    // Skip other effects if hover effects are disabled
+    if (!enableHoverEffect) return;
+
     const animationIntensity = weight === 'heavy' ? 0.6 : weight === 'medium' ? 0.8 : 1;
 
     gsap.to(card, {
@@ -369,6 +417,31 @@ const AnimatedCardBase: React.FC<AnimatedCardProps> = ({
     });
   };
 
+  // Get stable initial styles for SSR, then apply dynamic styles after mount
+  const getCardStyles = (): React.CSSProperties => {
+    // Base styles that are stable between server and client
+    const baseStyles: React.CSSProperties = {
+      backdropFilter: currentWeight.backdropBlur,
+      WebkitBackdropFilter: currentWeight.backdropBlur,
+      border: `${currentWeight.borderWidth} solid color-mix(in srgb, var(--color-border) ${currentWeight.borderOpacity * 100}%, transparent)`,
+      boxShadow: currentWeight.shadowBase,
+      transformStyle: variant === 'tilt' ? 'preserve-3d' : undefined,
+      willChange: 'transform',
+    };
+
+    // Only add dynamic gradient after mount to avoid hydration mismatch
+    if (hasMounted) {
+      baseStyles.background = getGradientBackground();
+    } else {
+      // Stable fallback for SSR
+      baseStyles.background = `linear-gradient(to bottom right,
+        color-mix(in srgb, color-mix(in srgb, var(--color-primary) 60%, var(--color-bg-1)) ${glassOpacity * 100}%, transparent),
+        color-mix(in srgb, color-mix(in srgb, var(--color-secondary) 45%, var(--color-darker)) ${glassOpacity * 100}%, transparent))`;
+    }
+
+    return baseStyles;
+  };
+
   return (
     <div
       ref={cardRef}
@@ -383,18 +456,10 @@ const AnimatedCardBase: React.FC<AnimatedCardProps> = ({
         ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
         ${className}
       `}
-      style={{
-        backdropFilter: currentWeight.backdropBlur,
-        WebkitBackdropFilter: currentWeight.backdropBlur,
-        background: getGradientBackground(),
-        border: `${currentWeight.borderWidth} solid color-mix(in srgb, var(--color-border) ${currentWeight.borderOpacity * 100}%, transparent)`,
-        boxShadow: currentWeight.shadowBase,
-        transformStyle: variant === 'tilt' ? 'preserve-3d' : undefined,
-        willChange: 'transform',
-      }}
+      style={getCardStyles()}
     >
-      {/* Pattern Layer */}
-      {pattern && (
+      {/* Pattern Layer - only render after mount to avoid hydration issues with btoa */}
+      {pattern && hasMounted && (
         <div
           ref={patternRef}
           className="absolute inset-0 pointer-events-none"
@@ -408,7 +473,7 @@ const AnimatedCardBase: React.FC<AnimatedCardProps> = ({
       )}
 
       {/* Content */}
-      <div className="relative z-10">{children}</div>
+      <div className="relative z-10 h-full flex flex-col">{children}</div>
     </div>
   );
 };

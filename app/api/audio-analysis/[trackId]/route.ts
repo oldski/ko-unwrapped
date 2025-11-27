@@ -17,7 +17,6 @@ export async function GET(
             );
         }
 
-        console.log('Fetching audio analysis for track:', trackId);
         const audioAnalysis = await getAudioAnalysis(trackId);
 
         return NextResponse.json(audioAnalysis);
