@@ -340,8 +340,8 @@ export const NowPlaying: React.FC = () => {
 							</div>
 
 							{/* Action buttons */}
-							<div className="flex flex-col gap-3 mt-2 md:mt-4 w-full lg:w-auto">
-								<div className="flex items-center gap-2">
+							<div className="flex flex-col gap-3 mt-2 md:mt-4 w-full lg:w-auto items-center lg:items-start">
+								<div className="flex items-center justify-center lg:justify-start gap-2">
 									{/* Spotify Link with hover effect */}
 									{/*<a*/}
 									{/*	href={data?.songUrl}*/}

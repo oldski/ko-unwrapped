@@ -1,5 +1,5 @@
 'use client';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import useSWR from 'swr';
 import fetcher from '@/lib/fetcher';
@@ -12,6 +12,54 @@ type ViewMode = 'plays' | 'popularity';
 export default function CalendarHeatmap() {
   const [viewMode, setViewMode] = useState<ViewMode>('plays');
   const [hoveredDay, setHoveredDay] = useState<{ date: string; count: number; avgPopularity?: number; tracks: any[] } | null>(null);
+  const calendarScrollRef = useRef<HTMLDivElement>(null);
+
+  // Enable horizontal drag scrolling for calendar grid
+  useEffect(() => {
+    const el = calendarScrollRef.current;
+    if (!el) return;
+
+    let isDown = false;
+    let startX: number;
+    let scrollLeft: number;
+
+    const onMouseDown = (e: MouseEvent) => {
+      isDown = true;
+      el.classList.add('cursor-grabbing');
+      startX = e.pageX - el.offsetLeft;
+      scrollLeft = el.scrollLeft;
+    };
+
+    const onMouseLeave = () => {
+      isDown = false;
+      el.classList.remove('cursor-grabbing');
+    };
+
+    const onMouseUp = () => {
+      isDown = false;
+      el.classList.remove('cursor-grabbing');
+    };
+
+    const onMouseMove = (e: MouseEvent) => {
+      if (!isDown) return;
+      e.preventDefault();
+      const x = e.pageX - el.offsetLeft;
+      const walk = (x - startX) * 2;
+      el.scrollLeft = scrollLeft - walk;
+    };
+
+    el.addEventListener('mousedown', onMouseDown);
+    el.addEventListener('mouseleave', onMouseLeave);
+    el.addEventListener('mouseup', onMouseUp);
+    el.addEventListener('mousemove', onMouseMove);
+
+    return () => {
+      el.removeEventListener('mousedown', onMouseDown);
+      el.removeEventListener('mouseleave', onMouseLeave);
+      el.removeEventListener('mouseup', onMouseUp);
+      el.removeEventListener('mousemove', onMouseMove);
+    };
+  }, []);
 
   // Memoize the start date to prevent SWR from re-fetching on every render
   const startDateStr = useMemo(() => {
@@ -94,10 +142,10 @@ export default function CalendarHeatmap() {
 
   return (
     <AnimatedCard>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <AnimatedCard.Header
           title="Listening Calendar"
-          description="Last 365 days of your listening activity"
+          description="Last 365 days of your listening activity. Drag to scroll on mobile."
         />
 
         {/* View Mode Toggle */}
@@ -165,28 +213,39 @@ export default function CalendarHeatmap() {
             )}
           </div>
 
-          {/* Heatmap Grid */}
+          {/* Heatmap Grid - Scrollable on mobile */}
           <div className="relative">
-            <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${Math.ceil(heatmapData.length / 7)}, minmax(0, 1fr))` }}>
-              {weeks.map((week, weekIndex) => (
-                <div key={weekIndex} className="grid gap-1 grid-rows-7">
-                  {week.map((day, dayIndex) => (
-                    <motion.div
-                      key={day.date}
-                      initial={{ opacity: 0, scale: 0 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: (weekIndex * 7 + dayIndex) * 0.001 }}
-                      className="aspect-square rounded-sm cursor-pointer relative"
-                      style={{
-                        backgroundColor: getColor(day),
-                      }}
-                      onMouseEnter={() => setHoveredDay(day)}
-                      onMouseLeave={() => setHoveredDay(null)}
-                      whileHover={{ scale: 1.5, zIndex: 10 }}
-                    />
-                  ))}
-                </div>
-              ))}
+            <div
+              ref={calendarScrollRef}
+              className="overflow-x-auto cursor-grab pb-2 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent"
+            >
+              <div
+                className="grid gap-1"
+                style={{
+                  gridTemplateColumns: `repeat(${Math.ceil(heatmapData.length / 7)}, minmax(0, 1fr))`,
+                  minWidth: '800px'
+                }}
+              >
+                {weeks.map((week, weekIndex) => (
+                  <div key={weekIndex} className="grid gap-1 grid-rows-7">
+                    {week.map((day, dayIndex) => (
+                      <motion.div
+                        key={day.date}
+                        initial={{ opacity: 0, scale: 0 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: (weekIndex * 7 + dayIndex) * 0.001 }}
+                        className="aspect-square rounded-sm cursor-pointer relative"
+                        style={{
+                          backgroundColor: getColor(day),
+                        }}
+                        onMouseEnter={() => setHoveredDay(day)}
+                        onMouseLeave={() => setHoveredDay(null)}
+                        whileHover={{ scale: 1.5, zIndex: 10 }}
+                      />
+                    ))}
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Tooltip */}
