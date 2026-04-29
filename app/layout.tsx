@@ -15,6 +15,10 @@ import FABContainer from "@/components/FABContainer";
 import PageTransition from "@/components/PageTransition";
 import { VisualizerProvider } from "@/contexts/VisualizerContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { GoogleAnalytics } from "@next/third-parties/google";
+
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
+const enableAnalytics = process.env.NODE_ENV === "production" && !!GA_ID;
 
 const jetbrainsMono = localFont({
   src: [
@@ -98,6 +102,7 @@ export default function RootLayout({
             </VisualizerProvider>
           </ErrorBoundary>
         </ColorThemeProvider>
+        {enableAnalytics && <GoogleAnalytics gaId={GA_ID!} />}
       </body>
     </html>
   );
