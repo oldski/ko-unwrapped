@@ -200,6 +200,73 @@ const ColorThemeProvider = ({ children }: { children: React.ReactNode }) => {
     return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
   };
 
+  const getContrast = (a: string, b: string) => {
+    const la = getLuminance(a);
+    const lb = getLuminance(b);
+    const hi = Math.max(la, lb);
+    const lo = Math.min(la, lb);
+    return (hi + 0.05) / (lo + 0.05);
+  };
+
+  const hexToHsl = (hex: string) => {
+    const rgb = hexToRgb(hex);
+    if (!rgb) return { h: 0, s: 0, l: 0 };
+    const r = rgb.r / 255, g = rgb.g / 255, b = rgb.b / 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h = 0, s = 0;
+    const l = (max + min) / 2;
+    if (max !== min) {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+        case g: h = ((b - r) / d + 2) / 6; break;
+        case b: h = ((r - g) / d + 4) / 6; break;
+      }
+    }
+    return { h, s, l };
+  };
+
+  const hslToHex = (h: number, s: number, l: number) => {
+    const hue2rgb = (p: number, q: number, t: number) => {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1/6) return p + (q - p) * 6 * t;
+      if (t < 1/2) return q;
+      if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+      return p;
+    };
+    let r: number, g: number, b: number;
+    if (s === 0) {
+      r = g = b = l;
+    } else {
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      const p = 2 * l - q;
+      r = hue2rgb(p, q, h + 1/3);
+      g = hue2rgb(p, q, h);
+      b = hue2rgb(p, q, h - 1/3);
+    }
+    return rgbToHex(r * 255, g * 255, b * 255);
+  };
+
+  // Walk fg's lightness toward whichever extreme improves contrast against bg
+  // until the WCAG ratio is met. Caps at black/white if unreachable.
+  const ensureContrast = (fg: string, bg: string, target = 4.5) => {
+    if (getContrast(fg, bg) >= target) return fg;
+    const bgLum = getLuminance(bg);
+    const goDarker = bgLum > 0.5;
+    const { h, s } = hexToHsl(fg);
+    let { l } = hexToHsl(fg);
+    const step = 0.02;
+    for (let i = 0; i < 60; i++) {
+      l = goDarker ? Math.max(0, l - step) : Math.min(1, l + step);
+      const candidate = hslToHex(h, s, l);
+      if (getContrast(candidate, bg) >= target) return candidate;
+      if (l <= 0 || l >= 1) break;
+    }
+    return goDarker ? '#000000' : '#ffffff';
+  };
+
   // Generate rich color palette
   const colorPalette: ColorPalette = useMemo(() => {
     // Default palette
@@ -243,7 +310,7 @@ const ColorThemeProvider = ({ children }: { children: React.ReactNode }) => {
     const [c1, c2, c3, c4, c5, c6, c7, c8] = extractedColors;
 
     // Create variations
-    const vibrant = adjustSaturation(c2, 50);
+    const vibrantRaw = adjustSaturation(c2, 50);
     const muted = adjustSaturation(c3, -30);
     const light = adjustBrightness(c4, 60);
     const dark = adjustBrightness(c1, -40);
@@ -255,10 +322,21 @@ const ColorThemeProvider = ({ children }: { children: React.ReactNode }) => {
     const bg2 = c1;
     const bg3 = adjustBrightness(c2, 20);
 
-    // Determine text colors based on overall palette luminance
-    const avgLuminance = (getLuminance(c1) + getLuminance(c2) + getLuminance(c3)) / 3;
-    const textPrimary = avgLuminance > 0.4 ? '#000000' : '#ffffff';
-    const textSecondary = avgLuminance > 0.4 ? '#374151' : '#d1d5db';
+    // Pick text colors against the actual main surface (bg1), not the avg
+    const bg1Lum = getLuminance(bg1);
+    const textPrimary = bg1Lum > 0.5 ? '#0a0a0a' : '#ffffff';
+    const textSecondary = bg1Lum > 0.5 ? '#374151' : '#d1d5db';
+
+    // Contrast-correct any color used as a button/element background paired with textPrimary.
+    // These are the colors that appear under overlaid text in components.
+    const primary = ensureContrast(c2, textPrimary, 4.5);
+    const secondary = ensureContrast(c4, textPrimary, 4.5);
+    const accent = ensureContrast(c6, textPrimary, 4.5);
+    const vibrant = ensureContrast(vibrantRaw, textPrimary, 4.5);
+
+    // Border just needs visible separation from bg1
+    const borderRaw = adjustBrightness(c2, bg1Lum > 0.5 ? -20 : 20);
+    const border = ensureContrast(borderRaw, bg1, 1.5);
 
     // Complementary colors
     const complementary1 = getComplementary(c2);
@@ -273,9 +351,9 @@ const ColorThemeProvider = ({ children }: { children: React.ReactNode }) => {
       color6: c6,
       color7: c7,
       color8: c8,
-      primary: c2,
-      secondary: c4,
-      accent: c6,
+      primary,
+      secondary,
+      accent,
       vibrant,
       muted,
       light,
@@ -287,7 +365,7 @@ const ColorThemeProvider = ({ children }: { children: React.ReactNode }) => {
       bg3,
       textPrimary,
       textSecondary,
-      border: adjustBrightness(c2, avgLuminance > 0.4 ? -20 : 20),
+      border,
       complementary1,
       complementary2,
     };
@@ -335,11 +413,12 @@ const ColorThemeProvider = ({ children }: { children: React.ReactNode }) => {
       root.style.setProperty('--color-complementary-1', colorPalette.complementary1);
       root.style.setProperty('--color-complementary-2', colorPalette.complementary2);
 
-      // Safe variants (mixed with text-primary for guaranteed readability)
-      root.style.setProperty('--color-vibrant-safe', `color-mix(in srgb, ${colorPalette.vibrant} 75%, ${colorPalette.textPrimary} 25%)`);
-      root.style.setProperty('--color-accent-safe', `color-mix(in srgb, ${colorPalette.accent} 75%, ${colorPalette.textPrimary} 25%)`);
-      root.style.setProperty('--color-primary-safe', `color-mix(in srgb, ${colorPalette.primary} 75%, ${colorPalette.textPrimary} 25%)`);
-      root.style.setProperty('--color-secondary-safe', `color-mix(in srgb, ${colorPalette.secondary} 75%, ${colorPalette.textPrimary} 25%)`);
+      // Safe variants now equal the contrast-corrected base colors
+      // (mixing toward textPrimary would reduce contrast against textPrimary)
+      root.style.setProperty('--color-vibrant-safe', colorPalette.vibrant);
+      root.style.setProperty('--color-accent-safe', colorPalette.accent);
+      root.style.setProperty('--color-primary-safe', colorPalette.primary);
+      root.style.setProperty('--color-secondary-safe', colorPalette.secondary);
     } else {
       // Reset to defaults when not playing
       root.style.setProperty('--color-1', '#0f172a');

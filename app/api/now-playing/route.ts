@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import {currentlyPlayingSong, getAudioFeatures} from "@/lib/spotify";
+import { currentlyPlayingSong } from "@/lib/spotify";
 import { getAudioFeaturesOrMock } from "@/lib/mockAudioFeatures";
 
 export async function GET() {
@@ -31,17 +31,8 @@ export async function GET() {
 	const popularity = song.item.popularity;
 	const durationMs = song.item.duration_ms;
 
-	// Fetch audio features for the currently playing track
-	let audioFeatures = null;
-	try {
-		const features = await getAudioFeatures([trackId]);
-		audioFeatures = features.audio_features?.[0] || null;
-	} catch (error) {
-		// Silently fail - will use mock features below
-	}
-
-	// Use real features if available, otherwise generate intelligent mock features
-	const enhancedAudioFeatures = getAudioFeaturesOrMock(audioFeatures, {
+	// Spotify deprecated /v1/audio-features for new apps — always use intelligent mocks
+	const enhancedAudioFeatures = getAudioFeaturesOrMock(null, {
 		trackId,
 		popularity,
 		durationMs,

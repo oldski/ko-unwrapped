@@ -3,7 +3,6 @@ import {
     IArtistsAPIResponse,
     IProfileAPIResponse,
     ITracksAPIResponse,
-    IAudioFeaturesResponse,
     IRecentlyPlayedResponse,
     IAudioAnalysis,
     ITopTracksResponse
@@ -166,14 +165,6 @@ const spotifyApi = async (endpoint: string) => {
 
     return response.json();
 };
-
-/**
- * Get audio features for multiple tracks
- * Returns danceability, energy, valence, tempo, and other audio characteristics
- */
-export async function getAudioFeatures(trackIds: string[]): Promise<IAudioFeaturesResponse> {
-	return spotifyApi(`/v1/audio-features?ids=${trackIds.join(',')}`);
-}
 
 /**
  * Get recently played tracks for the user

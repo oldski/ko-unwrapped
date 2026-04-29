@@ -4,10 +4,24 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { LuShuffle } from "react-icons/lu";
+import { useVisualizer } from "@/contexts/VisualizerContext";
+
+type VisualizerType = 'retro' | 'waveform' | 'radar' | 'matrix' | 'tunnel' | 'orbs';
+const VISUALIZERS: VisualizerType[] = ['retro', 'waveform', 'radar', 'matrix', 'tunnel', 'orbs'];
 
 const Navigation = () => {
 	const pathname = usePathname();
 	const [isOpen, setIsOpen] = useState(false);
+	const [shuffleSpins, setShuffleSpins] = useState(0);
+	const { activeVisualizer, setActiveVisualizer } = useVisualizer();
+
+	const shuffleVisualizer = () => {
+		const others = VISUALIZERS.filter((v) => v !== activeVisualizer);
+		const next = others[Math.floor(Math.random() * others.length)];
+		setActiveVisualizer(next);
+		setShuffleSpins((n) => n + 1);
+	};
 
 	const navItems = [
 		{ href: "/", label: "Home", color: "gray" },
@@ -53,6 +67,28 @@ const Navigation = () => {
 			{/* Desktop Navigation */}
 			<nav className="hidden lg:block fixed top-0 right-0 z-50 p-6">
 				<div className="flex gap-3">
+					<motion.button
+						onClick={shuffleVisualizer}
+						aria-label="Switch visualization"
+						title="Switch visualization"
+						whileHover={{ scale: 1.08, rotate: -4 }}
+						whileTap={{ scale: 0.92, rotate: 0 }}
+						transition={{ type: "spring", stiffness: 400, damping: 18 }}
+						className={`
+							relative px-4 py-2 font-bold rounded-lg
+							border-2
+							${getColorClasses(false)}
+							flex items-center justify-center
+						`}
+					>
+						<motion.span
+							animate={{ rotate: shuffleSpins * 360 }}
+							transition={{ type: "spring", stiffness: 220, damping: 16 }}
+							className="inline-flex"
+						>
+							<LuShuffle className="w-5 h-5" />
+						</motion.span>
+					</motion.button>
 					{navItems.map((item) => {
 						const isActive = pathname === item.href;
 						return (
@@ -104,6 +140,30 @@ const Navigation = () => {
 							<div className="p-6 pt-20">
 								<h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-6">Menu</h2>
 								<div className="flex flex-col gap-3">
+									<motion.button
+										onClick={() => {
+											shuffleVisualizer();
+											setIsOpen(false);
+										}}
+										whileHover={{ scale: 1.03 }}
+										whileTap={{ scale: 0.96 }}
+										transition={{ type: "spring", stiffness: 400, damping: 18 }}
+										className={`
+											relative px-6 py-4 font-bold rounded-lg
+											border-2
+											${getColorClasses(false)}
+											flex items-center gap-3
+										`}
+									>
+										<motion.span
+											animate={{ rotate: shuffleSpins * 360 }}
+											transition={{ type: "spring", stiffness: 220, damping: 16 }}
+											className="inline-flex"
+										>
+											<LuShuffle className="w-5 h-5" />
+										</motion.span>
+										<span>Switch Visualization</span>
+									</motion.button>
 									{navItems.map((item) => {
 										const isActive = pathname === item.href;
 										return (

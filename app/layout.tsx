@@ -10,6 +10,7 @@ import Hero from "@/components/Hero";
 import NowPlaying from "@/components/NowPlaying";
 import Navigation from "@/components/Interface/Navigation";
 import VisualizationLayer from "@/components/VisualizationLayer";
+import VisualizerBlurOverlay from "@/components/VisualizerBlurOverlay";
 import FABContainer from "@/components/FABContainer";
 import PageTransition from "@/components/PageTransition";
 import { VisualizerProvider } from "@/contexts/VisualizerContext";
@@ -58,6 +59,8 @@ export default function RootLayout({
               >
                 <VisualizationLayer />
               </ErrorBoundary>
+
+              <VisualizerBlurOverlay />
 
               <SyncProvider>
                 <ErrorBoundary
