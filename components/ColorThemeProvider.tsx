@@ -65,6 +65,8 @@ interface ColorPalette {
   // Text
   textPrimary: string;
   textSecondary: string;
+  textVivid: string;
+  textVividMuted: string;
   border: string;
 
   // Complementary colors
@@ -293,6 +295,8 @@ const ColorThemeProvider = ({ children }: { children: React.ReactNode }) => {
       bg3: '#334155',
       textPrimary: '#ffffff',
       textSecondary: '#d1d5db',
+      textVivid: '#fbbf24',
+      textVividMuted: '#a5b4fc',
       border: '#374151',
       complementary1: '#fbbf24',
       complementary2: '#f97316',
@@ -338,6 +342,11 @@ const ColorThemeProvider = ({ children }: { children: React.ReactNode }) => {
     const borderRaw = adjustBrightness(c2, bg1Lum > 0.5 ? -20 : 20);
     const border = ensureContrast(borderRaw, bg1, 1.5);
 
+    // Tinted text colors — preserve album hue/saturation, shift lightness
+    // only as needed to meet contrast against bg1 (the actual surface).
+    const textVivid = ensureContrast(vibrantRaw, bg1, 4.5);
+    const textVividMuted = ensureContrast(c6, bg1, 4.5);
+
     // Complementary colors
     const complementary1 = getComplementary(c2);
     const complementary2 = getComplementary(c4);
@@ -365,6 +374,8 @@ const ColorThemeProvider = ({ children }: { children: React.ReactNode }) => {
       bg3,
       textPrimary,
       textSecondary,
+      textVivid,
+      textVividMuted,
       border,
       complementary1,
       complementary2,
@@ -407,6 +418,8 @@ const ColorThemeProvider = ({ children }: { children: React.ReactNode }) => {
       // Text
       root.style.setProperty('--color-text-primary', colorPalette.textPrimary);
       root.style.setProperty('--color-text-secondary', colorPalette.textSecondary);
+      root.style.setProperty('--color-text-vivid', colorPalette.textVivid);
+      root.style.setProperty('--color-text-vivid-muted', colorPalette.textVividMuted);
       root.style.setProperty('--color-border', colorPalette.border);
 
       // Complementary
@@ -443,6 +456,8 @@ const ColorThemeProvider = ({ children }: { children: React.ReactNode }) => {
       root.style.setProperty('--color-bg-3', '#334155');
       root.style.setProperty('--color-text-primary', '#ffffff');
       root.style.setProperty('--color-text-secondary', '#d1d5db');
+      root.style.setProperty('--color-text-vivid', '#fbbf24');
+      root.style.setProperty('--color-text-vivid-muted', '#a5b4fc');
       root.style.setProperty('--color-border', '#374151');
       root.style.setProperty('--color-complementary-1', '#fbbf24');
       root.style.setProperty('--color-complementary-2', '#f97316');

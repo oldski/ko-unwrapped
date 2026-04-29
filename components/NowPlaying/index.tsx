@@ -122,29 +122,6 @@ export const NowPlaying: React.FC = () => {
 			}));
 		}
 
-		// Track title opacity animation (synced to BPM - 4 beats)
-		if (trackTitleRef.current) {
-			animations.push(gsap.to(trackTitleRef.current, {
-				opacity: 0.8,
-				duration: beatDuration * 4,
-				ease: "power1.inOut",
-				yoyo: true,
-				repeat: -1,
-				delay: beatDuration * 0.5
-			}));
-		}
-
-		// Artist letter-spacing animation (synced to BPM - 3 beats)
-		if (artistRef.current) {
-			animations.push(gsap.to(artistRef.current, {
-				letterSpacing: '0.02em',
-				duration: beatDuration * 3,
-				ease: "power1.inOut",
-				yoyo: true,
-				repeat: -1
-			}));
-		}
-
 		// Text container subtle float (synced to BPM - 8 beats)
 		if (textContainerRef.current) {
 			animations.push(gsap.to(textContainerRef.current, {
@@ -327,13 +304,13 @@ export const NowPlaying: React.FC = () => {
 							<div className="w-full">
 								<h2
 									ref={trackTitleRef}
-									className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-[var(--color-vibrant-safe)] leading-tight break-words"
+									className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-[var(--color-text-vivid)] leading-tight break-words"
 								>
 									{data?.title || "Unknown Title"}
 								</h2>
 								<h4
 									ref={artistRef}
-									className="text-xl sm:text-2xl md:text-2xl lg:text-3xl font-semibold text-[var(--color-vibrant-safe)] break-words"
+									className="text-xl sm:text-2xl md:text-2xl lg:text-3xl font-semibold text-[var(--color-text-vivid-muted)] break-words"
 								>
 									{data?.artist || "Unknown Artist"}
 								</h4>
