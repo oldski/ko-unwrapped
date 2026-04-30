@@ -46,6 +46,7 @@ interface AudioFeatures {
 
 interface NowPlayingData {
   isPlaying: boolean;
+  isFallback?: boolean;
   audioFeatures?: AudioFeatures;
   albumImageUrl?: string;
 }
@@ -74,12 +75,13 @@ export default function VisualizationLayer() {
   const { data } = useSWR<NowPlayingData>(
     `${process.env.NEXT_PUBLIC_HOST}/api/now-playing`,
     fetcher,
-    { refreshInterval: 5000 }
+    { refreshInterval: 45000 }
   );
 
   useEffect(() => {
     if (data) {
-      setIsPlaying(data.isPlaying);
+      // Treat the recent-track fallback as "playing" so visualizers stay animated
+      setIsPlaying(data.isPlaying || data.isFallback === true);
 
       if (data.audioFeatures) {
         setBpm(data.audioFeatures.tempo);

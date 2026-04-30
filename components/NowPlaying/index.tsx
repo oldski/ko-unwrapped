@@ -30,11 +30,11 @@ export const NowPlaying: React.FC = () => {
 	const { data, error } = useSWR(
 		`${process.env.NEXT_PUBLIC_HOST}/api/now-playing`,
 		fetcher,
-		{ refreshInterval: 5000 }
+		{ refreshInterval: 45000 }
 	);
 
 	useEffect(() => {
-		if (data && data?.isPlaying !== undefined) {
+		if (data && data?.title !== undefined) {
 			if (data?.audioFeatures?.tempo) {
 				setBpm(data.audioFeatures.tempo);
 			}
@@ -53,7 +53,7 @@ export const NowPlaying: React.FC = () => {
 
 	// GSAP: Initial entrance animation
 	useEffect(() => {
-		if (!data?.isPlaying || !isHomePage) return;
+		if (!data?.title || !isHomePage) return;
 		if (hasAnimated) return; // Only run once per homepage visit
 
 		// Staggered entrance animation with delay using fromTo for robustness
@@ -80,11 +80,11 @@ export const NowPlaying: React.FC = () => {
 		return () => {
 			tl.kill();
 		};
-	}, [data?.isPlaying, isHomePage, hasAnimated]);
+	}, [data?.title, isHomePage, hasAnimated]);
 
 	// GSAP: Looping animations (BPM-synced)
 	useEffect(() => {
-		if (!data?.isPlaying || !isHomePage) return;
+		if (!data?.title || !isHomePage) return;
 
 		const animations: gsap.core.Tween[] = [];
 		const beatDuration = 60 / bpm; // Duration of one beat in seconds
@@ -137,7 +137,7 @@ export const NowPlaying: React.FC = () => {
 		return () => {
 			animations.forEach(anim => anim.kill());
 		};
-	}, [data?.isPlaying, bpm, isHomePage]);
+	}, [data?.title, bpm, isHomePage]);
 
 	// GSAP: Mouse parallax effect
 	useEffect(() => {
@@ -206,7 +206,7 @@ export const NowPlaying: React.FC = () => {
 
 	// GSAP: Scroll-linked scale down and fade to top left
 	useEffect(() => {
-		if (!data?.isPlaying || !isHomePage || !nowPlayingContainerRef.current) return;
+		if (!data?.title || !isHomePage || !nowPlayingContainerRef.current) return;
 
 		// Reset transform when coming to home page
 		gsap.set(nowPlayingContainerRef.current, {
@@ -242,7 +242,7 @@ export const NowPlaying: React.FC = () => {
 				}
 			});
 		};
-	}, [data?.isPlaying, isHomePage]);
+	}, [data?.title, isHomePage]);
 	
 	
 	// Apply mouse-driven shadow effect with BPM-synced pulsing
@@ -253,7 +253,7 @@ export const NowPlaying: React.FC = () => {
 	}
 
 	// Render homepage version (full screen, parallax, BPM-synced)
-	if (isHomePage && data?.isPlaying) {
+	if (isHomePage && data?.title) {
 		return (
 			<div className="h-screen w-screen duration-300 transition-all pointer-events-none isolate will-change-transform z-50">
 				<div
@@ -299,7 +299,7 @@ export const NowPlaying: React.FC = () => {
 								ref={titleRef}
 								className="text-xl sm:text-2xl lg:text-3xl font-extrabold italic inline drop-shadow-md text-[var(--color-secondary)]"
 							>
-								Now Playing
+								{data?.isFallback ? "Last Played" : "Now Playing"}
 							</h2>
 							<div className="w-full">
 								<h2
@@ -374,7 +374,7 @@ export const NowPlaying: React.FC = () => {
 	}
 
 	// Render internal pages version (minimal, bottom-right corner)
-	if (!isHomePage && data?.isPlaying) {
+	if (!isHomePage && data?.title) {
 		return (
 			<div className="fixed bottom-6 right-6 pointer-events-none z-5">
 				<div className="flex items-center gap-3 bg-black/20 backdrop-blur-md rounded-xl p-3 border border-[var(--color-border)]/30">

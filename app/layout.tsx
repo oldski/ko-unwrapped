@@ -3,7 +3,6 @@ import localFont from "next/font/local";
 
 import "./globals.css";
 import SyncProvider from "@/components/SyncProvider";
-import VideoBackground from "@/components/VideoBackground";
 import ColorThemeProvider from "@/components/ColorThemeProvider";
 import AmbientLayer from "@/components/AmbientLayer";
 import Hero from "@/components/Hero";
@@ -54,7 +53,6 @@ export default function RootLayout({
     <html lang="en">
       <body className={jetbrainsMono.className}>
         <ColorThemeProvider>
-          <VideoBackground />
           <ErrorBoundary componentName="App Root">
             <VisualizerProvider>
               <ErrorBoundary

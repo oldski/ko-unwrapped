@@ -27,6 +27,7 @@ interface AudioFeatures {
 
 interface NowPlayingData {
   isPlaying: boolean;
+  isFallback?: boolean;
   albumImageUrl: string;
   audioFeatures?: AudioFeatures;
   title?: string;
@@ -82,7 +83,7 @@ const ColorThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const { data, error } = useSWR<NowPlayingData>(
     `${process.env.NEXT_PUBLIC_HOST}/api/now-playing`,
     fetcher,
-    { refreshInterval: 5000 }
+    { refreshInterval: 45000 }
   );
 
   // Extract colors from album artwork
@@ -92,9 +93,10 @@ const ColorThemeProvider = ({ children }: { children: React.ReactNode }) => {
     colorCount: 8, // Extract 8 colors
   });
 
-  // Update image source and variant when track changes
+  // Update image source and variant when track changes (live or fallback)
+  const hasTrack = !!data?.albumImageUrl && (data.isPlaying || data.isFallback === true);
   useEffect(() => {
-    if (data?.isPlaying && data.albumImageUrl) {
+    if (hasTrack && data?.albumImageUrl) {
       if (data.albumImageUrl !== previousTrackRef.current) {
         previousTrackRef.current = data.albumImageUrl;
         setImgSrc(data.albumImageUrl);
@@ -103,7 +105,7 @@ const ColorThemeProvider = ({ children }: { children: React.ReactNode }) => {
         setVariant(randomVariant);
       }
     }
-  }, [data?.albumImageUrl, data?.isPlaying]);
+  }, [data?.albumImageUrl, hasTrack]);
 
   // Helper functions for color manipulation
   const hexToRgb = (hex: string) => {
@@ -386,7 +388,7 @@ const ColorThemeProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const root = document.documentElement;
 
-    if (data?.isPlaying && colorPalette) {
+    if (hasTrack && colorPalette) {
       // Original colors
       root.style.setProperty('--color-1', colorPalette.color1);
       root.style.setProperty('--color-2', colorPalette.color2);
@@ -468,10 +470,10 @@ const ColorThemeProvider = ({ children }: { children: React.ReactNode }) => {
       root.style.setProperty('--color-primary-safe', 'color-mix(in srgb, #06b6d4 75%, #ffffff 25%)');
       root.style.setProperty('--color-secondary-safe', 'color-mix(in srgb, #8b5cf6 75%, #ffffff 25%)');
     }
-  }, [colorPalette, data?.isPlaying]);
+  }, [colorPalette, hasTrack]);
 
   return (
-    <AmbientThemeContext.Provider value={{ variant, isPlaying: data?.isPlaying || false }}>
+    <AmbientThemeContext.Provider value={{ variant, isPlaying: hasTrack }}>
       {children}
     </AmbientThemeContext.Provider>
   );
