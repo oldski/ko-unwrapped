@@ -141,15 +141,17 @@ export default function CurateClient({ displayName }: { displayName: string }) {
     });
   }, []);
 
-  const swapInSet = useCallback((index: number, replacement: SetTrack) => {
-    setSet((prev) => {
-      const outgoing = prev[index];
+  const swapInSet = useCallback(
+    (index: number, replacement: SetTrack) => {
+      const outgoing = set[index];
+      if (!outgoing) return;
       setBaseOrder((base) =>
         base.map((t) => (t.trackId === outgoing.trackId ? replacement : t))
       );
-      return prev.map((t, i) => (i === index ? replacement : t));
-    });
-  }, []);
+      setSet((prev) => prev.map((t, i) => (i === index ? replacement : t)));
+    },
+    [set]
+  );
 
   const [pushOpen, setPushOpen] = useState(false);
 
