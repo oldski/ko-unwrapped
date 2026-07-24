@@ -6,6 +6,9 @@ import type { Filters, SetTrack, TrackHit } from './types';
 import { DEFAULT_FILTERS } from './types';
 import SeedTray from './SeedTray';
 import SearchTab from './SearchTab';
+import VibesTab from './VibesTab';
+import SessionsTab from './SessionsTab';
+import ShapeTab from './ShapeTab';
 
 type Tab = 'search' | 'vibes' | 'sessions' | 'shape';
 
@@ -25,6 +28,37 @@ export default function CurateClient({ displayName }: { displayName: string }) {
 
   const removeSeed = useCallback((trackId: string) => {
     setSeeds((prev) => prev.filter((s) => s.trackId !== trackId));
+  }, []);
+
+  const seedFromSession = useCallback(async (trackIds: string[]) => {
+    // Sessions give us ids+names only; fetch full TrackHit rows via the shelf
+    // endpoint would over-fetch, so hydrate from the tracks we already have or
+    // fall back to a minimal hit.
+    const res = await fetch(`/api/curation/tracks?shelf=most-played`);
+    const data = await res.json();
+    const byId = new Map<string, TrackHit>(
+      (data.success ? (data.tracks as TrackHit[]) : []).map((t) => [t.trackId, t])
+    );
+    setSeeds((prev) => {
+      const next = [...prev];
+      for (const id of trackIds) {
+        if (next.some((s) => s.trackId === id)) continue;
+        const hit = byId.get(id);
+        next.push(
+          hit ?? {
+            trackId: id,
+            spotifyTrackId: '',
+            trackName: 'From session',
+            artistNames: [],
+            durationMs: 0,
+            albumImageUrl: null,
+            popularity: null,
+            plays: 0,
+          }
+        );
+      }
+      return next;
+    });
   }, []);
 
   const generate = useCallback(async () => {
@@ -115,9 +149,11 @@ export default function CurateClient({ displayName }: { displayName: string }) {
           {tab === 'search' && (
             <SearchTab onAddSeed={addSeed} seedIds={new Set(seeds.map((s) => s.trackId))} />
           )}
-          {tab !== 'search' && (
-            <p className="text-sm text-[var(--color-text-secondary)]">Coming in the next task.</p>
+          {tab === 'vibes' && (
+            <VibesTab onAddSeed={addSeed} seedIds={new Set(seeds.map((s) => s.trackId))} />
           )}
+          {tab === 'sessions' && <SessionsTab onSeedFromSession={seedFromSession} />}
+          {tab === 'shape' && <ShapeTab filters={filters} onChange={setFilters} />}
         </section>
       </div>
     </div>
