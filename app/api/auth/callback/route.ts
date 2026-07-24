@@ -1,16 +1,21 @@
 import { NextResponse } from 'next/server';
 import { sealSession, SESSION_COOKIE } from '@/lib/auth/session';
+import { requestOrigin } from '@/lib/auth/requestOrigin';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
+  let home: string;
+  try {
+    home = requestOrigin(request);
+  } catch (error) {
+    return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
+  }
+
   const url = new URL(request.url);
   const code = url.searchParams.get('code');
   const state = url.searchParams.get('state');
   const cookieState = request.headers.get('cookie')?.match(/oauth_state=([^;]+)/)?.[1];
-  const host = request.headers.get('host') ?? url.host;
-  const proto = request.headers.get('x-forwarded-proto') ?? url.protocol.replace(':', '');
-  const home = `${proto}://${host}`;
 
   if (!code || !state || state !== cookieState) {
     return NextResponse.redirect(`${home}/curate?error=state`);

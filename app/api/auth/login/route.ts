@@ -1,13 +1,16 @@
 import { NextResponse } from 'next/server';
 import { randomBytes } from 'crypto';
+import { requestOrigin } from '@/lib/auth/requestOrigin';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
-  const url = new URL(request.url);
-  const host = request.headers.get('host') ?? url.host;
-  const proto = request.headers.get('x-forwarded-proto') ?? url.protocol.replace(':', '');
-  const home = `${proto}://${host}`;
+  let home: string;
+  try {
+    home = requestOrigin(request);
+  } catch (error) {
+    return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
+  }
 
   const state = randomBytes(16).toString('hex');
   const params = new URLSearchParams({
