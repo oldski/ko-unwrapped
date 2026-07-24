@@ -30,6 +30,7 @@ export interface RankCandidatesInput {
   hourOfDayFilter?: number[];
   popularityRange?: [number, number];
   excludeTrackIds?: string[];
+  alternatesCount?: number;
 }
 
 export interface CandidateTrack {
@@ -39,6 +40,8 @@ export interface CandidateTrack {
   artistNames: string[];
   durationMs: number;
   popularity: number | null;
+  albumImageUrl: string | null;
+  tags: string[];
   score: number;
   reasons: string[];
 }
@@ -46,6 +49,7 @@ export interface CandidateTrack {
 export interface RankCandidatesResult {
   tracks: CandidateTrack[];
   totalDurationMs: number;
+  alternates: CandidateTrack[];
   meta: {
     candidatePoolSize: number;
     constraintsApplied: string[];
@@ -64,6 +68,7 @@ interface TrackRow {
   trackName: string;
   durationMs: number;
   popularity: number | null;
+  albumImageUrl: string | null;
 }
 
 function jaccard(a: Set<string>, b: Set<string>): number {
@@ -115,6 +120,7 @@ export async function rankCandidates(input: RankCandidatesInput): Promise<RankCa
       trackName: tracks.trackName,
       durationMs: tracks.durationMs,
       popularity: tracks.popularity,
+      albumImageUrl: tracks.albumImageUrl,
     })
     .from(tracks);
 
@@ -404,7 +410,7 @@ export async function rankCandidates(input: RankCandidatesInput): Promise<RankCa
       .map(([k, v]) => labels[k](v as number));
   }
 
-  const out: CandidateTrack[] = sequenced.map((c) => {
+  function toCandidate(c: Scored): CandidateTrack {
     const t = tracksById.get(c.trackId)!;
     const artistNames = (artistsByTrack.get(c.trackId) ?? []).map((a) => a.name);
     return {
@@ -414,14 +420,25 @@ export async function rankCandidates(input: RankCandidatesInput): Promise<RankCa
       artistNames,
       durationMs: t.durationMs,
       popularity: t.popularity,
+      albumImageUrl: t.albumImageUrl,
+      tags: [...(tagsByTrack.get(c.trackId) ?? [])],
       score: Number(c.score.toFixed(4)),
       reasons: topReasons(c),
     };
-  });
+  }
+
+  const out: CandidateTrack[] = sequenced.map(toCandidate);
+
+  const chosenIdSet = new Set(chosen.map((c) => c.trackId));
+  const alternates: CandidateTrack[] = scored
+    .filter((c) => !chosenIdSet.has(c.trackId))
+    .slice(0, Math.max(0, input.alternatesCount ?? 0))
+    .map(toCandidate);
 
   return {
     tracks: out,
     totalDurationMs: totalMs,
+    alternates,
     meta: {
       candidatePoolSize: scored.length,
       constraintsApplied,

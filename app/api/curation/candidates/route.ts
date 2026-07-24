@@ -50,6 +50,9 @@ export async function POST(request: Request) {
       input.popularityRange = [body.popularityRange[0], body.popularityRange[1]];
     }
     if (isStringArray(body.excludeTrackIds)) input.excludeTrackIds = body.excludeTrackIds;
+    if (typeof body.alternatesCount === 'number' && body.alternatesCount > 0) {
+      input.alternatesCount = Math.min(30, Math.floor(body.alternatesCount));
+    }
 
     const result = await rankCandidates(input);
     return NextResponse.json({ success: true, ...result });
