@@ -9,21 +9,25 @@ export async function GET() {
     const rows = await db.execute(sql`
       select
         s.id,
-        s.started_at as "startedAt",
+        to_char(s.started_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS') as "startedAt",
         s.track_count as "trackCount",
         s.hour_of_day as "hourOfDay",
         s.day_of_week as "dayOfWeek",
         coalesce(
           (
-            select json_agg(json_build_object('trackId', x.track_id, 'trackName', x.track_name) order by x.position)
+            select json_agg(json_build_object('trackId', y.track_id, 'trackName', y.track_name) order by y.min_position)
             from (
-              select distinct on (st.track_id) st.track_id, t.track_name, st.position
-              from session_tracks st
-              join tracks t on t.id = st.track_id
-              where st.session_id = s.id
-              order by st.track_id, st.position
-            ) x
-            where x.position < 3
+              select x.track_id, x.track_name, x.min_position,
+                     row_number() over (order by x.min_position) as rnk
+              from (
+                select st.track_id, t.track_name, min(st.position) as min_position
+                from session_tracks st
+                join tracks t on t.id = st.track_id
+                where st.session_id = s.id
+                group by st.track_id, t.track_name
+              ) x
+            ) y
+            where y.rnk <= 3
           ), '[]'::json
         ) as "sampleTracks"
       from listening_sessions s
