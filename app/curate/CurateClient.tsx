@@ -11,6 +11,7 @@ import VibesTab from './VibesTab';
 import SessionsTab from './SessionsTab';
 import ShapeTab from './ShapeTab';
 import SetTimeline from './SetTimeline';
+import PushDialog from './PushDialog';
 
 type Tab = 'search' | 'vibes' | 'sessions' | 'shape';
 
@@ -207,6 +208,7 @@ export default function CurateClient({ displayName }: { displayName: string }) {
           {tab === 'sessions' && <SessionsTab onSeedFromSession={seedFromSession} />}
           {tab === 'shape' && <ShapeTab filters={filters} onChange={setFilters} />}
         </section>
+        {pushOpen && <PushDialog set={set} onClose={() => setPushOpen(false)} />}
       </div>
     </div>
   );
