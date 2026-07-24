@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from 'react';
 import { energyFromTags } from '@/lib/curation/energy';
+import { smoothTransitions } from '@/lib/curation/smoothTransitions';
 import type { Filters, SetTrack, TrackHit } from './types';
 import { DEFAULT_FILTERS } from './types';
 import SeedTray from './SeedTray';
@@ -9,6 +10,7 @@ import SearchTab from './SearchTab';
 import VibesTab from './VibesTab';
 import SessionsTab from './SessionsTab';
 import ShapeTab from './ShapeTab';
+import SetTimeline from './SetTimeline';
 
 type Tab = 'search' | 'vibes' | 'sessions' | 'shape';
 
@@ -94,12 +96,53 @@ export default function CurateClient({ displayName }: { displayName: string }) {
       });
       setSet(data.tracks.map(withEnergy));
       setAlternates(data.alternates.map(withEnergy));
+      setSmoothed(false);
+      setBaseOrder([]);
     } catch (e: any) {
       setError(e.message);
     } finally {
       setGenerating(false);
     }
   }, [seeds, filters, excluded]);
+
+  const [smoothed, setSmoothed] = useState(false);
+  const [baseOrder, setBaseOrder] = useState<SetTrack[]>([]);
+
+  const toggleSmoothed = useCallback(() => {
+    setSmoothed((prev) => {
+      const next = !prev;
+      if (next) {
+        setBaseOrder(set);
+        setSet(smoothTransitions(set));
+      } else {
+        setSet(baseOrder.filter((t) => set.some((s) => s.trackId === t.trackId)));
+      }
+      return next;
+    });
+  }, [set, baseOrder]);
+
+  const reorder = useCallback((from: number, to: number) => {
+    setSet((prev) => {
+      const next = [...prev];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return next;
+    });
+  }, []);
+
+  const removeFromSet = useCallback((index: number) => {
+    setSet((prev) => {
+      const removed = prev[index];
+      setExcluded((ex) => [...ex, removed.trackId]);
+      return prev.filter((_, i) => i !== index);
+    });
+  }, []);
+
+  const swapInSet = useCallback((index: number, replacement: SetTrack) => {
+    setSet((prev) => prev.map((t, i) => (i === index ? replacement : t)));
+  }, []);
+
+  const [pushOpen, setPushOpen] = useState(false);
 
   return (
     <div className="min-h-screen text-white p-6 md:p-8">
@@ -111,21 +154,19 @@ export default function CurateClient({ displayName }: { displayName: string }) {
           <span className="text-xs text-[var(--color-text-secondary)]">{displayName}</span>
         </header>
 
-        {/* The Set — timeline lands here in Task 13 */}
+        {/* The Set */}
         <section className="rounded-2xl bg-white/5 border border-white/10 p-4 min-h-40">
-          {set.length === 0 ? (
-            <p className="text-sm text-[var(--color-text-secondary)]">
-              The set will appear here. Pick seeds below and hit Generate.
-            </p>
-          ) : (
-            <ul className="text-sm space-y-1">
-              {set.map((t, i) => (
-                <li key={t.trackId} className="truncate">
-                  {i + 1}. {t.trackName} — {t.artistNames.join(', ')}
-                </li>
-              ))}
-            </ul>
-          )}
+          <SetTimeline
+            set={set}
+            alternates={alternates}
+            smoothed={smoothed}
+            onToggleSmoothed={toggleSmoothed}
+            onReorder={reorder}
+            onRemove={removeFromSet}
+            onSwap={swapInSet}
+            onPush={() => setPushOpen(true)}
+            pushDisabled={set.length === 0}
+          />
           {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
         </section>
 
