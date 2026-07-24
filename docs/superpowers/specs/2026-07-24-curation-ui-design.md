@@ -100,20 +100,34 @@ client mutations. Regenerate passes `excludeTrackIds` for removed tracks.
 
 - Playlist created only after all track URIs resolve (no partial cleanup
   path needed). Success state shows "open in Spotify" link.
-- Precondition (first implementation step): verify the stored refresh token
-  has `playlist-modify-private` (and ideally `-public`) scope. If missing,
-  re-run the existing `/spotify-auth` flow once with added scopes.
+- Uses the logged-in session's Spotify token (see Access control), which
+  always carries playlist scopes — no dependency on the static env refresh
+  token.
 
-## Access control
+## Access control: Log in with Spotify
 
 The site deploys publicly; curation endpoints mutate the DB, spend paid API
-quota, and can write to the user's Spotify account.
+quota, and can write to the user's Spotify account. `/curate` is a
+logged-in area gated by Spotify OAuth.
 
+- **Routes**: `GET /api/auth/login` (redirect to Spotify authorize with
+  `playlist-modify-private playlist-modify-public` scopes),
+  `GET /api/auth/callback` (exchange code, fetch `/me`), `POST
+  /api/auth/logout`.
+- **Authorization**: only the Spotify user ID matching
+  `OWNER_SPOTIFY_USER_ID` (env) is authorized in v1. Anyone else who logs
+  in sees a friendly not-authorized screen. (Future multi-user/social use
+  extends this check to an allowlist or user table — the session shape
+  doesn't change.)
+- **Session**: encrypted httpOnly cookie (HMAC-signed, `SESSION_SECRET`
+  env; no DB) holding the Spotify user ID and their refresh token.
+- **Playlist push uses the session's token**, not the static env refresh
+  token — so push acts as the logged-in owner, the scope problem
+  disappears (login always grants playlist scopes), and multi-user later
+  means each user pushes to their own account for free.
 - All **mutating** curation routes (`enrich/*`, `candidates`,
-  `playlist/push`) require a shared-secret header (`x-curation-key`),
-  checked against `CRON_SECRET` (or `CURATION_SECRET` if set).
-- `/curate` prompts once for the owner key, stores it in `localStorage`,
-  sends it on every mutating request. 401 → re-prompt.
+  `playlist/push`) require a valid authorized session; 401 → the UI shows
+  the login screen.
 - Read-only GETs (tracks/vibes/sessions) stay open — same exposure as
   existing stats pages.
 
@@ -139,4 +153,6 @@ quota, and can write to the user's Spotify account.
 - BPM/key enrichment (immediate next project; seams left in energy module).
 - Saved playlists / recipes in DB.
 - Mobile-optimized layout (desktop-first; should degrade acceptably).
-- Auth beyond the shared owner key.
+- Multi-user access, shared playlists, taste-matching between users — the
+  long-term direction. The Spotify-login session design is chosen so this
+  extends (allowlist/user table + per-user tokens) without rework.
