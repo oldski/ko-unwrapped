@@ -1,4 +1,5 @@
-import { pgTable, uuid, varchar, timestamp, integer, real, index } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, timestamp, integer, real, index, text, uniqueIndex } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 
 // Tracks table - Unique tracks from Spotify
 export const tracks = pgTable('tracks', {
@@ -57,3 +58,49 @@ export const audioFeatures = pgTable('audio_features', {
   speechiness: real('speechiness'),
   fetchedAt: timestamp('fetched_at').defaultNow(),
 });
+
+// Artist genre cache - populated from Spotify /v1/artists (genres array on each artist)
+export const artistGenres = pgTable('artist_genres', {
+  artistId: uuid('artist_id').references(() => artists.id).primaryKey(),
+  genres: text('genres').array().notNull().default(sql`'{}'::text[]`),
+  fetchedAt: timestamp('fetched_at').defaultNow(),
+});
+
+// Listening sessions - derived from play_history by splitting on gaps > 30 minutes
+export const listeningSessions = pgTable('listening_sessions', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  startedAt: timestamp('started_at').notNull(),
+  endedAt: timestamp('ended_at').notNull(),
+  trackCount: integer('track_count').notNull(),
+  hourOfDay: integer('hour_of_day').notNull(),
+  dayOfWeek: integer('day_of_week').notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+}, (table) => ({
+  startedAtIdx: index('sessions_started_at_idx').on(table.startedAt),
+}));
+
+// Session-track join, preserves play order inside each session
+export const sessionTracks = pgTable('session_tracks', {
+  sessionId: uuid('session_id').references(() => listeningSessions.id, { onDelete: 'cascade' }).notNull(),
+  trackId: uuid('track_id').references(() => tracks.id).notNull(),
+  playHistoryId: uuid('play_history_id').references(() => playHistory.id).notNull(),
+  position: integer('position').notNull(),
+}, (table) => ({
+  sessionIdx: index('session_tracks_session_idx').on(table.sessionId),
+  trackIdx: index('session_tracks_track_idx').on(table.trackId),
+}));
+
+// Vibe tags - multi-source classifications applied to tracks
+// source: 'llm' (Claude inference) | 'genre' (derived from artist genres) | 'context' (listening time/cohort)
+export const vibeTags = pgTable('vibe_tags', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  trackId: uuid('track_id').references(() => tracks.id).notNull(),
+  tag: varchar('tag', { length: 64 }).notNull(),
+  source: varchar('source', { length: 16 }).notNull(),
+  confidence: real('confidence').notNull().default(1),
+  createdAt: timestamp('created_at').defaultNow(),
+}, (table) => ({
+  trackIdx: index('vibe_tags_track_idx').on(table.trackId),
+  tagIdx: index('vibe_tags_tag_idx').on(table.tag),
+  uniq: uniqueIndex('vibe_tags_unique').on(table.trackId, table.tag, table.source),
+}));
