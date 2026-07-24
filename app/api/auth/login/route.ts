@@ -4,11 +4,16 @@ import { randomBytes } from 'crypto';
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
+  const home = process.env.NEXT_PUBLIC_HOST;
+  if (!home) {
+    return NextResponse.json({ success: false, error: 'NEXT_PUBLIC_HOST is not set' }, { status: 500 });
+  }
+
   const state = randomBytes(16).toString('hex');
   const params = new URLSearchParams({
     client_id: process.env.SPOTIFY_CLIENT_ID!,
     response_type: 'code',
-    redirect_uri: `${process.env.NEXT_PUBLIC_HOST}/api/auth/callback`,
+    redirect_uri: `${home}/api/auth/callback`,
     scope: 'playlist-modify-private playlist-modify-public',
     state,
   });

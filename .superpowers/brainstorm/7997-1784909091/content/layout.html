@@ -1,0 +1,98 @@
+<h2>Which layout fits how you'd build a set?</h2>
+<p class="subtitle">Three ways to arrange seed picking, filters, and the generated set on one page. Wireframes only — colors/polish come later.</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Studio — three panes, everything visible</h3>
+      <p>Left: source browser (Search / Vibes / Sessions tabs). Center: the sequenced set. Right: filters &amp; generate. Like DJ library software.</p>
+      <div class="mockup">
+        <div class="mockup-body">
+          <div style="display:flex;gap:8px;min-height:180px;">
+            <div style="flex:1.2;border:1px dashed #888;padding:6px;font-size:11px;">
+              <div class="mock-nav" style="font-size:10px;">Search | Vibes | Sessions</div>
+              <div class="mock-input" style="width:90%;font-size:10px;" >search 5,180 tracks…</div>
+              <div class="placeholder" style="height:20px;margin:4px 0;">Waking Up From… ⊕</div>
+              <div class="placeholder" style="height:20px;margin:4px 0;">We Enter / State… ⊕</div>
+              <div class="placeholder" style="height:20px;margin:4px 0;">Flumen Aeternum ⊕</div>
+              <div class="label">seeds: 3 selected</div>
+            </div>
+            <div style="flex:1.6;border:1px dashed #888;padding:6px;font-size:11px;">
+              <div class="label">The Set — 51 min</div>
+              <div class="placeholder" style="height:18px;margin:3px 0;">1. In The Waiting Line ▲▼✕⇄</div>
+              <div class="placeholder" style="height:18px;margin:3px 0;">2. Waiting Still ▲▼✕⇄</div>
+              <div class="placeholder" style="height:18px;margin:3px 0;">3. Paradise Circus ▲▼✕⇄</div>
+              <div class="placeholder" style="height:18px;margin:3px 0;">…</div>
+              <button class="mock-button" style="font-size:10px;">Push to Spotify</button>
+            </div>
+            <div style="flex:1;border:1px dashed #888;padding:6px;font-size:11px;">
+              <div class="label">Filters</div>
+              <div class="placeholder" style="height:16px;margin:3px 0;">duration: 45–60 min</div>
+              <div class="placeholder" style="height:16px;margin:3px 0;">genres ▾</div>
+              <div class="placeholder" style="height:16px;margin:3px 0;">vibe tags ▾</div>
+              <div class="placeholder" style="height:16px;margin:3px 0;">popularity range</div>
+              <button class="mock-button" style="font-size:10px;">Generate</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Deck — the set is the hero, sources below</h3>
+      <p>Top: the set as a horizontal timeline with an energy/vibe arc — built for thinking in transitions (and BPM/key later). Bottom: tabbed source browser feeding it.</p>
+      <div class="mockup">
+        <div class="mockup-body">
+          <div style="border:1px dashed #888;padding:6px;font-size:11px;margin-bottom:8px;">
+            <div class="label">The Set — 51 min · energy arc</div>
+            <div style="display:flex;align-items:flex-end;gap:3px;height:52px;margin:6px 0;">
+              <div style="flex:1;height:60%;background:#8884;border:1px solid #888;">1</div>
+              <div style="flex:1;height:75%;background:#8884;border:1px solid #888;">2</div>
+              <div style="flex:1;height:90%;background:#8884;border:1px solid #888;">3</div>
+              <div style="flex:1;height:80%;background:#8884;border:1px solid #888;">4</div>
+              <div style="flex:1;height:65%;background:#8884;border:1px solid #888;">5</div>
+              <div style="flex:1;height:40%;background:#8884;border:1px solid #888;">6</div>
+            </div>
+            <div class="label">drag to reorder · click a slot for swap/remove</div>
+            <button class="mock-button" style="font-size:10px;">Push to Spotify</button>
+          </div>
+          <div style="border:1px dashed #888;padding:6px;font-size:11px;">
+            <div class="mock-nav" style="font-size:10px;">Search | Vibes | Sessions | Filters</div>
+            <div style="display:flex;gap:4px;margin-top:4px;">
+              <div class="placeholder" style="flex:1;height:36px;">track ⊕</div>
+              <div class="placeholder" style="flex:1;height:36px;">track ⊕</div>
+              <div class="placeholder" style="flex:1;height:36px;">track ⊕</div>
+              <div class="placeholder" style="flex:1;height:36px;">track ⊕</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Flow — guided steps, one thing at a time</h3>
+      <p>Step 1: pick seeds (any of the three ways). Step 2: set filters. Step 3: review/edit the set, then push. Simple, mobile-friendly, less at once.</p>
+      <div class="mockup">
+        <div class="mockup-body">
+          <div style="border:1px dashed #888;padding:6px;font-size:11px;">
+            <div class="mock-nav" style="font-size:10px;">● Seeds → ○ Shape → ○ Review</div>
+            <div class="mock-input" style="width:60%;font-size:10px;">search or pick from vibes/sessions…</div>
+            <div style="display:flex;gap:4px;margin:6px 0;">
+              <div class="placeholder" style="flex:1;height:40px;">seed 1 ✓</div>
+              <div class="placeholder" style="flex:1;height:40px;">seed 2 ✓</div>
+              <div class="placeholder" style="flex:1;height:40px;">+ add</div>
+            </div>
+            <button class="mock-button" style="font-size:10px;">Next: shape the set →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

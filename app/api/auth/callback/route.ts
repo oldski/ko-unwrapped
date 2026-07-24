@@ -8,7 +8,10 @@ export async function GET(request: Request) {
   const code = url.searchParams.get('code');
   const state = url.searchParams.get('state');
   const cookieState = request.headers.get('cookie')?.match(/oauth_state=([^;]+)/)?.[1];
-  const home = process.env.NEXT_PUBLIC_HOST!;
+  const home = process.env.NEXT_PUBLIC_HOST;
+  if (!home) {
+    return NextResponse.json({ success: false, error: 'NEXT_PUBLIC_HOST is not set' }, { status: 500 });
+  }
 
   if (!code || !state || state !== cookieState) {
     return NextResponse.redirect(`${home}/curate?error=state`);
@@ -33,6 +36,7 @@ export async function GET(request: Request) {
     });
     if (!tokenRes.ok) throw new Error(`token exchange failed: ${tokenRes.status}`);
     const tokens = await tokenRes.json();
+    if (!tokens.refresh_token) throw new Error('token response missing refresh_token');
 
     const meRes = await fetch('https://api.spotify.com/v1/me', {
       headers: { Authorization: `Bearer ${tokens.access_token}` },
