@@ -3,11 +3,11 @@ import { randomBytes } from 'crypto';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
-  const home = process.env.NEXT_PUBLIC_HOST;
-  if (!home) {
-    return NextResponse.json({ success: false, error: 'NEXT_PUBLIC_HOST is not set' }, { status: 500 });
-  }
+export async function GET(request: Request) {
+  const url = new URL(request.url);
+  const host = request.headers.get('host') ?? url.host;
+  const proto = request.headers.get('x-forwarded-proto') ?? url.protocol.replace(':', '');
+  const home = `${proto}://${host}`;
 
   const state = randomBytes(16).toString('hex');
   const params = new URLSearchParams({

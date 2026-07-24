@@ -8,10 +8,9 @@ export async function GET(request: Request) {
   const code = url.searchParams.get('code');
   const state = url.searchParams.get('state');
   const cookieState = request.headers.get('cookie')?.match(/oauth_state=([^;]+)/)?.[1];
-  const home = process.env.NEXT_PUBLIC_HOST;
-  if (!home) {
-    return NextResponse.json({ success: false, error: 'NEXT_PUBLIC_HOST is not set' }, { status: 500 });
-  }
+  const host = request.headers.get('host') ?? url.host;
+  const proto = request.headers.get('x-forwarded-proto') ?? url.protocol.replace(':', '');
+  const home = `${proto}://${host}`;
 
   if (!code || !state || state !== cookieState) {
     return NextResponse.redirect(`${home}/curate?error=state`);
