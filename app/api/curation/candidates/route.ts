@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { rankCandidates, type RankCandidatesInput } from '@/lib/curation/candidateScorer';
+import { getSession } from '@/lib/auth/getSession';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -12,6 +13,10 @@ function isNumberArray(v: unknown): v is number[] {
 }
 
 export async function POST(request: Request) {
+  const session = await getSession();
+  if (!session) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
   try {
     const body = await request.json();
 
