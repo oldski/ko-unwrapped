@@ -115,6 +115,9 @@ export default function CurateClient({ displayName }: { displayName: string }) {
         setBaseOrder(set);
         setSet(smoothTransitions(set));
       } else {
+        // baseOrder is kept in sync with any swaps made while smoothed was on
+        // (see swapInSet, which mirrors each swap into baseOrder), so this
+        // filter never drops a track that was swapped in during smoothing.
         setSet(baseOrder.filter((t) => set.some((s) => s.trackId === t.trackId)));
       }
       return next;
@@ -139,7 +142,13 @@ export default function CurateClient({ displayName }: { displayName: string }) {
   }, []);
 
   const swapInSet = useCallback((index: number, replacement: SetTrack) => {
-    setSet((prev) => prev.map((t, i) => (i === index ? replacement : t)));
+    setSet((prev) => {
+      const outgoing = prev[index];
+      setBaseOrder((base) =>
+        base.map((t) => (t.trackId === outgoing.trackId ? replacement : t))
+      );
+      return prev.map((t, i) => (i === index ? replacement : t));
+    });
   }, []);
 
   const [pushOpen, setPushOpen] = useState(false);
