@@ -31,4 +31,16 @@ describe('session sealing', () => {
     expect(unsealSession('not-a-token')).toBeNull();
     expect(unsealSession('')).toBeNull();
   });
+
+  it('throws when SESSION_SECRET is missing', () => {
+    const token = sealSession(SESSION);
+    const saved = process.env.SESSION_SECRET;
+    delete process.env.SESSION_SECRET;
+    try {
+      expect(() => sealSession(SESSION)).toThrow('SESSION_SECRET is not set');
+      expect(() => unsealSession(token)).toThrow('SESSION_SECRET is not set');
+    } finally {
+      process.env.SESSION_SECRET = saved;
+    }
+  });
 });
