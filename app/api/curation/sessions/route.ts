@@ -9,7 +9,7 @@ export async function GET() {
     const rows = await db.execute(sql`
       select
         s.id,
-        to_char(s.started_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS') as "startedAt",
+        to_char(s.started_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') as "startedAt",
         s.track_count as "trackCount",
         s.hour_of_day as "hourOfDay",
         s.day_of_week as "dayOfWeek",
@@ -38,6 +38,6 @@ export async function GET() {
     return NextResponse.json({ success: true, sessions: [...rows] });
   } catch (error: any) {
     console.error('❌ curation/sessions error:', error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Internal error' }, { status: 500 });
   }
 }

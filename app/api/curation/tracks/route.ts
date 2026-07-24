@@ -90,6 +90,6 @@ export async function GET(request: Request) {
     return NextResponse.json({ success: true, tracks });
   } catch (error: any) {
     console.error('❌ curation/tracks error:', error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Internal error' }, { status: 500 });
   }
 }
