@@ -48,7 +48,7 @@ function getClient(): Anthropic {
   return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 }
 
-async function fetchUntaggedTracks(limit: number): Promise<TrackInput[]> {
+async function fetchUntaggedTracks(limit: number, onlyIds?: string[]): Promise<TrackInput[]> {
   // Tracks lacking any 'llm'-source vibe_tag row.
   const rows = await db
     .select({
@@ -57,7 +57,11 @@ async function fetchUntaggedTracks(limit: number): Promise<TrackInput[]> {
       album: tracks.albumName,
     })
     .from(tracks)
-    .where(sql`NOT EXISTS (SELECT 1 FROM ${vibeTags} WHERE ${vibeTags.trackId} = ${tracks.id} AND ${vibeTags.source} = 'llm')`)
+    .where(
+      onlyIds
+        ? sql`${tracks.id} IN ${onlyIds} AND NOT EXISTS (SELECT 1 FROM ${vibeTags} WHERE ${vibeTags.trackId} = ${tracks.id} AND ${vibeTags.source} = 'llm')`
+        : sql`NOT EXISTS (SELECT 1 FROM ${vibeTags} WHERE ${vibeTags.trackId} = ${tracks.id} AND ${vibeTags.source} = 'llm')`
+    )
     .limit(limit);
 
   if (!rows.length) return [];
@@ -152,13 +156,7 @@ async function tagBatch(client: Anthropic, batch: TrackInput[]): Promise<{ track
   return [];
 }
 
-/**
- * Tags untagged tracks with LLM-inferred vibe descriptors.
- * Idempotent: only tags tracks that have no 'llm'-source vibe_tag row.
- */
-export async function tagWithLLM(limit = 250): Promise<TagWithLLMResult> {
-  const candidates = await fetchUntaggedTracks(limit);
-
+async function runTagging(candidates: TrackInput[]): Promise<TagWithLLMResult> {
   if (!candidates.length) {
     return { tracksConsidered: 0, tracksTagged: 0, totalTagsApplied: 0, estimatedCostUsd: 0, errors: [] };
   }
@@ -210,5 +208,21 @@ export async function tagWithLLM(limit = 250): Promise<TagWithLLMResult> {
     estimatedCostUsd,
     errors,
   };
+}
+
+/**
+ * Tags untagged tracks with LLM-inferred vibe descriptors.
+ * Idempotent: only tags tracks that have no 'llm'-source vibe_tag row.
+ */
+export async function tagWithLLM(limit = 250): Promise<TagWithLLMResult> {
+  return runTagging(await fetchUntaggedTracks(limit));
+}
+
+/** Tags exactly the given tracks (those still lacking llm tags). Used for discovered tracks. */
+export async function tagTrackIds(trackIds: string[]): Promise<TagWithLLMResult> {
+  if (!trackIds.length) {
+    return { tracksConsidered: 0, tracksTagged: 0, totalTagsApplied: 0, estimatedCostUsd: 0, errors: [] };
+  }
+  return runTagging(await fetchUntaggedTracks(trackIds.length, trackIds));
 }
 
