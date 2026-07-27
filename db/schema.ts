@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, timestamp, integer, real, index, text, uniqueIndex } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, timestamp, integer, real, index, text, uniqueIndex, jsonb } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
 // Tracks table - Unique tracks from Spotify
@@ -104,3 +104,11 @@ export const vibeTags = pgTable('vibe_tags', {
   tagIdx: index('vibe_tags_tag_idx').on(table.tag),
   uniq: uniqueIndex('vibe_tags_unique').on(table.trackId, table.tag, table.source),
 }));
+
+// Discovery cache - memoizes external similarity/resolution lookups (30-day TTL enforced in code)
+export const discoveryCache = pgTable('discovery_cache', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  cacheKey: varchar('cache_key', { length: 300 }).unique().notNull(),
+  payload: jsonb('payload').notNull(),
+  fetchedAt: timestamp('fetched_at').defaultNow().notNull(),
+});

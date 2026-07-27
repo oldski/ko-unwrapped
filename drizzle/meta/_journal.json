@@ -15,6 +15,13 @@
       "when": 1778596258187,
       "tag": "0001_brown_felicia_hardy",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1785182489221,
+      "tag": "0002_loose_shiva",
+      "breakpoints": true
     }
   ]
 }
