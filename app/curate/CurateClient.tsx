@@ -241,6 +241,14 @@ export default function CurateClient({ displayName }: { displayName: string }) {
           {tab === 'sessions' && <SessionsTab onSeedFromSession={seedFromSession} />}
           {tab === 'shape' && <ShapeTab filters={filters} onChange={setFilters} />}
         </section>
+
+        <p className="text-[10px] text-[var(--color-text-secondary)] text-center">
+          BPM &amp; key data by{' '}
+          <a href="https://getsongbpm.com" target="_blank" rel="noreferrer" className="underline hover:text-white">
+            GetSongBPM
+          </a>
+        </p>
+
         {pushOpen && (
           <PushDialog
             set={set}
