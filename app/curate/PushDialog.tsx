@@ -5,9 +5,11 @@ import type { SetTrack } from './types';
 
 export default function PushDialog({
   set,
+  defaultDescription,
   onClose,
 }: {
   set: SetTrack[];
+  defaultDescription: string;
   onClose: () => void;
 }) {
   const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -23,7 +25,7 @@ export default function PushDialog({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name,
-          description: 'Curated with oldski unwrapped',
+          description: defaultDescription,
           spotifyTrackIds: set.map((t) => t.spotifyTrackId),
         }),
       });

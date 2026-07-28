@@ -194,6 +194,8 @@ export default function CurateClient({ displayName }: { displayName: string }) {
             onSwap={swapInSet}
             onPush={() => setPushOpen(true)}
             pushDisabled={set.length === 0}
+            transitions={transitions}
+            narrative={narrative}
           />
           {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
         </section>
@@ -239,7 +241,13 @@ export default function CurateClient({ displayName }: { displayName: string }) {
           {tab === 'sessions' && <SessionsTab onSeedFromSession={seedFromSession} />}
           {tab === 'shape' && <ShapeTab filters={filters} onChange={setFilters} />}
         </section>
-        {pushOpen && <PushDialog set={set} onClose={() => setPushOpen(false)} />}
+        {pushOpen && (
+          <PushDialog
+            set={set}
+            defaultDescription={narrative || 'Curated with oldski unwrapped'}
+            onClose={() => setPushOpen(false)}
+          />
+        )}
       </div>
     </div>
   );

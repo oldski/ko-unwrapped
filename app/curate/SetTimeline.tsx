@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { SetTrack } from './types';
+import type { SetTrack, Transition } from './types';
 
 function fmtDuration(ms: number): string {
   const m = Math.floor(ms / 60000);
@@ -18,6 +18,8 @@ export default function SetTimeline({
   onSwap,
   onPush,
   pushDisabled,
+  transitions,
+  narrative,
 }: {
   set: SetTrack[];
   alternates: SetTrack[];
@@ -28,6 +30,8 @@ export default function SetTimeline({
   onSwap: (index: number, replacement: SetTrack) => void;
   onPush: () => void;
   pushDisabled: boolean;
+  transitions: Transition[];
+  narrative: string;
 }) {
   const [openSlot, setOpenSlot] = useState<number | null>(null);
   const [swapping, setSwapping] = useState(false);
@@ -63,6 +67,10 @@ export default function SetTimeline({
           Push to Spotify
         </button>
       </div>
+
+      {narrative && (
+        <p className="text-xs text-[var(--color-text-secondary)] italic mb-3 max-w-3xl">{narrative}</p>
+      )}
 
       {/* Energy arc timeline */}
       <div className="flex items-end gap-1 h-36 mb-2">
@@ -101,6 +109,11 @@ export default function SetTimeline({
                 className="absolute bottom-0 left-1/2 -translate-x-1/2 w-7 h-7 rounded object-cover opacity-90"
               />
             )}
+            {t.source === 'discovery' && (
+              <span className="absolute top-1 left-1/2 -translate-x-1/2 text-[9px] px-1 rounded bg-[var(--color-vibrant-safe)] text-black font-bold">
+                new
+              </span>
+            )}
           </button>
         ))}
       </div>
@@ -119,6 +132,9 @@ export default function SetTimeline({
             <div className="flex-1 min-w-0">
               <p className="truncate font-semibold">
                 {openSlot + 1}. {set[openSlot].trackName}
+                {set[openSlot].source === 'discovery' && (
+                  <span className="ml-2 text-[10px] align-middle px-1.5 py-0.5 rounded bg-[var(--color-vibrant-safe)] text-black font-bold">NEW TO YOU</span>
+                )}
               </p>
               <p className="truncate text-xs text-[var(--color-text-secondary)]">
                 {set[openSlot].artistNames.join(', ')} · energy {set[openSlot].energy.toFixed(2)}
@@ -141,8 +157,14 @@ export default function SetTimeline({
             </button>
           </div>
           <p className="text-xs text-[var(--color-text-secondary)]">
-            why: {set[openSlot].reasons.join('; ') || 'seed-adjacent pick'}
+            {set[openSlot].placementNote || set[openSlot].reasons.join('; ') || 'seed-adjacent pick'}
           </p>
+          {(() => {
+            const t = transitions.find((tr) => tr.fromIndex === openSlot - 1);
+            return t ? (
+              <p className="mt-1 text-xs text-[var(--color-primary)]">↪ transition in: {t.note}</p>
+            ) : null;
+          })()}
           {swapping && (
             <ul className="mt-3 space-y-1 border-t border-white/10 pt-2">
               {freeAlternates.slice(0, 5).map((a) => (
