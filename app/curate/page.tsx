@@ -37,6 +37,12 @@ export default async function CuratePage({
           >
             Log in with Spotify
           </a>
+          <p className="mt-8 text-[10px] text-[var(--color-text-secondary)]">
+            BPM &amp; key data by{' '}
+            <a href="https://getsongbpm.com" target="_blank" rel="noreferrer" className="underline hover:text-white">
+              GetSongBPM
+            </a>
+          </p>
         </div>
       </div>
     );
