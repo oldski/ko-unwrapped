@@ -30,6 +30,42 @@ async function upsertArtist(spotifyArtistId: string, artistName: string): Promis
   return raced.id;
 }
 
+async function foldBackExistingTrack(
+  spotifyTrackId: string,
+  hit: { spotifyTrackId: string; trackName: string; artistNames: string[]; durationMs: number; popularity: number; albumImageUrl: string | null },
+  reason: string
+): Promise<DiscoveredCandidate | null> {
+  const [existing] = await db
+    .select({
+      id: tracks.id,
+      trackName: tracks.trackName,
+      durationMs: tracks.durationMs,
+      popularity: tracks.popularity,
+      albumImageUrl: tracks.albumImageUrl,
+    })
+    .from(tracks)
+    .where(eq(tracks.spotifyTrackId, spotifyTrackId));
+
+  if (!existing) return null;
+
+  const tagRows = await db
+    .select({ tag: vibeTags.tag })
+    .from(vibeTags)
+    .where(eq(vibeTags.trackId, existing.id));
+
+  return {
+    trackId: existing.id,
+    spotifyTrackId,
+    trackName: existing.trackName,
+    artistNames: hit.artistNames,
+    durationMs: existing.durationMs,
+    popularity: existing.popularity,
+    albumImageUrl: existing.albumImageUrl,
+    tags: tagRows.map((r) => r.tag),
+    reason,
+  };
+}
+
 /**
  * Resolves proposals against Spotify; folds library duplicates back to their
  * existing rows; inserts + vibe-tags genuinely new tracks. Unresolvable
@@ -44,33 +80,9 @@ export async function resolveProposals(proposals: ProposedTrack[]): Promise<Disc
       const hit = await searchTrack(p.trackName, p.artistName);
       if (!hit) continue;
 
-      const [existing] = await db
-        .select({
-          id: tracks.id,
-          trackName: tracks.trackName,
-          durationMs: tracks.durationMs,
-          popularity: tracks.popularity,
-          albumImageUrl: tracks.albumImageUrl,
-        })
-        .from(tracks)
-        .where(eq(tracks.spotifyTrackId, hit.spotifyTrackId));
-
-      if (existing) {
-        const tagRows = await db
-          .select({ tag: vibeTags.tag })
-          .from(vibeTags)
-          .where(eq(vibeTags.trackId, existing.id));
-        out.push({
-          trackId: existing.id,
-          spotifyTrackId: hit.spotifyTrackId,
-          trackName: existing.trackName,
-          artistNames: hit.artistNames,
-          durationMs: existing.durationMs,
-          popularity: existing.popularity,
-          albumImageUrl: existing.albumImageUrl,
-          tags: tagRows.map((r) => r.tag),
-          reason: p.reason,
-        });
+      const folded = await foldBackExistingTrack(hit.spotifyTrackId, hit, p.reason);
+      if (folded) {
+        out.push(folded);
         continue;
       }
 
@@ -86,7 +98,14 @@ export async function resolveProposals(proposals: ProposedTrack[]): Promise<Disc
         })
         .onConflictDoNothing()
         .returning({ id: tracks.id });
-      if (!inserted) continue;
+      if (!inserted) {
+        // Lost the race: another request inserted this track. Fold it back.
+        const raceLost = await foldBackExistingTrack(hit.spotifyTrackId, hit, p.reason);
+        if (raceLost) {
+          out.push(raceLost);
+        }
+        continue;
+      }
 
       if (hit.primaryArtistSpotifyId) {
         const artistId = await upsertArtist(hit.primaryArtistSpotifyId, hit.artistNames[0]);
