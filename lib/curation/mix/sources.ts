@@ -19,6 +19,20 @@ function sanityBpm(n: unknown): number | null {
   return Number.isFinite(v) && v >= 40 && v <= 220 ? v : null;
 }
 
+function cleanGsbQuery(s: string): string {
+  // NFD diacritic-fold (keep case), strip non-letter/number/whitespace/hyphen, collapse whitespace
+  return s
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '') // remove combining diacritics
+    .replace(/[^\p{L}\p{N}\s-]/gu, '') // strip non-letter/number/whitespace/hyphen
+    .replace(/\s+/g, ' ') // collapse whitespace runs
+    .trim();
+}
+
+export function buildGsbLookup(artistName: string, trackName: string): string {
+  return `artist:${cleanGsbQuery(artistName)} song:${cleanGsbQuery(trackName)}`;
+}
+
 export function parseGetSongBpm(
   json: unknown,
   artistName: string
@@ -48,7 +62,7 @@ async function getJson(url: string): Promise<unknown> {
 async function fromGetSongBpm(artistName: string, trackName: string) {
   const key = process.env.GETSONGBPM_API_KEY;
   if (!key) return null;
-  const lookup = encodeURIComponent(`song:${trackName} artist:${artistName}`);
+  const lookup = encodeURIComponent(buildGsbLookup(artistName, trackName));
   const json = await getJson(`${GSB_ROOT}/search/?api_key=${key}&type=both&lookup=${lookup}`);
   return parseGetSongBpm(json, artistName);
 }
