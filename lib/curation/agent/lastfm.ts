@@ -45,7 +45,8 @@ async function similarArtists(artistName: string): Promise<LastfmSuggestion[]> {
       autocorrect: '1',
       limit: String(PER_SEED_LIMIT),
     });
-    const items = data?.similarartists?.artist ?? [];
+    const raw = data?.similarartists?.artist ?? [];
+    const items = Array.isArray(raw) ? raw : [raw];
     return items.map((a: any) => ({ artistName: a.name as string, match: Number(a.match) || 0 }));
   });
 }
@@ -61,7 +62,8 @@ async function similarTracks(artistName: string, trackName: string): Promise<Las
         autocorrect: '1',
         limit: String(PER_SEED_LIMIT),
       });
-      const items = data?.similartracks?.track ?? [];
+      const raw = data?.similartracks?.track ?? [];
+      const items = Array.isArray(raw) ? raw : [raw];
       return items.map((t: any) => ({
         artistName: (t.artist?.name ?? '') as string,
         trackName: t.name as string,
