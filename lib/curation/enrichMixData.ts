@@ -1,7 +1,7 @@
 import { db } from '@/db';
 import { tracks, artists, trackArtists } from '@/db/schema';
 import { eq, isNull, inArray, asc } from 'drizzle-orm';
-import { lookupMix, RateLimitError } from './mix/sources';
+import { lookupMix, RateLimitError, type MixLookup } from './mix/sources';
 
 const THROTTLE_MS = 700;
 
@@ -13,6 +13,26 @@ export interface EnrichMixResult {
   noData: number;     // lookup completed, nothing found (stamped, won't retry)
   rateLimited: boolean;
   errors: string[];   // transient failures (NOT stamped, retried next run)
+}
+
+/** Attempts up to 3 artists per track; stops at first hit or throws on rate limit/transient error */
+async function tryArtistsForTrack(
+  artists: string[],
+  trackName: string
+): Promise<MixLookup> {
+  for (const artist of artists.slice(0, 3)) {
+    try {
+      const mix = await lookupMix(artist, trackName);
+      if (mix.bpm !== null || mix.camelotKey !== null) {
+        return mix; // hit; return immediately
+      }
+    } catch (e) {
+      if (e instanceof RateLimitError) throw e; // propagate rate limit to abort batch
+      throw e; // propagate transient error to abort this track (no stamp)
+    }
+  }
+  // no artist hit; return all-null (will be stamped)
+  return { bpm: null, camelotKey: null, source: null };
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -42,17 +62,16 @@ export async function enrichMixData(limit: number): Promise<EnrichMixResult> {
     .innerJoin(artists, eq(artists.id, trackArtists.artistId))
     .where(inArray(trackArtists.trackId, rows.map((r) => r.id)))
     .orderBy(asc(artists.artistName));
-  const artistByTrack = new Map<string, string>();
+  const artistsByTrack = new Map<string, string[]>();
   for (const a of artistRows) {
-    if (!artistByTrack.has(a.trackId)) artistByTrack.set(a.trackId, a.artistName);
+    if (!artistsByTrack.has(a.trackId)) artistsByTrack.set(a.trackId, []);
+    artistsByTrack.get(a.trackId)!.push(a.artistName);
   }
 
   for (const row of rows) {
-    const artistName = artistByTrack.get(row.id);
+    const trackArtists = artistsByTrack.get(row.id) ?? [];
     try {
-      const mix = artistName
-        ? await lookupMix(artistName, row.trackName)
-        : { bpm: null, camelotKey: null, source: null };
+      const mix = await tryArtistsForTrack(trackArtists, row.trackName);
       await db
         .update(tracks)
         .set({
@@ -72,7 +91,7 @@ export async function enrichMixData(limit: number): Promise<EnrichMixResult> {
         result.errors.push(`rate limited: ${e.message}`);
         break; // abort batch; un-stamped rows retry next run
       }
-      result.errors.push(`${row.trackName}: ${e.message}`); // transient; not stamped
+      result.errors.push(`${row.trackName}: ${e.message}`); // transient error on an artist; not stamped
     }
     await sleep(THROTTLE_MS);
   }

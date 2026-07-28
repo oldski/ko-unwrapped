@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseGetSongBpm, parseDeezerTrack, buildGsbLookup } from '@/lib/curation/mix/sources';
+import { parseGetSongBpm, parseDeezerTrack, buildGsbLookup, cleanTrackTitle } from '@/lib/curation/mix/sources';
 
 const gsbFixture = {
   search: [
@@ -68,5 +68,26 @@ describe('buildGsbLookup', () => {
 
   it('collapses runs of whitespace to single spaces', () => {
     expect(buildGsbLookup('Artist  With  Spaces', 'Track  Name')).toMatch(/^artist:Artist With Spaces song:Track Name$/);
+  });
+});
+
+describe('cleanTrackTitle', () => {
+  it('strips version suffix after first space-dash-space', () => {
+    expect(cleanTrackTitle('Midnight Drive - 2023 Remaster')).toBe('Midnight Drive');
+    expect(cleanTrackTitle('Back That Up To The Beat - sped up version')).toBe('Back That Up To The Beat');
+  });
+
+  it('leaves plain title unchanged when no suffix', () => {
+    expect(cleanTrackTitle('Simple Track')).toBe('Simple Track');
+    expect(cleanTrackTitle('Single Word')).toBe('Single Word');
+  });
+
+  it('cuts only at the first space-dash-space occurrence', () => {
+    expect(cleanTrackTitle('A - B - C')).toBe('A');
+  });
+
+  it('leaves hyphenated words without surrounding spaces untouched', () => {
+    expect(cleanTrackTitle('Anti-Hero')).toBe('Anti-Hero');
+    expect(cleanTrackTitle('Rock-Pop Song')).toBe('Rock-Pop Song');
   });
 });

@@ -14,6 +14,11 @@ function fold(s: string): string {
   return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 }
 
+export function cleanTrackTitle(title: string): string {
+  const idx = title.indexOf(' - ');
+  return idx === -1 ? title : title.slice(0, idx).trim();
+}
+
 function sanityBpm(n: unknown): number | null {
   const v = Number(n);
   return Number.isFinite(v) && v >= 40 && v <= 220 ? v : null;
@@ -30,7 +35,7 @@ function cleanGsbQuery(s: string): string {
 }
 
 export function buildGsbLookup(artistName: string, trackName: string): string {
-  return `artist:${cleanGsbQuery(artistName)} song:${cleanGsbQuery(trackName)}`;
+  return `artist:${cleanGsbQuery(artistName)} song:${cleanGsbQuery(cleanTrackTitle(trackName))}`;
 }
 
 export function parseGetSongBpm(
@@ -68,7 +73,8 @@ async function fromGetSongBpm(artistName: string, trackName: string) {
 }
 
 async function fromDeezer(artistName: string, trackName: string): Promise<number | null> {
-  const q = encodeURIComponent(`artist:"${artistName}" track:"${trackName}"`);
+  const cleanedTrackName = cleanTrackTitle(trackName);
+  const q = encodeURIComponent(`artist:"${artistName}" track:"${cleanedTrackName}"`);
   const search = (await getJson(`https://api.deezer.com/search?q=${q}`)) as any;
   const want = fold(artistName);
   const hit = (search?.data ?? []).find((d: any) => fold(String(d?.artist?.name ?? '')) === want);
