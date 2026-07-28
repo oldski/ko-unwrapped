@@ -29,6 +29,8 @@ async function seedCandidates(seedTrackIds: string[]): Promise<CandidateTrack[]>
       durationMs: tracks.durationMs,
       popularity: tracks.popularity,
       albumImageUrl: tracks.albumImageUrl,
+      bpm: tracks.bpm,
+      camelotKey: tracks.camelotKey,
     })
     .from(tracks)
     .where(inArray(tracks.id, seedTrackIds));
