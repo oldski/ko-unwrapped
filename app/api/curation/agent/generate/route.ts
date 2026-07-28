@@ -74,10 +74,22 @@ function toAgentTracks(
   });
 }
 
-function fallbackResult(ranked: Awaited<ReturnType<typeof rankCandidates>>, reason: string): AgentGenerateResult {
+type AgentGenerateResultWithAlternates = AgentGenerateResult & { alternates: AgentTrack[] };
+
+function fallbackResult(
+  ranked: Awaited<ReturnType<typeof rankCandidates>>,
+  reason: string
+): AgentGenerateResultWithAlternates {
   return {
     mode: 'fallback',
     tracks: ranked.tracks.map((t) => ({
+      ...t,
+      energy: 0.5,
+      score: t.score,
+      source: 'library' as const,
+      placementNote: t.reasons.join('; '),
+    })),
+    alternates: ranked.alternates.map((t) => ({
       ...t,
       energy: 0.5,
       score: t.score,
@@ -161,9 +173,21 @@ export async function POST(request: Request) {
     try {
       const set = await directSet({ seeds: buildPool([], seeds, []), pool, preset, durationTargetMs });
       const agentTracks = toAgentTracks(set.trackIds, pool, set.placementNotes);
-      const result: AgentGenerateResult = {
+      const usedIds = new Set(set.trackIds);
+      const leftovers: AgentTrack[] = pool
+        .filter((p) => !usedIds.has(p.trackId))
+        .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
+        .slice(0, 15)
+        .map((p) => ({
+          ...p,
+          source: p.source === 'discovery' ? 'discovery' : ('library' as const),
+          placementNote: p.discoveryReason ?? '',
+          reasons: [],
+        }));
+      const result: AgentGenerateResultWithAlternates = {
         mode: 'agent',
         tracks: agentTracks,
+        alternates: leftovers,
         transitions: set.transitions,
         narrative: set.narrative,
         totalDurationMs: agentTracks.reduce((s, t) => s + t.durationMs, 0),

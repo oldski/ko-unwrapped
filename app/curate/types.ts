@@ -21,7 +21,16 @@ export interface SetTrack {
   score: number;
   reasons: string[];
   energy: number;
+  source: 'library' | 'discovery';
+  placementNote: string;
 }
+
+export interface Transition {
+  fromIndex: number;
+  note: string;
+}
+
+export type Preset = 'familiar' | 'balanced' | 'adventurous';
 
 export interface Filters {
   durationMinMinutes: number;

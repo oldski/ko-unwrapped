@@ -3,7 +3,7 @@
 import { useCallback, useState } from 'react';
 import { energyFromTags } from '@/lib/curation/energy';
 import { smoothTransitions } from '@/lib/curation/smoothTransitions';
-import type { Filters, SetTrack, TrackHit } from './types';
+import type { Filters, Preset, SetTrack, TrackHit, Transition } from './types';
 import { DEFAULT_FILTERS } from './types';
 import SeedTray from './SeedTray';
 import SearchTab from './SearchTab';
@@ -24,6 +24,11 @@ export default function CurateClient({ displayName }: { displayName: string }) {
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [preset, setPreset] = useState<Preset>('balanced');
+  const [transitions, setTransitions] = useState<Transition[]>([]);
+  const [narrative, setNarrative] = useState('');
+  const [fallbackNotice, setFallbackNotice] = useState<string | null>(null);
+  const [progressStage, setProgressStage] = useState<string | null>(null);
 
   const addSeed = useCallback((t: TrackHit) => {
     setSeeds((prev) => (prev.some((s) => s.trackId === t.trackId) ? prev : [...prev, t]));
@@ -68,12 +73,17 @@ export default function CurateClient({ displayName }: { displayName: string }) {
     if (seeds.length === 0) return;
     setGenerating(true);
     setError(null);
+    setFallbackNotice(null);
+    setProgressStage('finding candidates…');
+    const stages = ['discovering new music…', 'sequencing the set…'];
+    const timers = stages.map((s, i) => setTimeout(() => setProgressStage(s), 4000 * (i + 1)));
     try {
-      const res = await fetch('/api/curation/candidates', {
+      const res = await fetch('/api/curation/agent/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           seedTrackIds: seeds.map((s) => s.trackId),
+          preset,
           durationTargetMs: [
             filters.durationMinMinutes * 60_000,
             filters.durationMaxMinutes * 60_000,
@@ -82,7 +92,6 @@ export default function CurateClient({ displayName }: { displayName: string }) {
           ...(filters.genreAllow.length ? { genreAllow: filters.genreAllow } : {}),
           ...(filters.genreDeny.length ? { genreDeny: filters.genreDeny } : {}),
           excludeTrackIds: excluded,
-          alternatesCount: 15,
         }),
       });
       if (res.status === 401) {
@@ -91,20 +100,24 @@ export default function CurateClient({ displayName }: { displayName: string }) {
       }
       const data = await res.json();
       if (!data.success) throw new Error(data.error ?? 'Generation failed');
-      const withEnergy = (t: Omit<SetTrack, 'energy'>): SetTrack => ({
-        ...t,
-        energy: energyFromTags(t.tags),
-      });
+      const withEnergy = (t: any): SetTrack => ({ ...t, energy: energyFromTags(t.tags) });
       setSet(data.tracks.map(withEnergy));
-      setAlternates(data.alternates.map(withEnergy));
+      setAlternates((data.alternates ?? []).map(withEnergy));
+      setTransitions(data.transitions ?? []);
+      setNarrative(data.narrative ?? '');
+      if (data.mode === 'fallback') {
+        setFallbackNotice('Agent unavailable — classic sequencing used.');
+      }
       setSmoothed(false);
       setBaseOrder([]);
     } catch (e: any) {
       setError(e.message);
     } finally {
+      timers.forEach(clearTimeout);
+      setProgressStage(null);
       setGenerating(false);
     }
-  }, [seeds, filters, excluded]);
+  }, [seeds, filters, excluded, preset]);
 
   const [smoothed, setSmoothed] = useState(false);
   const [baseOrder, setBaseOrder] = useState<SetTrack[]>([]);
@@ -182,7 +195,22 @@ export default function CurateClient({ displayName }: { displayName: string }) {
           {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
         </section>
 
-        <SeedTray seeds={seeds} onRemove={removeSeed} onGenerate={generate} generating={generating} />
+        <SeedTray
+          seeds={seeds}
+          onRemove={removeSeed}
+          onGenerate={generate}
+          generating={generating}
+          preset={preset}
+          onPresetChange={setPreset}
+          progressLabel={progressStage}
+        />
+
+        {fallbackNotice && (
+          <div className="flex items-center gap-2 text-xs text-amber-300/90 bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2">
+            <span>{fallbackNotice}</span>
+            <button onClick={() => setFallbackNotice(null)} className="ml-auto hover:text-white">✕</button>
+          </div>
+        )}
 
         <nav className="flex gap-1">
           {(['search', 'vibes', 'sessions', 'shape'] as const).map((t) => (
