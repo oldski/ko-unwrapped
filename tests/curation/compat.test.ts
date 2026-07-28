@@ -40,4 +40,15 @@ describe('harmonicCompat', () => {
     // one-sided data: only the available component counts
     expect(harmonicCompat(mix(120, null), mix(120, null)).score).toBe(1);
   });
+
+  it('handles zero bpm gracefully (no NaN/Infinity)', () => {
+    const c = harmonicCompat(mix(0, null), mix(120, null));
+    expect(c.bpmDelta).toBeNull(); // Can't compute ratio with zero denominator
+    expect(Number.isFinite(c.score)).toBe(true);
+    expect(c.score).toBe(0.5); // No data on either side, neutral
+    // Reverse direction
+    const c2 = harmonicCompat(mix(120, null), mix(0, null));
+    expect(c2.bpmDelta).toBeNull();
+    expect(Number.isFinite(c2.score)).toBe(true);
+  });
 });

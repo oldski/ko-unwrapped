@@ -20,10 +20,13 @@ function parseCamelot(code: string): { num: number; letter: 'A' | 'B' } | null {
 
 export function harmonicCompat(a: MixInfo, b: MixInfo): MixCompat {
   let bpmDelta: number | null = null;
-  if (a.bpm && b.bpm) {
-    const ratios = [b.bpm / a.bpm, (b.bpm * 2) / a.bpm, b.bpm / (a.bpm * 2)];
-    const best = ratios.reduce((r, x) => (Math.abs(x - 1) < Math.abs(r - 1) ? x : r));
-    bpmDelta = (best - 1) * 100;
+  if (a.bpm != null && b.bpm != null) {
+    // Avoid division by zero: if either BPM is 0, can't compute meaningful ratios
+    if (a.bpm !== 0 && b.bpm !== 0) {
+      const ratios = [b.bpm / a.bpm, (b.bpm * 2) / a.bpm, b.bpm / (a.bpm * 2)];
+      const best = ratios.reduce((r, x) => (Math.abs(x - 1) < Math.abs(r - 1) ? x : r));
+      bpmDelta = (best - 1) * 100;
+    }
   }
 
   let keyRelation: MixCompat['keyRelation'] = null;
