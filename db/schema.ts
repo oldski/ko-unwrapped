@@ -10,6 +10,11 @@ export const tracks = pgTable('tracks', {
   albumName: varchar('album_name', { length: 500 }),
   albumImageUrl: varchar('album_image_url', { length: 1000 }),
   popularity: integer('popularity'),
+  // Mix-readiness data (Phase 2): from GetSongBPM/Deezer, see lib/curation/enrichMixData.ts
+  bpm: real('bpm'),
+  camelotKey: varchar('camelot_key', { length: 3 }),
+  mixSource: varchar('mix_source', { length: 20 }),
+  mixCheckedAt: timestamp('mix_checked_at'),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 }, (table) => ({
