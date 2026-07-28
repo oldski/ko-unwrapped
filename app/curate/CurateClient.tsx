@@ -100,7 +100,10 @@ export default function CurateClient({ displayName }: { displayName: string }) {
       }
       const data = await res.json();
       if (!data.success) throw new Error(data.error ?? 'Generation failed');
-      const withEnergy = (t: any): SetTrack => ({ ...t, energy: energyFromTags(t.tags) });
+      const withEnergy = (t: Omit<SetTrack, 'energy'>): SetTrack => ({
+        ...t,
+        energy: energyFromTags(t.tags),
+      });
       setSet(data.tracks.map(withEnergy));
       setAlternates((data.alternates ?? []).map(withEnergy));
       setTransitions(data.transitions ?? []);

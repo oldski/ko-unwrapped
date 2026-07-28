@@ -158,7 +158,7 @@ export default function SetTimeline({
                       {a.trackName} — {a.artistNames.join(', ')}
                     </span>
                     <span className="text-[10px] text-[var(--color-text-secondary)]">
-                      score {a.score.toFixed(2)} · energy {a.energy.toFixed(2)}
+                      {a.score != null ? `score ${a.score.toFixed(2)}` : 'new'} · energy {a.energy.toFixed(2)}
                     </span>
                   </button>
                 </li>

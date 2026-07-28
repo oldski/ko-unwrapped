@@ -18,7 +18,7 @@ export interface SetTrack {
   popularity: number | null;
   albumImageUrl: string | null;
   tags: string[];
-  score: number;
+  score: number | null;
   reasons: string[];
   energy: number;
   source: 'library' | 'discovery';
