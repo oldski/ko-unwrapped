@@ -38,3 +38,28 @@ describe('smoothTransitions', () => {
     expect(out.map((i) => i.id)).toEqual(['open', 'near', 'far', 'outro']);
   });
 });
+
+describe('harmonic blend', () => {
+  const t = (id: string, energy: number, bpm: number | null, camelotKey: string | null) => ({
+    id, energy, bpm, camelotKey,
+  });
+
+  it('prefers the harmonic neighbor over an equal-energy clash', () => {
+    // both b and c are equidistant in energy from the opener; only b is key-compatible
+    const opener = t('open', 0.5, 120, '8A');
+    const clash = t('clash', 0.6, 121, '3A');
+    const harmonic = t('harm', 0.4, 122, '9A');
+    const outro = t('out', 0.2, 100, '5A');
+    const out = smoothTransitions([opener, clash, harmonic, outro]).map((x) => x.id);
+    expect(out).toEqual(['open', 'harm', 'clash', 'out']);
+  });
+
+  it('regression: identical to energy-only ordering when no mix data', () => {
+    const bare = (id: string, energy: number) => ({ id, energy });
+    const items = [bare('a', 0.5), bare('b', 0.9), bare('c', 0.55), bare('d', 0.2)];
+    const withNulls = items.map((x) => ({ ...x, bpm: null, camelotKey: null }));
+    expect(smoothTransitions(withNulls).map((x) => x.id)).toEqual(
+      smoothTransitions(items).map((x) => x.id)
+    );
+  });
+});
