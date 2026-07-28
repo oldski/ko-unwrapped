@@ -9,6 +9,7 @@ export interface EnrichMixResult {
   considered: number;
   enriched: number;   // got bpm + key
   bpmOnly: number;    // got bpm, no key
+  keyOnly: number;    // got camelotKey, no bpm
   noData: number;     // lookup completed, nothing found (stamped, won't retry)
   rateLimited: boolean;
   errors: string[];   // transient failures (NOT stamped, retried next run)
@@ -28,6 +29,7 @@ export async function enrichMixData(limit: number): Promise<EnrichMixResult> {
     considered: rows.length,
     enriched: 0,
     bpmOnly: 0,
+    keyOnly: 0,
     noData: 0,
     rateLimited: false,
     errors: [],
@@ -38,7 +40,8 @@ export async function enrichMixData(limit: number): Promise<EnrichMixResult> {
     .select({ trackId: trackArtists.trackId, artistName: artists.artistName })
     .from(trackArtists)
     .innerJoin(artists, eq(artists.id, trackArtists.artistId))
-    .where(inArray(trackArtists.trackId, rows.map((r) => r.id)));
+    .where(inArray(trackArtists.trackId, rows.map((r) => r.id)))
+    .orderBy(asc(artists.artistName));
   const artistByTrack = new Map<string, string>();
   for (const a of artistRows) {
     if (!artistByTrack.has(a.trackId)) artistByTrack.set(a.trackId, a.artistName);
@@ -61,6 +64,7 @@ export async function enrichMixData(limit: number): Promise<EnrichMixResult> {
         .where(eq(tracks.id, row.id));
       if (mix.bpm !== null && mix.camelotKey !== null) result.enriched++;
       else if (mix.bpm !== null) result.bpmOnly++;
+      else if (mix.camelotKey !== null) result.keyOnly++;
       else result.noData++;
     } catch (e: any) {
       if (e instanceof RateLimitError) {
