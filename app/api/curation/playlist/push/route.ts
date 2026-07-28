@@ -21,6 +21,14 @@ export async function POST(request: Request) {
       );
     }
 
+    const rawDescription =
+      typeof body.description === 'string' && body.description.trim()
+        ? body.description.trim()
+        : 'Curated with oldski unwrapped';
+    // Spotify caps playlist descriptions at 300 characters
+    const description =
+      rawDescription.length > 300 ? `${rawDescription.slice(0, 299)}…` : rawDescription;
+
     const accessToken = await accessTokenFromRefresh(session.refreshToken);
     const headers = {
       Authorization: `Bearer ${accessToken}`,
@@ -32,7 +40,7 @@ export async function POST(request: Request) {
       headers,
       body: JSON.stringify({
         name,
-        description: typeof body.description === 'string' ? body.description : 'Curated with oldski unwrapped',
+        description,
         public: false,
       }),
     });
