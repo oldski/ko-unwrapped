@@ -16,6 +16,8 @@ export interface PoolTrack {
   durationMs: number;
   popularity: number | null;
   albumImageUrl: string | null;
+  bpm: number | null;
+  camelotKey: string | null;
   tags: string[];
   energy: number;
   score: number | null;           // null for discovered tracks (no play-history signals)

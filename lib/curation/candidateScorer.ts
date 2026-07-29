@@ -41,6 +41,8 @@ export interface CandidateTrack {
   durationMs: number;
   popularity: number | null;
   albumImageUrl: string | null;
+  bpm: number | null;
+  camelotKey: string | null;
   tags: string[];
   score: number;
   reasons: string[];
@@ -69,6 +71,8 @@ interface TrackRow {
   durationMs: number;
   popularity: number | null;
   albumImageUrl: string | null;
+  bpm: number | null;
+  camelotKey: string | null;
 }
 
 function jaccard(a: Set<string>, b: Set<string>): number {
@@ -121,6 +125,8 @@ export async function rankCandidates(input: RankCandidatesInput): Promise<RankCa
       durationMs: tracks.durationMs,
       popularity: tracks.popularity,
       albumImageUrl: tracks.albumImageUrl,
+      bpm: tracks.bpm,
+      camelotKey: tracks.camelotKey,
     })
     .from(tracks);
 
@@ -421,6 +427,8 @@ export async function rankCandidates(input: RankCandidatesInput): Promise<RankCa
       durationMs: t.durationMs,
       popularity: t.popularity,
       albumImageUrl: t.albumImageUrl,
+      bpm: t.bpm,
+      camelotKey: t.camelotKey,
       tags: [...(tagsByTrack.get(c.trackId) ?? [])],
       score: Number(c.score.toFixed(4)),
       reasons: topReasons(c),

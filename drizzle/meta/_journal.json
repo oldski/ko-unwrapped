@@ -22,6 +22,13 @@
       "when": 1785182489221,
       "tag": "0002_loose_shiva",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1785260932738,
+      "tag": "0003_sudden_wolfpack",
+      "breakpoints": true
     }
   ]
 }

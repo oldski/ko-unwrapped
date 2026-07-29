@@ -10,6 +10,8 @@ const pt = (id: string, durationMs = 180_000): PoolTrack => ({
   durationMs,
   popularity: 30,
   albumImageUrl: null,
+  bpm: null,
+  camelotKey: null,
   tags: [],
   energy: 0.5,
   score: 0.4,

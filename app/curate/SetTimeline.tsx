@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { harmonicCompat } from '@/lib/curation/mix/compat';
 import type { SetTrack, Transition } from './types';
 
 function fmtDuration(ms: number): string {
@@ -138,6 +139,8 @@ export default function SetTimeline({
               </p>
               <p className="truncate text-xs text-[var(--color-text-secondary)]">
                 {set[openSlot].artistNames.join(', ')} · energy {set[openSlot].energy.toFixed(2)}
+                {set[openSlot].bpm != null && <> · {Math.round(set[openSlot].bpm!)} BPM</>}
+                {set[openSlot].camelotKey && <> · {set[openSlot].camelotKey}</>}
               </p>
             </div>
             <button
@@ -161,9 +164,42 @@ export default function SetTimeline({
           </p>
           {(() => {
             const t = transitions.find((tr) => tr.fromIndex === openSlot - 1);
-            return t ? (
-              <p className="mt-1 text-xs text-[var(--color-primary)]">↪ transition in: {t.note}</p>
-            ) : null;
+            const prev = openSlot > 0 ? set[openSlot - 1] : null;
+            const cur = set[openSlot];
+            const compat =
+              prev && (prev.bpm != null || prev.camelotKey) && (cur.bpm != null || cur.camelotKey)
+                ? harmonicCompat(
+                    { bpm: prev.bpm, camelotKey: prev.camelotKey },
+                    { bpm: cur.bpm, camelotKey: cur.camelotKey }
+                  )
+                : null;
+            const chipClass =
+              compat?.keyRelation === 'clash'
+                ? 'bg-red-500/15 text-red-300'
+                : compat?.keyRelation === 'energy-boost'
+                  ? 'bg-amber-500/15 text-amber-300'
+                  : 'bg-emerald-500/15 text-emerald-300';
+            const chipLabel = compat
+              ? [
+                  prev?.camelotKey && cur.camelotKey ? `${prev.camelotKey}→${cur.camelotKey}` : null,
+                  compat.bpmDelta != null
+                    ? `${compat.bpmDelta >= 0 ? '+' : ''}${compat.bpmDelta.toFixed(1)}%`
+                    : null,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')
+              : null;
+            if (!t && !chipLabel) return null;
+            return (
+              <p className="mt-1 text-xs text-[var(--color-primary)]">
+                {t && <>↪ transition in: {t.note}</>}
+                {chipLabel && (
+                  <span className={`ml-2 px-1.5 py-0.5 rounded text-[10px] font-semibold ${chipClass}`}>
+                    ⚡ {chipLabel}
+                  </span>
+                )}
+              </p>
+            );
           })()}
           {swapping && (
             <ul className="mt-3 space-y-1 border-t border-white/10 pt-2">

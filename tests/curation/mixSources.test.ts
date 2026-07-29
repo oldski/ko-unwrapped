@@ -1,0 +1,125 @@
+import { describe, it, expect } from 'vitest';
+import {
+  parseGetSongBpm,
+  parseDeezerTrack,
+  buildGsbLookup,
+  cleanTrackTitle,
+  classifyHttpStatus,
+} from '@/lib/curation/mix/sources';
+
+const gsbFixture = {
+  search: [
+    {
+      song_title: 'Near Light',
+      tempo: '122',
+      key_of: 'F♯m',
+      artist: { name: 'Ólafur Arnalds' },
+    },
+    { song_title: 'Other', tempo: '90', key_of: 'C', artist: { name: 'Somebody Else' } },
+  ],
+};
+
+describe('parseGetSongBpm', () => {
+  it('takes the first artist-matched result, folding diacritics', () => {
+    const r = parseGetSongBpm(gsbFixture, 'Olafur Arnalds');
+    expect(r).toEqual({ bpm: 122, camelotKey: '11A' });
+  });
+
+  it('rejects results whose artist does not match', () => {
+    expect(parseGetSongBpm(gsbFixture, 'Röyksopp')).toBeNull();
+  });
+
+  it('handles the no-result error shape and garbage', () => {
+    expect(parseGetSongBpm({ search: { error: 'no result' } }, 'X')).toBeNull();
+    expect(parseGetSongBpm(null, 'X')).toBeNull();
+  });
+
+  it('null key and out-of-range bpm are dropped, not fatal', () => {
+    const r = parseGetSongBpm(
+      { search: [{ song_title: 'T', tempo: '300', key_of: '?', artist: { name: 'A' } }] },
+      'A'
+    );
+    expect(r).toEqual({ bpm: null, camelotKey: null });
+  });
+});
+
+describe('parseDeezerTrack', () => {
+  it('extracts bpm and treats 0 as no data', () => {
+    expect(parseDeezerTrack({ bpm: 124.5 })).toBe(124.5);
+    expect(parseDeezerTrack({ bpm: 0 })).toBeNull();
+    expect(parseDeezerTrack({})).toBeNull();
+  });
+
+  it('applies the sanity range', () => {
+    expect(parseDeezerTrack({ bpm: 20 })).toBeNull();
+    expect(parseDeezerTrack({ bpm: 500 })).toBeNull();
+  });
+});
+
+describe('buildGsbLookup', () => {
+  it('orders artist first, then song', () => {
+    const result = buildGsbLookup('Artist', 'Track');
+    expect(result).toBe('artist:Artist song:Track');
+  });
+
+  it('folds diacritics in artist and track names', () => {
+    expect(buildGsbLookup('Röyksopp', 'Song')).toMatch(/^artist:Royksopp song:Song$/);
+    expect(buildGsbLookup('Ólafur Arnalds', 'Near Light')).toMatch(/^artist:Olafur Arnalds song:Near Light$/);
+  });
+
+  it('strips punctuation from artist and track names', () => {
+    expect(buildGsbLookup('Artist', 'What Else Is There?')).toMatch(/^artist:Artist song:What Else Is There$/);
+    expect(buildGsbLookup('The Band & Co', 'Me&Youphoria')).toMatch(/^artist:The Band Co song:MeYouphoria$/);
+  });
+
+  it('collapses runs of whitespace to single spaces', () => {
+    expect(buildGsbLookup('Artist  With  Spaces', 'Track  Name')).toMatch(/^artist:Artist With Spaces song:Track Name$/);
+  });
+});
+
+describe('cleanTrackTitle', () => {
+  it('strips version suffix after first space-dash-space', () => {
+    expect(cleanTrackTitle('Midnight Drive - 2023 Remaster')).toBe('Midnight Drive');
+    expect(cleanTrackTitle('Back That Up To The Beat - sped up version')).toBe('Back That Up To The Beat');
+  });
+
+  it('leaves plain title unchanged when no suffix', () => {
+    expect(cleanTrackTitle('Simple Track')).toBe('Simple Track');
+    expect(cleanTrackTitle('Single Word')).toBe('Single Word');
+  });
+
+  it('cuts only at the first space-dash-space occurrence', () => {
+    expect(cleanTrackTitle('A - B - C')).toBe('A');
+  });
+
+  it('leaves hyphenated words without surrounding spaces untouched', () => {
+    expect(cleanTrackTitle('Anti-Hero')).toBe('Anti-Hero');
+    expect(cleanTrackTitle('Rock-Pop Song')).toBe('Rock-Pop Song');
+  });
+});
+
+describe('classifyHttpStatus', () => {
+  it('treats 2xx as ok', () => {
+    expect(classifyHttpStatus(200)).toBe('ok');
+    expect(classifyHttpStatus(204)).toBe('ok');
+    expect(classifyHttpStatus(299)).toBe('ok');
+  });
+
+  it('treats 429 as rate-limited', () => {
+    expect(classifyHttpStatus(429)).toBe('rate-limited');
+  });
+
+  it('treats other 4xx as permanent', () => {
+    expect(classifyHttpStatus(400)).toBe('permanent');
+    expect(classifyHttpStatus(401)).toBe('permanent');
+    expect(classifyHttpStatus(404)).toBe('permanent');
+    expect(classifyHttpStatus(499)).toBe('permanent');
+  });
+
+  it('treats 5xx and other statuses as transient', () => {
+    expect(classifyHttpStatus(500)).toBe('transient');
+    expect(classifyHttpStatus(503)).toBe('transient');
+    expect(classifyHttpStatus(302)).toBe('transient');
+    expect(classifyHttpStatus(100)).toBe('transient');
+  });
+});

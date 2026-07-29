@@ -15,6 +15,7 @@ const SYSTEM = `You are a set director for a personal DJ-set builder. You receiv
 Craft rules:
 - Think like a DJ: an intentional opener, an arc (build, peak, comedown), and a closing track that lands.
 - Adjacent tracks should flow: use the energy values (0-1) and vibe tags to avoid jarring jumps unless deliberate.
+- When bpm/key data is present, prefer adjacent tracks within ±6% BPM (double/half-time counts as matching) and harmonically compatible Camelot keys (same code, ±1 same letter with 12↔1 wrap, or same number other letter). Missing data is not a penalty. Call out deliberate rule-breaks in the transition note.
 - Seeds are candidates too — place them where they serve the arc, or omit them.
 - Respect the requested discovery ratio approximately: discovered tracks are marked source=discovery.
 - Avoid clumping one artist's tracks together.
@@ -35,7 +36,7 @@ export async function directSet(args: {
   const poolLines = pool
     .map(
       (p) =>
-        `- id:${p.trackId} | "${p.trackName}" by ${p.artistNames.join(', ')} | source:${p.source} | energy:${p.energy.toFixed(2)} | duration_ms:${p.durationMs} | popularity:${p.popularity ?? 'n/a'} | score:${p.score ?? 'n/a'} | tags:${p.tags.join(',') || 'none'}${p.discoveryReason ? ` | why-suggested:${p.discoveryReason}` : ''}`
+        `- id:${p.trackId} | "${p.trackName}" by ${p.artistNames.join(', ')} | source:${p.source} | energy:${p.energy.toFixed(2)}${p.bpm != null ? ` | bpm:${Math.round(p.bpm)}` : ''}${p.camelotKey ? ` | key:${p.camelotKey}` : ''} | duration_ms:${p.durationMs} | popularity:${p.popularity ?? 'n/a'} | score:${p.score ?? 'n/a'} | tags:${p.tags.join(',') || 'none'}${p.discoveryReason ? ` | why-suggested:${p.discoveryReason}` : ''}`
     )
     .join('\n');
 

@@ -10,6 +10,8 @@ const cand = (id: string, over: Partial<CandidateTrack> = {}): CandidateTrack =>
   durationMs: 200_000,
   popularity: 40,
   albumImageUrl: null,
+  bpm: null,
+  camelotKey: null,
   tags: ['electronic', 'high-energy'],
   score: 0.5,
   reasons: ['r'],
@@ -30,13 +32,17 @@ const disc = (id: string) => ({
 
 describe('buildPool', () => {
   it('labels sources and computes energy from tags', () => {
-    const pool = buildPool([cand('a')], [cand('s')], [disc('d')]);
+    const pool = buildPool([cand('a', { bpm: 122, camelotKey: '8A' })], [cand('s')], [disc('d')]);
     const byId = new Map(pool.map((p) => [p.trackId, p]));
     expect(byId.get('a')!.source).toBe('library');
     expect(byId.get('s')!.source).toBe('seed');
     expect(byId.get('d')!.source).toBe('discovery');
     expect(byId.get('a')!.energy).toBeGreaterThan(0.6);
     expect(byId.get('d')!.energy).toBeLessThan(0.3);
+    expect(byId.get('a')!.bpm).toBe(122);
+    expect(byId.get('a')!.camelotKey).toBe('8A');
+    expect(byId.get('d')!.bpm).toBeNull();
+    expect(byId.get('d')!.camelotKey).toBeNull();
   });
 
   it('dedups with precedence seed > library > discovery', () => {

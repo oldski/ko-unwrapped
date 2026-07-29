@@ -17,6 +17,8 @@ export interface SetTrack {
   durationMs: number;
   popularity: number | null;
   albumImageUrl: string | null;
+  bpm: number | null;
+  camelotKey: string | null;
   tags: string[];
   score: number | null;
   reasons: string[];
