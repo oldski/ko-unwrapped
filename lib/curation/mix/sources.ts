@@ -7,6 +7,17 @@ export interface MixLookup {
 }
 
 export class RateLimitError extends Error {}
+export class PermanentLookupError extends Error {}
+
+export type HttpStatusClass = 'ok' | 'rate-limited' | 'permanent' | 'transient';
+
+/** Classifies an HTTP response status for retry purposes. */
+export function classifyHttpStatus(status: number): HttpStatusClass {
+  if (status >= 200 && status < 300) return 'ok';
+  if (status === 429) return 'rate-limited';
+  if (status >= 400 && status < 500) return 'permanent';
+  return 'transient';
+}
 
 const GSB_ROOT = 'https://api.getsong.co';
 
@@ -59,8 +70,11 @@ export function parseDeezerTrack(json: unknown): number | null {
 
 async function getJson(url: string): Promise<unknown> {
   const res = await fetch(url);
-  if (res.status === 429) throw new RateLimitError(`429 from ${new URL(url).host}`);
-  if (!res.ok) throw new Error(`${new URL(url).host} responded ${res.status}`);
+  const cls = classifyHttpStatus(res.status);
+  const host = new URL(url).host;
+  if (cls === 'rate-limited') throw new RateLimitError(`429 from ${host}`);
+  if (cls === 'permanent') throw new PermanentLookupError(`${host} responded ${res.status}`);
+  if (cls === 'transient') throw new Error(`${host} responded ${res.status}`);
   return res.json();
 }
 

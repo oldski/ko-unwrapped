@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { parseGetSongBpm, parseDeezerTrack, buildGsbLookup, cleanTrackTitle } from '@/lib/curation/mix/sources';
+import {
+  parseGetSongBpm,
+  parseDeezerTrack,
+  buildGsbLookup,
+  cleanTrackTitle,
+  classifyHttpStatus,
+} from '@/lib/curation/mix/sources';
 
 const gsbFixture = {
   search: [
@@ -89,5 +95,31 @@ describe('cleanTrackTitle', () => {
   it('leaves hyphenated words without surrounding spaces untouched', () => {
     expect(cleanTrackTitle('Anti-Hero')).toBe('Anti-Hero');
     expect(cleanTrackTitle('Rock-Pop Song')).toBe('Rock-Pop Song');
+  });
+});
+
+describe('classifyHttpStatus', () => {
+  it('treats 2xx as ok', () => {
+    expect(classifyHttpStatus(200)).toBe('ok');
+    expect(classifyHttpStatus(204)).toBe('ok');
+    expect(classifyHttpStatus(299)).toBe('ok');
+  });
+
+  it('treats 429 as rate-limited', () => {
+    expect(classifyHttpStatus(429)).toBe('rate-limited');
+  });
+
+  it('treats other 4xx as permanent', () => {
+    expect(classifyHttpStatus(400)).toBe('permanent');
+    expect(classifyHttpStatus(401)).toBe('permanent');
+    expect(classifyHttpStatus(404)).toBe('permanent');
+    expect(classifyHttpStatus(499)).toBe('permanent');
+  });
+
+  it('treats 5xx and other statuses as transient', () => {
+    expect(classifyHttpStatus(500)).toBe('transient');
+    expect(classifyHttpStatus(503)).toBe('transient');
+    expect(classifyHttpStatus(302)).toBe('transient');
+    expect(classifyHttpStatus(100)).toBe('transient');
   });
 });

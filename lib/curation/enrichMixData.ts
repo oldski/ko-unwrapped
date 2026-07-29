@@ -1,7 +1,7 @@
 import { db } from '@/db';
 import { tracks, artists, trackArtists } from '@/db/schema';
 import { eq, isNull, inArray, asc } from 'drizzle-orm';
-import { lookupMix, RateLimitError, type MixLookup } from './mix/sources';
+import { lookupMix, RateLimitError, PermanentLookupError, type MixLookup } from './mix/sources';
 
 const THROTTLE_MS = 700;
 
@@ -15,20 +15,15 @@ export interface EnrichMixResult {
   errors: string[];   // transient failures (NOT stamped, retried next run)
 }
 
-/** Attempts up to 3 artists per track; stops at first hit or throws on rate limit/transient error */
+/** Attempts up to 3 artists per track; stops at first hit or throws on rate limit/transient/permanent error */
 async function tryArtistsForTrack(
   artists: string[],
   trackName: string
 ): Promise<MixLookup> {
   for (const artist of artists.slice(0, 3)) {
-    try {
-      const mix = await lookupMix(artist, trackName);
-      if (mix.bpm !== null || mix.camelotKey !== null) {
-        return mix; // hit; return immediately
-      }
-    } catch (e) {
-      if (e instanceof RateLimitError) throw e; // propagate rate limit to abort batch
-      throw e; // propagate transient error to abort this track (no stamp)
+    const mix = await lookupMix(artist, trackName);
+    if (mix.bpm !== null || mix.camelotKey !== null) {
+      return mix; // hit; return immediately
     }
   }
   // no artist hit; return all-null (will be stamped)
@@ -38,6 +33,12 @@ async function tryArtistsForTrack(
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export async function enrichMixData(limit: number): Promise<EnrichMixResult> {
+  if (!process.env.GETSONGBPM_API_KEY) {
+    throw new Error(
+      'GETSONGBPM_API_KEY is not set — refusing to run enrichment without the primary bpm/key source'
+    );
+  }
+
   const rows = await db
     .select({ id: tracks.id, trackName: tracks.trackName })
     .from(tracks)
@@ -69,9 +70,9 @@ export async function enrichMixData(limit: number): Promise<EnrichMixResult> {
   }
 
   for (const row of rows) {
-    const trackArtists = artistsByTrack.get(row.id) ?? [];
+    const trackArtistNames = artistsByTrack.get(row.id) ?? [];
     try {
-      const mix = await tryArtistsForTrack(trackArtists, row.trackName);
+      const mix = await tryArtistsForTrack(trackArtistNames, row.trackName);
       await db
         .update(tracks)
         .set({
@@ -91,7 +92,22 @@ export async function enrichMixData(limit: number): Promise<EnrichMixResult> {
         result.errors.push(`rate limited: ${e.message}`);
         break; // abort batch; un-stamped rows retry next run
       }
-      result.errors.push(`${row.trackName}: ${e.message}`); // transient error on an artist; not stamped
+      else if (e instanceof PermanentLookupError) {
+        // Deterministic 4xx (bad request, not found, etc.) — retrying won't help.
+        // Treat as a completed lookup: stamp it and count as no-data.
+        await db
+          .update(tracks)
+          .set({
+            bpm: null,
+            camelotKey: null,
+            mixSource: null,
+            mixCheckedAt: new Date(),
+          })
+          .where(eq(tracks.id, row.id));
+        result.noData++;
+      } else {
+        result.errors.push(`${row.trackName}: ${e.message}`); // transient error on an artist; not stamped
+      }
     }
     await sleep(THROTTLE_MS);
   }
