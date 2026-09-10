@@ -57,6 +57,16 @@ body {
     animation-delay: 4s;
   }
 
+  /* Off-canvas nav rows. Solid so the part that overhangs the panel
+     edge reads as an opaque key rather than a translucent tint. */
+  .bg-nav-row {
+    background-color: var(--color-bg-2);
+  }
+
+  .bg-nav-row-hover:hover {
+    background-color: color-mix(in srgb, var(--color-bg-2) 60%, var(--color-primary));
+  }
+
   /* Layered shadow using theme colors - hover only */
   .shadow-layered-hover {
     transition: box-shadow 0.3s ease-in-out;
