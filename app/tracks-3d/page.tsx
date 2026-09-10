@@ -51,8 +51,8 @@ export default function Tracks3DPage() {
     <div className="relative h-screen overflow-hidden">
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/80 to-transparent p-6">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl font-bold text-white mb-2">
+        <div className="max-w-7xl">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2 pt-14 md:pt-0 md:pr-82">
             Your Top Tracks
             <span className="text-cyan-500"> in 3D</span>
           </h1>

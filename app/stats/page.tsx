@@ -407,10 +407,10 @@ export default function StatsPage() {
 
   return (
     <div className="min-h-screen text-white p-8">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl">
         {/* Header */}
-        <div className="mb-8">
-	        <h1 className="text-5xl font-bold mb-2 text-[var(--color-text-primary)]">
+        <div className="mb-8 pt-14 md:pt-0 md:pr-82">
+	        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2 text-[var(--color-text-primary)]">
             Your Listening
 	          <span className="text-[var(--color-vibrant-safe)]"> Patterns</span>
           </h1>
