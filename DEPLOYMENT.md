@@ -25,7 +25,7 @@ Create a list of the following environment variables to add in Vercel:
 NEXT_PUBLIC_HOST=https://unwrapped.oldskilabs.com
 
 # Database (Supabase)
-DATABASE_URL=postgresql://postgres.kqpjyiwvfaaujdxpcdcf:8x16T2cvUjL10xuE@aws-1-us-east-1.pooler.supabase.com:6543/postgres
+DATABASE_URL=postgresql://user:password@host:6543/postgres
 
 # Spotify API Credentials
 SPOTIFY_CLIENT_ID=your-client-id-here
