@@ -3,7 +3,7 @@ import fetcher from "@/lib/fetcher";
 import useSWR from "swr";
 import Image from "next/image";
 import React, { useEffect, useState, useRef } from "react";
-import { FaSpotify, FaPlay, FaXmark } from "react-icons/fa6";
+import { FaPlay, FaXmark } from "react-icons/fa6";
 import { usePathname } from "next/navigation";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
 import useMouseShadow from "@/hooks/useMouseShadow";
@@ -373,46 +373,8 @@ export const NowPlaying: React.FC = () => {
 		);
 	}
 
-	// Render internal pages version (minimal, bottom-right corner)
-	if (!isHomePage && data?.title) {
-		return (
-			<div className="fixed bottom-6 right-6 pointer-events-none z-5">
-				<div className="flex items-center gap-3 bg-black/20 backdrop-blur-md rounded-xl p-3 border border-[var(--color-border)]/30">
-					{/* Mini Album Art */}
-					<div className="relative w-12 h-12 rounded-lg overflow-hidden">
-						<Image
-							src={data?.albumImageUrl || "/default-image.jpg"}
-							alt={`${data?.title || "No Title"}`}
-							width={48}
-							height={48}
-							className="object-cover"
-						/>
-					</div>
-
-					{/* Mini Track Info */}
-					<div className="flex flex-col max-w-[200px]">
-						<p className="text-xs font-medium text-[var(--color-text-secondary)] truncate opacity-70">
-							{data?.title || "Unknown Title"}
-						</p>
-						<p className="text-[10px] text-[var(--color-text-primary)]/60 truncate">
-							{data?.artist || "Unknown Artist"}
-						</p>
-					</div>
-
-					{/* Mini Spotify Link */}
-					<a
-						href={data?.songUrl}
-						target="_blank"
-						rel="noopener noreferrer"
-						className="group pointer-events-auto p-2 rounded-lg hover:bg-[var(--color-primary)]/20 transition-all"
-						title="Open in Spotify"
-					>
-						<FaSpotify size={16} className="text-[var(--color-primary)]/60 group-hover:text-[var(--color-primary)] transition-colors" />
-					</a>
-				</div>
-			</div>
-		);
-	}
+	// Internal pages render the compact readout inside the Navigation
+	// control cluster instead; see components/NowPlaying/MiniNowPlaying.tsx
 
 	return null;
 };
