@@ -29,9 +29,9 @@ const Hero = () => {
 						initial={{ opacity: 0, y: 50 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ duration: 0.8, delay: 0.5 }}
-						className="hidden backdrop-blur-3xl lg:block fixed bottom-0 left-[-10] font-extrabold font-mono italic text-[var(--color-primary)] text-8xl mix-blend-multiply z-20 px-4"
+						className="wordmark hidden backdrop-blur-3xl lg:block fixed bottom-[-10] right-[-10] font-extrabold font-mono italic text-[var(--color-primary)] text-7xl mix-blend-multiply z-[56] px-4 [writing-mode:vertical-rl] rotate-180 origin-center"
 					>
-						__<a target="_blank" className="mix-blend-hue hover:mix-blend-exclusion hover:text-[var(--color-vibrant)] hover:duration-300" href={data.external_urls?.spotify}>{data.display_name}</a>_UNWRAPPED__
+						__<a target="_blank" className="mix-blend-hue hover:mix-blend-exclusion hover:text-[var(--color-vibrant)] hover:duration-300" href={data.external_urls?.spotify}>{data.display_name}</a>_UNWRAPPED________
 					</motion.h1>
 				</>
 			)}
