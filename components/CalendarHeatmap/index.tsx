@@ -1,5 +1,8 @@
 'use client';
 import { useMemo, useState, useRef, useEffect } from 'react';
+import { useSequentialRamp } from '@/hooks/useChartPalette';
+import { useAmbientTheme } from '@/components/ColorThemeProvider';
+import { buildSequentialRamp } from '@/lib/color/chartPalette';
 import { motion } from 'framer-motion';
 import useSWR from 'swr';
 import fetcher from '@/lib/fetcher';
@@ -10,8 +13,9 @@ import Spinner from '@/components/Spinner';
 type ViewMode = 'plays' | 'popularity';
 
 export default function CalendarHeatmap() {
+  const { albumHue } = useAmbientTheme();
   const [viewMode, setViewMode] = useState<ViewMode>('plays');
-  const [hoveredDay, setHoveredDay] = useState<{ date: string; count: number; avgPopularity?: number; tracks: any[] } | null>(null);
+  const [hoveredDay, setHoveredDay] = useState<{ date: string; count: number; avgPopularity: number; topTrack?: string | null } | null>(null);
   const calendarScrollRef = useRef<HTMLDivElement>(null);
 
   // Enable horizontal drag scrolling for calendar grid
@@ -61,78 +65,81 @@ export default function CalendarHeatmap() {
     };
   }, []);
 
-  // Memoize the start date to prevent SWR from re-fetching on every render
-  const startDateStr = useMemo(() => {
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - 365);
-    return startDate.toISOString().split('T')[0]; // Use just the date part (YYYY-MM-DD)
-  }, []);
-
-  const { data: historyData, error, isLoading } = useSWR(
-    // Reads playedAt and popularity only.
-    `/api/stats/history?start=${startDateStr}&limit=10000&fields=minimal`,
+  /*
+   * One row per day, grouped in the database.
+   *
+   * This used to fetch raw plays from /api/stats/history and bucket them here,
+   * which made `limit` a cap on plays rather than days: ~14,500 plays in a
+   * 365-day window meant limit=10000 returned only back to 2026-01-26, so
+   * three months quietly vanished off the left of the calendar.
+   */
+  const { data: dailyData, error, isLoading } = useSWR(
+    '/api/stats/daily?days=365',
     fetcher
   );
 
-  const history = historyData?.data || [];
+  const dailyRows: { date: string; plays: number; avgPopularity: number; topTrack?: string | null }[] =
+    dailyData?.data || [];
 
   const heatmapData = useMemo(() => {
-    if (history.length === 0) return [];
+    if (dailyRows.length === 0) return [];
 
-    // Group plays by day
-    const dayMap = new Map<string, { count: number; totalPopularity: number; tracks: any[] }>();
-
-    history.forEach((play: any) => {
-      const day = new Date(play.playedAt).toISOString().split('T')[0];
-      if (!dayMap.has(day)) {
-        dayMap.set(day, { count: 0, totalPopularity: 0, tracks: [] });
-      }
-      const dayData = dayMap.get(day)!;
-      dayData.count++;
-      dayData.tracks.push(play.track);
-      dayData.totalPopularity += play.track.popularity || 50;
-    });
-
-    // Create grid for last 365 days
-    const days = [];
+    const byDate = new Map(dailyRows.map((row) => [row.date, row]));
+    const days: { date: string; count: number; avgPopularity: number; topTrack?: string | null }[] = [];
     const today = new Date();
 
     for (let i = 365; i >= 0; i--) {
       const date = new Date(today);
       date.setDate(date.getDate() - i);
       const dateStr = date.toISOString().split('T')[0];
-      const dayData = dayMap.get(dateStr);
+      const row = byDate.get(dateStr);
 
       days.push({
         date: dateStr,
-        count: dayData?.count || 0,
-        avgPopularity: dayData ? Math.round(dayData.totalPopularity / dayData.count) : 0,
-        tracks: dayData?.tracks || [],
+        count: row?.plays ?? 0,
+        avgPopularity: row?.avgPopularity ?? 0,
+        topTrack: row?.topTrack ?? null,
       });
     }
 
     return days;
-  }, [history]);
+  }, [dailyRows]);
 
   const maxCount = Math.max(...heatmapData.map(d => d.count), 1);
 
-  const getColor = (day: typeof heatmapData[0]) => {
-    if (day.count === 0) return '#1f2937'; // gray-800
+  /*
+   * Cell colour.
+   *
+   * Both views are sequential — they encode magnitude — so each is one hue
+   * stepping light to dark, taken from the album. The previous version
+   * hardcoded cyan for plays and, for popularity, swept the hue from purple
+   * toward pink while also changing saturation and lightness. A hue sweep
+   * encodes magnitude as a rainbow, which reads as categories rather than
+   * amount; and neither view touched the album palette at all.
+   *
+   * The two views sit on different anchors of the album hue so switching
+   * between them is visible, while each stays a single-hue ramp.
+   */
+  const RAMP_STEPS = 5;
+  const playsRamp = useSequentialRamp(RAMP_STEPS);
+  const popularityRamp = useMemo(
+    () => buildSequentialRamp((albumHue + 40) % 360, RAMP_STEPS),
+    [albumHue],
+  );
 
-    if (viewMode === 'plays') {
-      // Play count: cyan gradient
-      const intensity = day.count / maxCount;
-      const lightness = 70 - intensity * 40; // 70% to 30%
-      return `hsl(180, 100%, ${lightness}%)`;
-    } else {
-      // Popularity view: purple (niche/indie) to pink (mainstream)
-      const popularity = (day.avgPopularity || 50) / 100; // 0-1 scale
-      // 0 = purple (niche), 1 = pink (mainstream)
-      const hue = 280 - popularity * 40; // 280 (purple) to 240 (more pink/magenta)
-      const saturation = 60 + popularity * 30; // More popular = more saturated
-      const lightness = 40 + popularity * 20; // More popular = brighter
-      return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-    }
+  const getColor = (day: typeof heatmapData[0]) => {
+    // An empty day is absence, not a low value: it takes the surface, not the
+    // lightest step of the ramp, so "nothing" never reads as "a little".
+    if (day.count === 0) return 'var(--surface-raised)';
+
+    const ramp = viewMode === 'plays' ? playsRamp : popularityRamp;
+    const fraction =
+      viewMode === 'plays'
+        ? day.count / maxCount
+        : Math.min(day.avgPopularity, 100) / 100;
+
+    const step = Math.min(RAMP_STEPS - 1, Math.floor(fraction * RAMP_STEPS));
+    return ramp[step];
   };
 
   // Group days by week for proper grid layout
@@ -173,52 +180,33 @@ export default function CalendarHeatmap() {
       {/* Legend and Heatmap - hide while loading */}
       {!isLoading && heatmapData.length > 0 && (
         <>
-          <div className="mb-4 flex items-center gap-4 text-sm text-[var(--ink-muted)]">
-            {viewMode === 'plays' ? (
-              <>
-                <span>Less</span>
-                <div className="flex gap-1">
-                  {[0.2, 0.4, 0.6, 0.8, 1.0].map((intensity) => (
-                    <div
-                      key={intensity}
-                      className="w-4 h-4 rounded-sm"
-                      style={{
-                        backgroundColor: `hsl(180, 100%, ${70 - intensity * 40}%)`,
-                      }}
-                    />
-                  ))}
-                </div>
-                <span>More</span>
-              </>
-            ) : (
-              <>
-                <span>Niche</span>
-                <div className="flex gap-1">
-                  {[0.0, 0.25, 0.5, 0.75, 1.0].map((popularity) => {
-                    const hue = 280 - popularity * 40;
-                    const saturation = 60 + popularity * 30;
-                    const lightness = 40 + popularity * 20;
-                    return (
-                      <div
-                        key={popularity}
-                        className="w-4 h-4 rounded-sm"
-                        style={{
-                          backgroundColor: `hsl(${hue}, ${saturation}%, ${lightness}%)`,
-                        }}
-                      />
-                    );
-                  })}
-                </div>
-                <span>Mainstream</span>
-              </>
-            )}
+          {/* Legend reads from the same ramp the cells use, so it cannot drift. */}
+          <div className="mb-4 flex items-center gap-3 text-xs text-[var(--ink-muted)]">
+            <span>{viewMode === 'plays' ? 'Fewer plays' : 'Niche'}</span>
+            <div className="flex gap-[2px]">
+              {(viewMode === 'plays' ? playsRamp : popularityRamp).map((colour, i) => (
+                <div
+                  key={colour + i}
+                  className="w-4 h-4 rounded-[3px]"
+                  style={{ backgroundColor: colour }}
+                />
+              ))}
+            </div>
+            <span>{viewMode === 'plays' ? 'More' : 'Mainstream'}</span>
+            <span className="ml-2 flex items-center gap-1.5">
+              <span
+                className="w-4 h-4 rounded-[3px] inline-block"
+                style={{ backgroundColor: 'var(--surface-raised)' }}
+              />
+              no plays
+            </span>
           </div>
 
           {/* Heatmap Grid - Scrollable on mobile */}
           <div className="relative">
             <div
               ref={calendarScrollRef}
-              className="overflow-x-auto cursor-grab pb-2 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent"
+              className="overflow-x-auto cursor-grab pb-2 palette-scrollbar"
             >
               <div
                 className="grid gap-1"
@@ -254,25 +242,25 @@ export default function CalendarHeatmap() {
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-gray-800 border border-gray-700 rounded-lg p-3 shadow-xl z-20 pointer-events-none"
+                className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 rounded-lg p-3 shadow-xl z-20 pointer-events-none bg-[var(--surface-raised)] border border-[var(--line)]"
                 style={{ minWidth: '200px' }}
               >
-                <p className="font-bold text-white mb-1">{hoveredDay.date}</p>
-                <p className="text-cyan-400 text-sm">
+                <p className="text-[var(--ink-primary)] mb-1">{hoveredDay.date}</p>
+                <p className="text-[var(--ink-signal)] text-sm">
                   {hoveredDay.count} {hoveredDay.count === 1 ? 'play' : 'plays'}
                 </p>
                 {viewMode === 'popularity' && hoveredDay.avgPopularity !== undefined && (
-                  <p className="text-purple-400 text-sm mt-1">
+                  <p className="text-[var(--ink-signal)] text-sm mt-1">
                     Avg Popularity: {hoveredDay.avgPopularity}/100
                     <span className="text-[var(--ink-muted)] ml-1">
                       ({hoveredDay.avgPopularity >= 70 ? 'Mainstream' : hoveredDay.avgPopularity >= 40 ? 'Mid-tier' : 'Niche'})
                     </span>
                   </p>
                 )}
-                {hoveredDay.tracks.length > 0 && (
-                  <div className="mt-2 pt-2 border-t border-gray-700">
-                    <p className="text-[var(--ink-muted)] text-xs mb-1">Top track:</p>
-                    <p className="text-white text-sm truncate">{hoveredDay.tracks[0].name}</p>
+                {hoveredDay.topTrack && (
+                  <div className="mt-2 pt-2 border-t border-[var(--line)]">
+                    <p className="text-[var(--ink-muted)] text-xs mb-1">Last played</p>
+                    <p className="text-[var(--ink-primary)] text-sm truncate">{hoveredDay.topTrack}</p>
                   </div>
                 )}
               </motion.div>

@@ -747,23 +747,12 @@ export default function StatsPage() {
 
             {selectedView === 'heatmap' && (
               <div className="space-y-8">
-                {/* Period Persona */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
-                  <AnimatedCard tier="panel">
-                    <div className="flex flex-col md:flex-row items-center gap-6 p-2">
-                      <div className="text-6xl">{periodPersona.emoji}</div>
-                      <div className="text-center md:text-left">
-                        <h2 className="text-2xl mb-1" style={{ color: periodPersona.color }}>
-                          {periodPersona.name}
-                        </h2>
-                        <p className="text-[var(--ink-muted)]">{periodPersona.description}</p>
-                      </div>
-                    </div>
-                  </AnimatedCard>
-                </motion.div>
+                {/*
+                  * No persona here. It is derived from when you listen, and
+                  * the hour-by-day heatmap directly below shows that same
+                  * thing in full rather than as a one-line verdict. The
+                  * Patterns tab still carries it, where it is the headline.
+                  */}
 
                 {/* Hour x Day Heatmap */}
                 <AnimatedCard tier="panel">
