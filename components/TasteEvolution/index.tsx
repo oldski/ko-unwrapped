@@ -1,5 +1,13 @@
 'use client';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useChartPalette } from '@/hooks/useChartPalette';
+
+/** One panel per measure; each has its own scale. */
+const SERIES = [
+  { key: 'totalPlays', label: 'Plays', note: 'per month' },
+  { key: 'uniqueArtists', label: 'Unique artists', note: 'per month' },
+  { key: 'avgPopularity', label: 'Average popularity', note: '0–100' },
+] as const;
 import useSWR from 'swr';
 import fetcher from '@/lib/fetcher';
 import AnimatedCard from '@/components/AnimatedCard';
@@ -11,6 +19,7 @@ interface TasteEvolutionProps {
 }
 
 export default function TasteEvolution({ months = 12 }: TasteEvolutionProps) {
+  const chart = useChartPalette();
   const { data: monthlyData, isLoading } = useSWR(
     `/api/stats/monthly-trends?months=${months}`,
     fetcher
@@ -95,61 +104,68 @@ export default function TasteEvolution({ months = 12 }: TasteEvolutionProps) {
             </motion.div>
           </div>
 
-          {/* Chart */}
-          <ResponsiveContainer width="100%" height={400}>
-            <LineChart
-              data={formattedData}
-              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis
-                dataKey="monthLabel"
-                stroke="#9ca3af"
-                style={{ fontSize: '12px' }}
-              />
-              <YAxis stroke="#9ca3af" style={{ fontSize: '12px' }} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#1f2937',
-                  border: '1px solid #374151',
-                  borderRadius: '8px',
-                  color: '#fff',
-                }}
-                labelStyle={{ color: '#9ca3af' }}
-              />
-              <Legend
-                wrapperStyle={{ paddingTop: '20px' }}
-                iconType="line"
-              />
-              <Line
-                type="monotone"
-                dataKey="avgPopularity"
-                stroke="#06b6d4"
-                strokeWidth={3}
-                name="Avg Popularity"
-                dot={{ fill: '#06b6d4', r: 5 }}
-                activeDot={{ r: 7 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="uniqueArtists"
-                stroke="#ec4899"
-                strokeWidth={3}
-                name="Unique Artists"
-                dot={{ fill: '#ec4899', r: 5 }}
-                activeDot={{ r: 7 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="totalPlays"
-                stroke="#8b5cf6"
-                strokeWidth={3}
-                name="Total Plays"
-                dot={{ fill: '#8b5cf6', r: 5 }}
-                activeDot={{ r: 7 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          {/*
+            * Small multiples, one measure each.
+            *
+            * These three series were previously drawn on a single shared y
+            * axis: average popularity runs 0–100, total plays into the
+            * thousands. On one scale the two smaller series flatten onto the
+            * baseline and read as nothing. Separate panels give each measure
+            * its own scale, and the shared month axis still supports
+            * comparison across them.
+            *
+            * Each panel carries one series, so identity comes from its title
+            * and no legend or second colour is needed.
+            */}
+          <div className="space-y-5">
+            {SERIES.map(({ key, label, note }) => (
+              <div key={key}>
+                <div className="flex items-baseline gap-3 mb-1">
+                  <h3 className="text-sm text-[var(--ink-primary)]">{label}</h3>
+                  <span className="text-xs text-[var(--ink-muted)]">{note}</span>
+                </div>
+                <ResponsiveContainer width="100%" height={132}>
+                  <LineChart data={formattedData} margin={{ top: 6, right: 12, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="2 4" stroke={chart.grid} vertical={false} />
+                    <XAxis
+                      dataKey="monthLabel"
+                      stroke={chart.grid}
+                      tick={{ fill: chart.axis, fontSize: 11 }}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis
+                      stroke={chart.grid}
+                      tick={{ fill: chart.axis, fontSize: 11 }}
+                      tickLine={false}
+                      axisLine={false}
+                      width={44}
+                    />
+                    <Tooltip
+                      cursor={{ stroke: chart.axis, strokeWidth: 1, strokeDasharray: '3 3' }}
+                      contentStyle={{
+                        backgroundColor: chart.tooltipBg,
+                        border: `1px solid ${chart.tooltipBorder}`,
+                        borderRadius: '10px',
+                        color: 'var(--ink-primary)',
+                        fontSize: '12px',
+                      }}
+                      labelStyle={{ color: 'var(--ink-muted)' }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey={key}
+                      name={label}
+                      stroke={chart.series[0]}
+                      strokeWidth={2}
+                      dot={false}
+                      activeDot={{ r: 5, strokeWidth: 0 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            ))}
+          </div>
 
           {/* Insights */}
           <motion.div

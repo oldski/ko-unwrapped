@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import DateRangePicker from "@/components/DateRangePicker";
 import AnimatedCard from '@/components/AnimatedCard';
 import SectionRule from '@/components/Interface/SectionRule';
+import { useChartPalette } from '@/hooks/useChartPalette';
 import Button from '@/components/Button';
 import Spinner from '@/components/Spinner';
 import HourDayHeatmap from '@/components/HourDayHeatmap';
@@ -130,6 +131,7 @@ function getPersonaFromPatterns(patterns: ReturnType<typeof calculatePatterns>) 
 }
 
 export default function StatsPage() {
+  const chart = useChartPalette();
   const [selectedView, setSelectedView] = useState<'timeline' | 'patterns' | 'heatmap' | 'compare'>('timeline');
   const [dateRange, setDateRange] = useState<{ start: string | null; end: string | null }>({
     start: (() => {
@@ -983,24 +985,26 @@ export default function StatsPage() {
 
                       return (
                         <div key={day} className="text-center">
-                          <p className="text-xs text-gray-400 mb-2">{day}</p>
-                          <div className="h-24 md:h-32 flex items-end gap-1">
-                            {/* Previous period bar */}
-                            <motion.div
-                              className="flex-1 bg-purple-600/60 rounded-t"
-                              initial={{ height: 0 }}
-                              animate={{ height: `${prevHeight}%` }}
-                              transition={{ duration: 0.5, delay: index * 0.05 }}
+                          <p className="text-xs text-[var(--ink-muted)] mb-2">{day}</p>
+                          {/*
+                            * Two series, so the two validated album-derived
+                            * slots. The 2px gap between the pair is the
+                            * surface showing through, which keeps adjacent
+                            * fills from reading as one mark.
+                            */}
+                          <div className="h-24 md:h-32 flex items-end gap-[2px]">
+                            <div
+                              className="flex-1 rounded-t-[4px]"
+                              style={{ height: `${prevHeight}%`, backgroundColor: chart.series[0] }}
+                              title={`${comparisonRanges.periodB.label}: ${prevCount}`}
                             />
-                            {/* Current period bar */}
-                            <motion.div
-                              className="flex-1 bg-cyan-500 rounded-t"
-                              initial={{ height: 0 }}
-                              animate={{ height: `${currHeight}%` }}
-                              transition={{ duration: 0.5, delay: index * 0.05 + 0.1 }}
+                            <div
+                              className="flex-1 rounded-t-[4px]"
+                              style={{ height: `${currHeight}%`, backgroundColor: chart.series[1] }}
+                              title={`${comparisonRanges.periodA.label}: ${currCount}`}
                             />
                           </div>
-                          <p className={`text-xs font-bold mt-1 ${delta > 0 ? 'text-green-400' : delta < 0 ? 'text-red-400' : 'text-gray-500'}`}>
+                          <p className={`text-xs mt-1 ${delta > 0 ? 'text-emerald-400' : delta < 0 ? 'text-rose-400' : 'text-[var(--ink-muted)]'}`}>
                             {delta > 0 ? '+' : ''}{delta}
                           </p>
                         </div>
@@ -1009,11 +1013,11 @@ export default function StatsPage() {
                   </div>
                   <div className="flex justify-center gap-6 mt-4 text-xs">
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded bg-purple-600/60" />
+                      <div className="w-3 h-3 rounded" style={{ backgroundColor: chart.series[0] }} />
                       <span className="text-[var(--ink-muted)]">{comparisonRanges.periodB.label}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded bg-cyan-500" />
+                      <div className="w-3 h-3 rounded" style={{ backgroundColor: chart.series[1] }} />
                       <span className="text-[var(--ink-muted)]">{comparisonRanges.periodA.label}</span>
                     </div>
                   </div>

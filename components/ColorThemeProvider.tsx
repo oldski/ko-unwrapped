@@ -10,11 +10,14 @@ import { buildPalette, FALLBACK_PALETTE } from '@/lib/color/palette';
 interface AmbientThemeContextType {
   variant: 1 | 2 | 3 | 4 | 5 | 6;
   isPlaying: boolean;
+  /** Album hue in degrees. Charts derive their series colours from this. */
+  albumHue: number;
 }
 
 const AmbientThemeContext = createContext<AmbientThemeContextType>({
   variant: 1,
   isPlaying: false,
+  albumHue: FALLBACK_PALETTE.hue,
 });
 
 export const useAmbientTheme = () => useContext(AmbientThemeContext);
@@ -500,7 +503,13 @@ const ColorThemeProvider = ({ children }: { children: React.ReactNode }) => {
   }, [colorPalette, hasTrack]);
 
   return (
-    <AmbientThemeContext.Provider value={{ variant, isPlaying: hasTrack }}>
+    <AmbientThemeContext.Provider
+      value={{
+        variant,
+        isPlaying: hasTrack,
+        albumHue: hasTrack ? contentPalette.hue : FALLBACK_PALETTE.hue,
+      }}
+    >
       {children}
     </AmbientThemeContext.Provider>
   );
