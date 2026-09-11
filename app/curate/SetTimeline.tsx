@@ -62,9 +62,12 @@ export default function SetTimeline({
             over {set.length} tracks
           </span>
         </p>
-        <label className="flex items-center gap-2 text-xs text-[var(--ink-muted)] cursor-pointer select-none">
+        <label
+          className="flex items-center gap-2 text-xs text-[var(--ink-muted)] cursor-pointer select-none"
+          title="Uncheck to see the order the generator returned"
+        >
           <input type="checkbox" checked={smoothed} onChange={onToggleSmoothed} />
-          Reorder for smoother mixing
+          Ordered for smooth mixing
         </label>
         <button
           onClick={onPush}

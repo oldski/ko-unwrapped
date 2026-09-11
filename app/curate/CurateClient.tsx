@@ -30,6 +30,9 @@ export default function CurateClient({ displayName }: { displayName: string }) {
   const [narrative, setNarrative] = useState('');
   const [fallbackNotice, setFallbackNotice] = useState<string | null>(null);
   const [progressStage, setProgressStage] = useState<string | null>(null);
+  // On by default: see the note in generate.
+  const [smoothed, setSmoothed] = useState(true);
+  const [baseOrder, setBaseOrder] = useState<SetTrack[]>([]);
 
   const addSeed = useCallback((t: TrackHit) => {
     setSeeds((prev) => (prev.some((s) => s.trackId === t.trackId) ? prev : [...prev, t]));
@@ -105,15 +108,23 @@ export default function CurateClient({ displayName }: { displayName: string }) {
         ...t,
         energy: energyFromTags(t.tags),
       });
-      setSet(data.tracks.map(withEnergy));
+      const sequenced = data.tracks.map(withEnergy);
+      /*
+       * Smoothed is the default, not an option you have to find.
+       *
+       * This is a mixing tool: the order that mixes is the answer, and the
+       * order the generator happens to return is the working. Keeping the raw
+       * order in baseOrder means the toggle still shows you what changed.
+       */
+      setBaseOrder(sequenced);
+      setSet(smoothTransitions(sequenced));
+      setSmoothed(true);
       setAlternates((data.alternates ?? []).map(withEnergy));
       setTransitions(data.transitions ?? []);
       setNarrative(data.narrative ?? '');
       if (data.mode === 'fallback') {
         setFallbackNotice('The set director was unavailable, so this set was sequenced the classic way.');
       }
-      setSmoothed(false);
-      setBaseOrder([]);
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -122,9 +133,6 @@ export default function CurateClient({ displayName }: { displayName: string }) {
       setGenerating(false);
     }
   }, [seeds, filters, excluded, preset]);
-
-  const [smoothed, setSmoothed] = useState(false);
-  const [baseOrder, setBaseOrder] = useState<SetTrack[]>([]);
 
   const toggleSmoothed = useCallback(() => {
     setSmoothed((prev) => {
