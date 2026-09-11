@@ -1,5 +1,5 @@
 'use client';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 import { ReactNode, useEffect, useRef, useState } from 'react';
 import { useVisualizer } from '@/contexts/VisualizerContext';
@@ -8,39 +8,37 @@ interface PageTransitionProps {
   children: ReactNode;
 }
 
+/** How long the overlay stays up, matched to the canvas animation's run. */
+const OVERLAY_MS = 1000;
+
 export default function PageTransition({ children }: PageTransitionProps) {
   const pathname = usePathname();
   const { activeVisualizer, bpm, energy } = useVisualizer();
+  const reduceMotion = useReducedMotion();
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [showContent, setShowContent] = useState(true);
   const [transitionKey, setTransitionKey] = useState(0);
+  const isFirstRender = useRef(true);
 
-  // Trigger transition overlay on route change
   useEffect(() => {
-    // Hide content immediately on route change
-    setShowContent(false);
+    // Nothing to transition from on first mount, and running it there made
+    // the initial page load blank for over a second.
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
+    if (reduceMotion) return;
+
     setIsTransitioning(true);
-    setTransitionKey(prev => prev + 1);
+    setTransitionKey((prev) => prev + 1);
 
-    // Show content after transition completes
-    const showTimer = setTimeout(() => {
-      setShowContent(true);
-    }, 1200);
-
-    // Hide transition overlay
-    const hideTimer = setTimeout(() => {
-      setIsTransitioning(false);
-    }, 1400);
-
-    return () => {
-      clearTimeout(showTimer);
-      clearTimeout(hideTimer);
-    };
-  }, [pathname]);
+    const hideTimer = setTimeout(() => setIsTransitioning(false), OVERLAY_MS);
+    return () => clearTimeout(hideTimer);
+  }, [pathname, reduceMotion]);
 
   return (
     <>
-      {/* Transition Overlay - Shows during route changes */}
+      {/* Transition overlay, drawn above the page during route changes. */}
       <AnimatePresence>
         {isTransitioning && (
           <motion.div
@@ -56,19 +54,23 @@ export default function PageTransition({ children }: PageTransitionProps) {
         )}
       </AnimatePresence>
 
-      {/* Page Content */}
-      <AnimatePresence mode="wait">
-        {showContent && (
-          <motion.div
-            key={pathname}
-            initial={{ opacity: 0, filter: 'blur(10px)' }}
-            animate={{ opacity: 1, filter: 'blur(0px)' }}
-            transition={{ duration: 0.5 }}
-          >
-            {children}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/*
+       * Page content stays mounted and visible throughout.
+       *
+       * It used to be unmounted on every route change and held back for
+       * 1200ms, then faded in by a framer animation that started at opacity
+       * 0. That blanked the page for over a second on every navigation, and
+       * left it blank permanently whenever the animation did not run, which
+       * is what happens in a throttled or backgrounded tab.
+       *
+       * The overlay above already covers the screen, so it can carry the
+       * transition on its own. Keying this element on the pathname restarts a
+       * CSS settle animation whose resting state is visible and whose first
+       * frame is still legible, so nothing here can hide the page.
+       */}
+      <div key={pathname} className="page-enter">
+        {children}
+      </div>
     </>
   );
 }

@@ -74,6 +74,24 @@ body {
 }
 
 /*
+ * Page settle on route change. Starts at 0.4 rather than 0, so even the first
+ * frame is readable, and carries no fill-mode, so the resting state is a fully
+ * visible page. Visibility is never gated on this animation running.
+ */
+@keyframes page-enter {
+  from { opacity: 0.4; filter: blur(6px); }
+  to { opacity: 1; filter: blur(0); }
+}
+
+.page-enter {
+  animation: page-enter 420ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter { animation: none; }
+}
+
+/*
  * Masthead entrance. Deliberately a CSS animation with no fill-mode: the
  * element's resting state is visible, so if the animation never runs, the
  * heading is still there. An entrance that starts at opacity 0 and relies on
