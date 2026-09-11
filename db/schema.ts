@@ -47,7 +47,10 @@ export const playHistory = pgTable('play_history', {
   contextType: varchar('context_type', { length: 50 }), // playlist, album, artist, etc.
   createdAt: timestamp('created_at').defaultNow(),
 }, (table) => ({
-  playedAtIdx: index('played_at_idx').on(table.playedAt),
+  // Unique: one play per instant. Lets the sync insert with ON CONFLICT
+  // instead of a read-then-write check, which was racing between the cron
+  // and manual syncs and producing duplicate plays.
+  playedAtIdx: uniqueIndex('played_at_idx').on(table.playedAt),
   trackIdIdx: index('track_id_idx').on(table.trackId),
 }));
 
