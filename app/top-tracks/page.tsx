@@ -4,6 +4,7 @@ import useSWR from 'swr';
 import fetcher from '@/lib/fetcher';
 import { motion } from 'framer-motion';
 import AnimatedCard from '@/components/AnimatedCard';
+import SectionRule from '@/components/Interface/SectionRule';
 import Spinner from '@/components/Spinner';
 
 export default function AudioFeaturesPage() {
@@ -47,49 +48,49 @@ export default function AudioFeaturesPage() {
         {/* Main Content */}
         {!isLoading && insights && (
           <>
-            {/* Summary Stats Row */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              <AnimatedCard size="compact" opacity="bold" weight="light" hoverOpacity>
-                <div className="text-center">
-                  <p className="text-[var(--ink-muted)] text-xs mb-1">Tracks Analyzed</p>
-                  <p className="text-3xl font-bold text-[var(--ink-signal)]">
-                    {insights.summary.tracksAnalyzed}
-                  </p>
+            {/*
+              * Headline figure plus supporting readouts, rather than four
+              * identical tiles. One number is the story of this page; the rest
+              * are context, and the layout should say which is which.
+              */}
+            <section className="mb-12">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div className="lg:col-span-7">
+                  <AnimatedCard tier="feature">
+                    <p className="text-sm text-[var(--ink-muted)] mb-2">Total plays across your top 100</p>
+                    <p className="font-figure text-7xl sm:text-8xl text-[var(--ink-primary)]">
+                      {insights.summary.totalPlays.toLocaleString()}
+                    </p>
+                    <p className="text-sm text-[var(--ink-muted)] mt-3">
+                      {insights.summary.totalListeningTime.hours} hours{' '}
+                      {insights.summary.totalListeningTime.minutes} minutes of listening
+                    </p>
+                  </AnimatedCard>
                 </div>
-              </AnimatedCard>
 
-              <AnimatedCard size="compact" opacity="bold" weight="light" hoverOpacity>
-                <div className="text-center">
-                  <p className="text-[var(--ink-muted)] text-xs mb-1">Total Plays</p>
-                  <p className="font-figure text-4xl text-[var(--ink-primary)]">
-                    {insights.summary.totalPlays.toLocaleString()}
-                  </p>
-                </div>
-              </AnimatedCard>
+                <div className="lg:col-span-5 grid grid-cols-2 lg:grid-cols-1 gap-6">
+                  <AnimatedCard tier="chip">
+                    <p className="text-xs text-[var(--ink-muted)] mb-1">Tracks analysed</p>
+                    <p className="font-figure text-4xl text-[var(--ink-primary)]">
+                      {insights.summary.tracksAnalyzed}
+                    </p>
+                  </AnimatedCard>
 
-              <AnimatedCard size="compact" opacity="bold" weight="light" hoverOpacity>
-                <div className="text-center">
-                  <p className="text-[var(--ink-muted)] text-xs mb-1">Listening Time</p>
-                  <p className="text-3xl font-bold text-[var(--ink-signal)]">
-                    {insights.summary.totalListeningTime.hours}h {insights.summary.totalListeningTime.minutes}m
-                  </p>
+                  <AnimatedCard tier="chip">
+                    <p className="text-xs text-[var(--ink-muted)] mb-1">Unique artists</p>
+                    <p className="font-figure text-4xl text-[var(--ink-primary)]">
+                      {insights.summary.uniqueArtists}
+                    </p>
+                  </AnimatedCard>
                 </div>
-              </AnimatedCard>
-
-              <AnimatedCard size="compact" opacity="bold" weight="light" hoverOpacity>
-                <div className="text-center">
-                  <p className="text-[var(--ink-muted)] text-xs mb-1">Unique Artists</p>
-                  <p className="text-3xl font-bold text-[var(--ink-signal)]">
-                    {insights.summary.uniqueArtists}
-                  </p>
-                </div>
-              </AnimatedCard>
-            </div>
+              </div>
+            </section>
 
             {/* Main Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <SectionRule label="Popularity" note="how far off the beaten track" />
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-12">
               {/* Popularity Analysis */}
-              <AnimatedCard opacity="bold" weight="medium" hoverOpacity>
+              <AnimatedCard tier="panel" className="lg:col-span-7">
                 <AnimatedCard.Header title="Popularity Profile" />
                 <div className="space-y-6">
                   {/* Average & Obscurity */}
@@ -149,7 +150,7 @@ export default function AudioFeaturesPage() {
               </AnimatedCard>
 
               {/* Duration Analysis */}
-              <AnimatedCard className="h-full" opacity="bold" weight="medium" hoverOpacity>
+              <AnimatedCard tier="panel" className="h-full lg:col-span-5">
                 <AnimatedCard.Header title="Duration Insights" />
                 <div className="flex flex-col justify-between flex-1">
                   {/* Average Duration */}
@@ -192,7 +193,7 @@ export default function AudioFeaturesPage() {
             {/* Second Row */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
               {/* Listening Style */}
-              <AnimatedCard opacity="bold" weight="medium" hoverOpacity>
+              <AnimatedCard tier="panel">
                 <AnimatedCard.Header title="Your Style" />
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-3 bg-[var(--color-darker)] rounded-lg">

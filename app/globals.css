@@ -111,9 +111,24 @@ body {
 }
 
 /*
- * Type roles. Mono is the default voice for data, labels and UI. The display
- * face is opt-in per element so it stays reserved for headings and figures.
+ * Type roles.
+ *
+ * Headings take the display face by default rather than opting in class by
+ * class, which left coverage patchy. Mono remains the default voice for body
+ * copy, data, labels and UI; `.font-mono-heading` opts a heading back out.
  */
+h1, h2, h3 {
+  font-family: var(--font-display), var(--font-jetbrains-mono), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.08;
+}
+
+.font-mono-heading {
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+  letter-spacing: 0;
+}
+
 .font-display {
   font-family: var(--font-display), var(--font-jetbrains-mono), ui-sans-serif, system-ui, sans-serif;
   font-weight: 600;

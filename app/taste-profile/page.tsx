@@ -5,6 +5,7 @@ import useSWR from 'swr';
 import fetcher from '@/lib/fetcher';
 import { motion } from 'framer-motion';
 import AnimatedCard from '@/components/AnimatedCard';
+import SectionRule from '@/components/Interface/SectionRule';
 import Button from '@/components/Button';
 import Spinner from '@/components/Spinner';
 
@@ -215,58 +216,70 @@ export default function TasteProfilePage() {
                 </div>
               </AnimatedCard>
             </motion.div>
-
-            {/* Stats Overview - Enhanced */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-                <AnimatedCard size="compact" opacity="bold" weight="light">
-                  <div className="text-center p-2">
-                    <p className="text-[var(--ink-muted)] text-xs mb-1">Obscurity Score</p>
-                    <p className="text-3xl font-bold text-[var(--ink-signal)]">{obscurityScore}</p>
-                    <p className="text-xs text-[var(--ink-muted)] mt-1">
-                      {obscurityScore >= 60 ? 'Deep underground' : obscurityScore >= 40 ? 'Off the beaten path' : 'Chart adjacent'}
+            {/*
+              * Obscurity leads: it is the number that characterises a taste
+              * profile. The rest are supporting readouts. Four equal tiles,
+              * each with its own staggered entrance, gave them all the same
+              * weight and made the page assemble itself on every visit.
+              */}
+            <section className="mb-10">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div className="lg:col-span-5">
+                  <AnimatedCard tier="feature">
+                    <p className="text-sm text-[var(--ink-muted)] mb-2">Obscurity score</p>
+                    <p className="font-figure text-7xl sm:text-8xl text-[var(--ink-primary)]">
+                      {obscurityScore}
                     </p>
-                  </div>
-                </AnimatedCard>
-              </motion.div>
-
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
-                <AnimatedCard size="compact" opacity="bold" weight="light">
-                  <div className="text-center p-2">
-                    <p className="text-[var(--ink-muted)] text-xs mb-1">Artist Diversity</p>
-                    <p className="font-figure text-4xl text-[var(--ink-primary)]">{diversityMetrics.artistDiversity}%</p>
-                    <p className="text-xs text-[var(--ink-muted)] mt-1">
-                      {diversityMetrics.artistDiversity >= 70 ? 'Variety seeker' : diversityMetrics.artistDiversity >= 40 ? 'Balanced mix' : 'Loyal listener'}
+                    <p className="text-sm text-[var(--ink-muted)] mt-3">
+                      {obscurityScore >= 60
+                        ? 'Deep underground'
+                        : obscurityScore >= 40
+                          ? 'Off the beaten path'
+                          : 'Chart adjacent'}
                     </p>
-                  </div>
-                </AnimatedCard>
-              </motion.div>
+                  </AnimatedCard>
+                </div>
 
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-                <AnimatedCard size="compact" opacity="bold" weight="light">
-                  <div className="text-center p-2">
-                    <p className="text-[var(--ink-muted)] text-xs mb-1">Genres</p>
-                    <p className="text-3xl font-bold text-[var(--ink-signal)]">{diversityMetrics.uniqueGenres}</p>
-                    <p className="text-xs text-[var(--ink-muted)] mt-1">unique genres</p>
-                  </div>
-                </AnimatedCard>
-              </motion.div>
+                <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-6">
+                  <AnimatedCard tier="chip">
+                    <p className="text-xs text-[var(--ink-muted)] mb-1">Artist diversity</p>
+                    <p className="font-figure text-4xl text-[var(--ink-primary)]">
+                      {diversityMetrics.artistDiversity}%
+                    </p>
+                    <p className="text-xs text-[var(--ink-muted)] mt-1.5">
+                      {diversityMetrics.artistDiversity >= 70
+                        ? 'Variety seeker'
+                        : diversityMetrics.artistDiversity >= 40
+                          ? 'Balanced mix'
+                          : 'Loyal listener'}
+                    </p>
+                  </AnimatedCard>
 
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-                <AnimatedCard size="compact" opacity="bold" weight="light">
-                  <div className="text-center p-2">
-                    <p className="text-[var(--ink-muted)] text-xs mb-1">Avg Popularity</p>
-                    <p className="text-3xl font-bold text-[var(--ink-signal)]">{avgPopularity}</p>
-                    <p className="text-xs text-[var(--ink-muted)] mt-1">out of 100</p>
-                  </div>
-                </AnimatedCard>
-              </motion.div>
-            </div>
+                  <AnimatedCard tier="chip">
+                    <p className="text-xs text-[var(--ink-muted)] mb-1">Genres</p>
+                    <p className="font-figure text-4xl text-[var(--ink-primary)]">
+                      {diversityMetrics.uniqueGenres}
+                    </p>
+                    <p className="text-xs text-[var(--ink-muted)] mt-1.5">unique</p>
+                  </AnimatedCard>
+
+                  <AnimatedCard tier="chip">
+                    <p className="text-xs text-[var(--ink-muted)] mb-1">Avg popularity</p>
+                    <p className="font-figure text-4xl text-[var(--ink-primary)]">
+                      {avgPopularity}
+                    </p>
+                    <p className="text-xs text-[var(--ink-muted)] mt-1.5">out of 100</p>
+                  </AnimatedCard>
+                </div>
+              </div>
+            </section>
+
+            <SectionRule label="Genre DNA" note="from your top artists" />
+
 
             {/* Genre Breakdown */}
             {genreData.length > 0 && (
-              <AnimatedCard opacity="bold" weight="medium" className="mb-8">
-                <AnimatedCard.Header title="Your Genre DNA" description="Based on your top artists" />
+              <AnimatedCard tier="panel" className="mb-10">
                 <div className="flex flex-wrap gap-2 mt-4">
                   {genreData.map((item, index) => {
                     const maxCount = genreData[0].count;

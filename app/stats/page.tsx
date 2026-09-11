@@ -6,6 +6,7 @@ import fetcher from '@/lib/fetcher';
 import { motion, AnimatePresence } from 'framer-motion';
 import DateRangePicker from "@/components/DateRangePicker";
 import AnimatedCard from '@/components/AnimatedCard';
+import SectionRule from '@/components/Interface/SectionRule';
 import Button from '@/components/Button';
 import Spinner from '@/components/Spinner';
 import HourDayHeatmap from '@/components/HourDayHeatmap';
@@ -495,44 +496,52 @@ export default function StatsPage() {
           <>
             {selectedView === 'timeline' && (
               <div className="space-y-6">
-                {/* Stats Overview */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                  <AnimatedCard size="compact" opacity="bold" weight="light">
-                    <AnimatedCard.Stat
-                      label="Tracks Played"
-                      value={patterns.totalTracks}
-                      trend="in selected period"
-                    />
-                  </AnimatedCard>
+                {/*
+                  * Total listening leads; the rest are context. Four equal
+                  * tiles gave a peak hour and a total the same visual weight,
+                  * which told the reader nothing about what mattered.
+                  */}
+                <section className="mb-10">
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div className="lg:col-span-6">
+                      <AnimatedCard tier="feature">
+                        <p className="text-sm text-[var(--ink-muted)] mb-2">Time spent listening</p>
+                        <p className="font-figure text-7xl sm:text-8xl text-[var(--ink-primary)]">
+                          {patterns.totalHours}
+                          <span className="text-3xl ml-2 text-[var(--ink-muted)]">hours</span>
+                        </p>
+                        <p className="text-sm text-[var(--ink-muted)] mt-3">
+                          across {patterns.totalTracks.toLocaleString()} tracks in this period
+                        </p>
+                      </AnimatedCard>
+                    </div>
 
-                  <AnimatedCard size="compact" opacity="bold" weight="light">
-                    <AnimatedCard.Stat
-                      label="Peak Listening Time"
-                      value={`${patterns.peakHour > 12 ? patterns.peakHour - 12 : patterns.peakHour || 12}${patterns.peakHour >= 12 ? 'PM' : 'AM'}`}
-                      trend={getTimeOfDay(patterns.peakHour)}
-                    />
-                  </AnimatedCard>
+                    <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      <AnimatedCard tier="chip">
+                        <p className="text-xs text-[var(--ink-muted)] mb-1">Peak hour</p>
+                        <p className="font-figure text-4xl text-[var(--ink-primary)]">
+                          {patterns.peakHour > 12 ? patterns.peakHour - 12 : patterns.peakHour || 12}
+                          <span className="text-lg ml-1 text-[var(--ink-muted)]">
+                            {patterns.peakHour >= 12 ? 'pm' : 'am'}
+                          </span>
+                        </p>
+                        <p className="text-xs text-[var(--ink-muted)] mt-1.5">{getTimeOfDay(patterns.peakHour)}</p>
+                      </AnimatedCard>
 
-                  <AnimatedCard size="compact" opacity="bold" weight="light">
-                    <AnimatedCard.Stat
-                      label="Favorite Day"
-                      value={dayNames[patterns.peakDay]}
-                      trend="Most active listening day"
-                    />
-                  </AnimatedCard>
+                      <AnimatedCard tier="chip">
+                        <p className="text-xs text-[var(--ink-muted)] mb-1">Busiest day</p>
+                        <p className="font-figure text-4xl text-[var(--ink-primary)]">
+                          {dayNames[patterns.peakDay]}
+                        </p>
+                        <p className="text-xs text-[var(--ink-muted)] mt-1.5">most active</p>
+                      </AnimatedCard>
+                    </div>
+                  </div>
+                </section>
 
-                  <AnimatedCard size="compact" opacity="bold" weight="light">
-                    <AnimatedCard.Stat
-                      label="Total Listening Time"
-                      value={`${patterns.totalHours}h`}
-                      trend={`${patterns.totalMinutes} minutes`}
-                    />
-                  </AnimatedCard>
-                </div>
-
+                <SectionRule label="Recent history" note="last 50 plays" />
                 {/* Recently Played Timeline */}
-                <AnimatedCard opacity="bold" weight="medium">
-                  <AnimatedCard.Header title="Recent History" />
+                <AnimatedCard tier="panel">
                   <div className="space-y-3 max-h-[600px] overflow-y-auto">
                     {recentTracks.slice(0, 50).map((item: any, index: number) => {
                       const playedDate = new Date(item.playedAt);
