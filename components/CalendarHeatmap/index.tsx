@@ -69,7 +69,8 @@ export default function CalendarHeatmap() {
   }, []);
 
   const { data: historyData, error, isLoading } = useSWR(
-    `/api/stats/history?start=${startDateStr}&limit=10000`,
+    // Reads playedAt and popularity only.
+    `/api/stats/history?start=${startDateStr}&limit=10000&fields=minimal`,
     fetcher
   );
 

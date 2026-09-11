@@ -18,7 +18,8 @@ export default function FABContainer() {
   startDate.setDate(startDate.getDate() - 365);
 
   const { data: historyData } = useSWR(
-    `/api/stats/history?start=${startDate.toISOString()}&limit=10000`,
+    // Only the count is read below, so do not ship a year of play rows.
+    `/api/stats/history?start=${startDate.toISOString()}&fields=count`,
     fetcher
   );
 
