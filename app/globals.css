@@ -28,25 +28,127 @@
   --background-end-rgb: 0, 0, 0;
 }
 
-/* Apply smooth transitions to all elements using CSS variables */
-* {
+/*
+ * Album palette tokens. Defaults here so server-rendered markup is legible
+ * before ColorThemeProvider runs; it overwrites them per track.
+ * See lib/color/palette.ts for how these are derived and guaranteed.
+ */
+:root {
+  --surface-base: #14141c;
+  --surface-panel: #1d1d28;
+  --surface-raised: #272734;
+  --surface-signal: #6f6ab8;
+  --line: #3a3a4c;
+  --ink-primary: #f1f0f6;
+  --ink-muted: #b6b4c6;
+  --ink-signal: #c3bcf5;
+  --ink-on-signal: #14121f;
+}
+
+/*
+ * The album palette crossfades when the track changes. Scoped to the elements
+ * that actually carry palette colours: as a `*` rule it also caught every
+ * hover and focus state in the app, so a button's hover took two seconds to
+ * arrive and interaction felt broken.
+ */
+.palette-transition,
+.palette-transition * {
   transition:
-    color 2s ease-in-out,
-    background-color 2s ease-in-out,
-    border-color 2s ease-in-out,
-    fill 2s ease-in-out,
-    stroke 2s ease-in-out,
-    box-shadow 0.3s ease-in-out;
+    color 900ms ease-in-out,
+    background-color 900ms ease-in-out,
+    border-color 900ms ease-in-out,
+    fill 900ms ease-in-out,
+    stroke 900ms ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .palette-transition,
+  .palette-transition * {
+    transition: none;
+  }
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  color: var(--ink-primary);
+  background-color: var(--surface-base);
+}
+
+/*
+ * Page settle on route change. Starts at 0.4 rather than 0, so even the first
+ * frame is readable, and carries no fill-mode, so the resting state is a fully
+ * visible page. Visibility is never gated on this animation running.
+ */
+@keyframes page-enter {
+  from { opacity: 0.4; filter: blur(6px); }
+  to { opacity: 1; filter: blur(0); }
+}
+
+.page-enter {
+  animation: page-enter 420ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter { animation: none; }
+}
+
+/*
+ * Masthead entrance. Deliberately a CSS animation with no fill-mode: the
+ * element's resting state is visible, so if the animation never runs, the
+ * heading is still there. An entrance that starts at opacity 0 and relies on
+ * JS to restore it leaves the page blank whenever that JS does not fire.
+ */
+@keyframes masthead-enter {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: none; }
+}
+
+.masthead {
+  animation: masthead-enter 520ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .masthead { animation: none; }
+}
+
+/*
+ * Type roles.
+ *
+ * Headings take the display face by default rather than opting in class by
+ * class, which left coverage patchy. Mono remains the default voice for body
+ * copy, data, labels and UI; `.font-mono-heading` opts a heading back out.
+ */
+h1, h2, h3 {
+  font-family: var(--font-display), var(--font-jetbrains-mono), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.08;
+}
+
+.font-mono-heading {
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+  letter-spacing: 0;
+}
+
+.font-display {
+  font-family: var(--font-display), var(--font-jetbrains-mono), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 0.98;
+}
+
+/* Feature figures: condensed, light, and set very large. */
+.font-figure {
+  font-family: var(--font-display), var(--font-jetbrains-mono), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.025em;
+  line-height: 0.9;
+}
+
+/* Data figures inside panels stay mono so columns align. */
+.font-data {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "zero" 1;
 }
 
 @layer utilities {

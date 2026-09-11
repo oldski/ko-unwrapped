@@ -29,9 +29,9 @@ export default function OnThisDay() {
 
   if (isLoading) {
     return (
-      <AnimatedCard opacity="bold" weight="medium">
+      <AnimatedCard opacity="bold" weight="medium" tier="panel">
         <div className="flex items-center justify-center h-32">
-          <p className="text-[var(--color-text-secondary)]">Loading...</p>
+          <p className="text-[var(--ink-muted)]">Loading...</p>
         </div>
       </AnimatedCard>
     );
@@ -39,7 +39,7 @@ export default function OnThisDay() {
 
   if (!plays.length) {
     return (
-      <AnimatedCard opacity="bold" weight="medium">
+      <AnimatedCard tier="panel">
         <AnimatedCard.Header
           title="On This Day"
           icon="📅"
@@ -50,7 +50,7 @@ export default function OnThisDay() {
   }
 
   return (
-    <AnimatedCard opacity="bold" weight="medium">
+    <AnimatedCard tier="panel">
       <AnimatedCard.Header
         title="On This Day"
         icon="📅"
@@ -59,21 +59,21 @@ export default function OnThisDay() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-[var(--color-bg-2)]/30 border border-[var(--color-border)]/20 rounded p-3">
-          <p className="text-[var(--color-text-secondary)] text-xs mb-1">Total Plays</p>
-          <p className="text-2xl font-bold text-[var(--color-vibrant-safe)]">{plays.length}</p>
+        <div className="bg-[var(--surface-panel)]/30 border border-[var(--line)]/20 rounded p-3">
+          <p className="text-[var(--ink-muted)] text-xs mb-1">Total Plays</p>
+          <p className="font-display text-xl text-[var(--ink-primary)]">{plays.length}</p>
         </div>
-        <div className="bg-[var(--color-bg-2)]/30 border border-[var(--color-border)]/20 rounded p-3">
-          <p className="text-[var(--color-text-secondary)] text-xs mb-1">Years</p>
-          <p className="text-2xl font-bold text-[var(--color-vibrant-safe)]">{years.length}</p>
+        <div className="bg-[var(--surface-panel)]/30 border border-[var(--line)]/20 rounded p-3">
+          <p className="text-[var(--ink-muted)] text-xs mb-1">Years</p>
+          <p className="font-display text-xl text-[var(--ink-primary)]">{years.length}</p>
         </div>
-        <div className="bg-[var(--color-bg-2)]/30 border border-[var(--color-border)]/20 rounded p-3">
-          <p className="text-[var(--color-text-secondary)] text-xs mb-1">First Year</p>
-          <p className="text-2xl font-bold text-[var(--color-vibrant-safe)]">{Math.min(...years)}</p>
+        <div className="bg-[var(--surface-panel)]/30 border border-[var(--line)]/20 rounded p-3">
+          <p className="text-[var(--ink-muted)] text-xs mb-1">First Year</p>
+          <p className="font-display text-xl text-[var(--ink-primary)]">{Math.min(...years)}</p>
         </div>
-        <div className="bg-[var(--color-bg-2)]/30 border border-[var(--color-border)]/20 rounded p-3">
-          <p className="text-[var(--color-text-secondary)] text-xs mb-1">Latest Year</p>
-          <p className="text-2xl font-bold text-[var(--color-vibrant-safe)]">{Math.max(...years)}</p>
+        <div className="bg-[var(--surface-panel)]/30 border border-[var(--line)]/20 rounded p-3">
+          <p className="text-[var(--ink-muted)] text-xs mb-1">Latest Year</p>
+          <p className="font-display text-xl text-[var(--ink-primary)]">{Math.max(...years)}</p>
         </div>
       </div>
 
@@ -88,19 +88,19 @@ export default function OnThisDay() {
               <img
                 src={play.track.albumImage}
                 alt={play.track.albumName}
-                className="w-16 h-16 rounded border border-[var(--color-border)]/30"
+                className="w-16 h-16 rounded border border-[var(--line)]/30"
               />
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-[var(--color-text-primary)] truncate">
+                <p className="font-bold text-[var(--ink-primary)] truncate">
                   {play.track.name}
                 </p>
-                <p className="text-sm text-[var(--color-text-secondary)] truncate">
+                <p className="text-sm text-[var(--ink-muted)] truncate">
                   {play.track.artists?.map((a: any) => a.name).join(', ')}
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-lg font-bold text-[var(--color-vibrant-safe)]">{year}</p>
-                <p className="text-xs text-[var(--color-text-secondary)]">
+                <p className="text-lg font-bold text-[var(--ink-signal)]">{year}</p>
+                <p className="text-xs text-[var(--ink-muted)]">
                   {yearsAgo === 0 ? 'This year' : yearsAgo === 1 ? '1 year ago' : `${yearsAgo} years ago`}
                 </p>
               </div>
@@ -111,7 +111,7 @@ export default function OnThisDay() {
 
       {plays.length > highlightedPlays.length && (
         <div className="mt-4 text-center">
-          <p className="text-[var(--color-text-secondary)] text-sm">
+          <p className="text-[var(--ink-muted)] text-sm">
 	          + {plays.length - highlightedPlays.length} more {plays.length - highlightedPlays.length === 1 ? 'track' : 'tracks'} on this day
           </p>
         </div>

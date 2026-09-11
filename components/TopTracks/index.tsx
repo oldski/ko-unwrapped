@@ -27,8 +27,8 @@ const TopTracks = () => {
 		return (
 			<div className="min-h-screen text-white p-8">
 				<div className="max-w-7xl">
-					<AnimatedCard opacity="bold" weight="medium">
-						<p className="text-[var(--color-text-secondary)]">Error loading data</p>
+					<AnimatedCard tier="panel">
+						<p className="text-[var(--ink-muted)]">Error loading data</p>
 					</AnimatedCard>
 				</div>
 			</div>
@@ -39,11 +39,11 @@ const TopTracks = () => {
 		return (
 			<div className="min-h-screen text-white p-8">
 				<div className="max-w-7xl">
-					<AnimatedCard opacity="bold" weight="medium">
+					<AnimatedCard tier="panel">
 						<div className="flex items-center justify-center h-64">
 							<div className="text-center">
 								<Spinner size="xl" className="mx-auto mb-4" />
-								<p className="text-[var(--color-text-secondary)]">Loading your top tracks...</p>
+								<p className="text-[var(--ink-muted)]">Loading your top tracks...</p>
 							</div>
 						</div>
 					</AnimatedCard>
@@ -57,11 +57,11 @@ const TopTracks = () => {
 			<div className="max-w-7xl">
 				{/* Header */}
 				<div className="mb-8 pt-14 md:pt-0 md:pr-82">
-					<h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2 text-[var(--color-text-primary)]">
+					<h1 className="text-3xl sm:text-4xl lg:text-5xl mb-2 text-[var(--ink-primary)]">
 						Your Top
-						<span className="text-[var(--color-vibrant-safe)]"> Tracks</span>
+						<span className="text-[var(--ink-signal)]"> Tracks</span>
 					</h1>
-					<p className="text-[var(--color-text-secondary)] text-lg">
+					<p className="text-[var(--ink-muted)] text-lg">
 						Your most played tracks across different time periods
 					</p>
 				</div>
@@ -81,7 +81,7 @@ const TopTracks = () => {
 				</div>
 
 				{/* Tracks List */}
-				<AnimatedCard opacity="bold" weight="medium">
+				<AnimatedCard tier="panel">
 					<AnimatedCard.Header
 						title={`Top ${tracks.length} Tracks`}
 						description={`From ${timeRangeLabels[timeRange].toLowerCase()}`}
@@ -96,7 +96,7 @@ const TopTracks = () => {
 								transition={{ delay: index * 0.02 }}
 								className="flex items-center gap-4 bg-gray-800/30 p-4 rounded-xl hover:bg-gray-800/50 transition-colors group"
 							>
-								<span className="text-2xl font-bold text-[var(--color-text-secondary)]/50 w-12 text-center">
+								<span className="font-figure text-2xl text-[var(--ink-muted)] w-12 text-center">
 									#{index + 1}
 								</span>
 								<img
@@ -105,13 +105,13 @@ const TopTracks = () => {
 									className="w-16 h-16 rounded-lg shadow-lg"
 								/>
 								<div className="flex-1 min-w-0">
-									<p className="font-bold text-[var(--color-text-primary)] truncate group-hover:text-[var(--color-vibrant-safe)] transition-colors">
+									<p className="font-bold text-[var(--ink-primary)] truncate group-hover:text-[var(--ink-signal)] transition-colors">
 										{track.name}
 									</p>
-									<p className="text-sm text-[var(--color-text-secondary)] truncate">
+									<p className="text-sm text-[var(--ink-muted)] truncate">
 										{track.artists.map((a: any) => a.name).join(', ')}
 									</p>
-									<p className="text-xs text-[var(--color-text-secondary)]/70 truncate">
+									<p className="text-xs text-[var(--ink-muted)]/70 truncate">
 										{track.album.name}
 									</p>
 								</div>
@@ -120,7 +120,7 @@ const TopTracks = () => {
 										<div className="flex items-center gap-2">
 											<div className="w-24 h-2 bg-gray-700 rounded-full overflow-hidden">
 												<div
-													className="h-full bg-[var(--color-vibrant-safe)] rounded-full"
+													className="h-full bg-[var(--ink-signal)] rounded-full"
 													style={{ width: `${track.popularity}%` }}
 												/>
 											</div>
@@ -134,7 +134,7 @@ const TopTracks = () => {
 											href={track.external_urls.spotify}
 											target="_blank"
 											rel="noopener noreferrer"
-											className="px-4 py-2 bg-[var(--color-vibrant)]/20 text-[var(--color-vibrant-safe)] font-semibold rounded-lg hover:bg-[var(--color-vibrant)]/40 transition-colors text-sm"
+											className="px-4 py-2 bg-[var(--color-vibrant)]/20 text-[var(--ink-signal)] font-semibold rounded-lg hover:bg-[var(--color-vibrant)]/40 transition-colors text-sm"
 										>
 											Play
 										</a>

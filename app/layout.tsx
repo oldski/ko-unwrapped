@@ -36,6 +36,22 @@ const jetbrainsMono = localFont({
   display: "swap",
 });
 
+/*
+ * Display face. Clash Display (Fontshare, ITF Free Font Licence) carries the
+ * headings and feature figures. JetBrains Mono stays the voice for data,
+ * labels and UI; this exists to give headings a register mono cannot reach.
+ */
+const clashDisplay = localFont({
+  src: [
+    { path: "../public/fonts/ClashDisplay/ClashDisplay-400.woff2", weight: "400", style: "normal" },
+    { path: "../public/fonts/ClashDisplay/ClashDisplay-500.woff2", weight: "500", style: "normal" },
+    { path: "../public/fonts/ClashDisplay/ClashDisplay-600.woff2", weight: "600", style: "normal" },
+    { path: "../public/fonts/ClashDisplay/ClashDisplay-700.woff2", weight: "700", style: "normal" },
+  ],
+  variable: "--font-display",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "oldski unwrapped",
   description: "A fun project diving into Spotify's API",
@@ -51,7 +67,7 @@ export default function RootLayout({
 	
   return (
     <html lang="en">
-      <body className={jetbrainsMono.className}>
+      <body className={`${jetbrainsMono.className} ${jetbrainsMono.variable} ${clashDisplay.variable} palette-transition`}>
         <ColorThemeProvider>
           <ErrorBoundary componentName="App Root">
             <VisualizerProvider>

@@ -1,5 +1,13 @@
 'use client';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useChartPalette } from '@/hooks/useChartPalette';
+
+/** One panel per measure; each has its own scale. */
+const SERIES = [
+  { key: 'totalPlays', label: 'Plays', note: 'per month' },
+  { key: 'uniqueArtists', label: 'Unique artists', note: 'per month' },
+  { key: 'avgPopularity', label: 'Average popularity', note: '0–100' },
+] as const;
 import useSWR from 'swr';
 import fetcher from '@/lib/fetcher';
 import AnimatedCard from '@/components/AnimatedCard';
@@ -11,6 +19,7 @@ interface TasteEvolutionProps {
 }
 
 export default function TasteEvolution({ months = 12 }: TasteEvolutionProps) {
+  const chart = useChartPalette();
   const { data: monthlyData, isLoading } = useSWR(
     `/api/stats/monthly-trends?months=${months}`,
     fetcher
@@ -28,7 +37,7 @@ export default function TasteEvolution({ months = 12 }: TasteEvolutionProps) {
   }));
 
   return (
-    <AnimatedCard>
+    <AnimatedCard tier="panel">
       <AnimatedCard.Header
         title="Taste Evolution"
         description="How your music taste has changed over time"
@@ -38,15 +47,15 @@ export default function TasteEvolution({ months = 12 }: TasteEvolutionProps) {
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <Spinner size="lg" className="mx-auto mb-3" />
-            <p className="text-[var(--color-text-secondary)] text-sm">Loading trends...</p>
+            <p className="text-[var(--ink-muted)] text-sm">Loading trends...</p>
           </div>
         </div>
       )}
 
       {!isLoading && formattedData.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-gray-400">No trend data available yet</p>
-          <p className="text-gray-500 text-sm mt-1">
+          <p className="text-[var(--ink-muted)]">No trend data available yet</p>
+          <p className="text-[var(--ink-muted)] text-sm mt-1">
             Listen to more music to see your taste evolution!
           </p>
         </div>
@@ -54,102 +63,104 @@ export default function TasteEvolution({ months = 12 }: TasteEvolutionProps) {
 
       {!isLoading && formattedData.length > 0 && (
         <>
-          {/* Stats Summary */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="bg-[var(--color-bg-2)]/30 border border-[var(--color-border)]/20 rounded-lg p-4 hover:bg-[var(--color-bg-2)]/50 transition-all hover:scale-105"
-            >
-              <p className="text-[var(--color-text-secondary)] text-sm mb-1">Total Plays</p>
-              <p className="text-2xl font-bold text-[var(--color-primary-safe)]">
-                {formattedData.reduce((sum: number, m: any) => sum + m.totalPlays, 0)}
+          {/*
+            * Three readouts of the same kind, so one treatment: figure face in
+            * primary ink over a muted label. They previously carried three
+            * different type treatments between them and a hand-rolled card
+            * style, and each animated in on its own delay.
+            */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <AnimatedCard tier="chip">
+              <p className="text-xs text-[var(--ink-muted)] mb-1">Total plays</p>
+              <p className="font-figure text-4xl text-[var(--ink-primary)]">
+                {formattedData
+                  .reduce((sum: number, m: any) => sum + m.totalPlays, 0)
+                  .toLocaleString()}
               </p>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="bg-[var(--color-bg-2)]/30 border border-[var(--color-border)]/20 rounded-lg p-4 hover:bg-[var(--color-bg-2)]/50 transition-all hover:scale-105"
-            >
-              <p className="text-[var(--color-text-secondary)] text-sm mb-1">Avg Popularity</p>
-              <p className="text-2xl font-bold text-[var(--color-accent-safe)]">
+            </AnimatedCard>
+
+            <AnimatedCard tier="chip">
+              <p className="text-xs text-[var(--ink-muted)] mb-1">Average popularity</p>
+              <p className="font-figure text-4xl text-[var(--ink-primary)]">
                 {Math.round(
                   formattedData.reduce((sum: number, m: any) => sum + m.avgPopularity, 0) /
                     formattedData.length
                 )}
               </p>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="bg-[var(--color-bg-2)]/30 border border-[var(--color-border)]/20 rounded-lg p-4 hover:bg-[var(--color-bg-2)]/50 transition-all hover:scale-105"
-            >
-              <p className="text-[var(--color-text-secondary)] text-sm mb-1">Unique Artists</p>
-              <p className="text-2xl font-bold text-[var(--color-vibrant-safe)]">
-                {Math.max(...formattedData.map((m: any) => m.uniqueArtists))}
+              <p className="text-xs text-[var(--ink-muted)] mt-1.5">out of 100</p>
+            </AnimatedCard>
+
+            <AnimatedCard tier="chip">
+              <p className="text-xs text-[var(--ink-muted)] mb-1">Unique artists</p>
+              <p className="font-figure text-4xl text-[var(--ink-primary)]">
+                {Math.max(...formattedData.map((m: any) => m.uniqueArtists)).toLocaleString()}
               </p>
-              <p className="text-[var(--color-text-secondary)]/70 text-xs mt-1">Peak in a month</p>
-            </motion.div>
+              <p className="text-xs text-[var(--ink-muted)] mt-1.5">peak in a month</p>
+            </AnimatedCard>
           </div>
 
-          {/* Chart */}
-          <ResponsiveContainer width="100%" height={400}>
-            <LineChart
-              data={formattedData}
-              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis
-                dataKey="monthLabel"
-                stroke="#9ca3af"
-                style={{ fontSize: '12px' }}
-              />
-              <YAxis stroke="#9ca3af" style={{ fontSize: '12px' }} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#1f2937',
-                  border: '1px solid #374151',
-                  borderRadius: '8px',
-                  color: '#fff',
-                }}
-                labelStyle={{ color: '#9ca3af' }}
-              />
-              <Legend
-                wrapperStyle={{ paddingTop: '20px' }}
-                iconType="line"
-              />
-              <Line
-                type="monotone"
-                dataKey="avgPopularity"
-                stroke="#06b6d4"
-                strokeWidth={3}
-                name="Avg Popularity"
-                dot={{ fill: '#06b6d4', r: 5 }}
-                activeDot={{ r: 7 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="uniqueArtists"
-                stroke="#ec4899"
-                strokeWidth={3}
-                name="Unique Artists"
-                dot={{ fill: '#ec4899', r: 5 }}
-                activeDot={{ r: 7 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="totalPlays"
-                stroke="#8b5cf6"
-                strokeWidth={3}
-                name="Total Plays"
-                dot={{ fill: '#8b5cf6', r: 5 }}
-                activeDot={{ r: 7 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          {/*
+            * Small multiples, one measure each.
+            *
+            * These three series were previously drawn on a single shared y
+            * axis: average popularity runs 0–100, total plays into the
+            * thousands. On one scale the two smaller series flatten onto the
+            * baseline and read as nothing. Separate panels give each measure
+            * its own scale, and the shared month axis still supports
+            * comparison across them.
+            *
+            * Each panel carries one series, so identity comes from its title
+            * and no legend or second colour is needed.
+            */}
+          <div className="space-y-5">
+            {SERIES.map(({ key, label, note }) => (
+              <div key={key}>
+                <div className="flex items-baseline gap-3 mb-1">
+                  <h3 className="text-sm text-[var(--ink-primary)]">{label}</h3>
+                  <span className="text-xs text-[var(--ink-muted)]">{note}</span>
+                </div>
+                <ResponsiveContainer width="100%" height={132}>
+                  <LineChart data={formattedData} margin={{ top: 6, right: 12, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="2 4" stroke={chart.grid} vertical={false} />
+                    <XAxis
+                      dataKey="monthLabel"
+                      stroke={chart.grid}
+                      tick={{ fill: chart.axis, fontSize: 11 }}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis
+                      stroke={chart.grid}
+                      tick={{ fill: chart.axis, fontSize: 11 }}
+                      tickLine={false}
+                      axisLine={false}
+                      width={44}
+                    />
+                    <Tooltip
+                      cursor={{ stroke: chart.axis, strokeWidth: 1, strokeDasharray: '3 3' }}
+                      contentStyle={{
+                        backgroundColor: chart.tooltipBg,
+                        border: `1px solid ${chart.tooltipBorder}`,
+                        borderRadius: '10px',
+                        color: 'var(--ink-primary)',
+                        fontSize: '12px',
+                      }}
+                      labelStyle={{ color: 'var(--ink-muted)' }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey={key}
+                      name={label}
+                      stroke={chart.series[0]}
+                      strokeWidth={2}
+                      dot={false}
+                      activeDot={{ r: 5, strokeWidth: 0 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            ))}
+          </div>
 
           {/* Insights */}
           <motion.div
@@ -158,8 +169,8 @@ export default function TasteEvolution({ months = 12 }: TasteEvolutionProps) {
             transition={{ delay: 0.4 }}
             className="mt-6 p-4 bg-[var(--color-accent)]/10 border border-[var(--color-accent)]/30 rounded-lg"
           >
-            <h3 className="text-lg font-semibold text-[var(--color-accent-safe)] mb-2">Insights</h3>
-            <ul className="space-y-2 text-sm text-[var(--color-text-secondary)]">
+            <h3 className="text-lg font-semibold text-[var(--ink-signal)] mb-2">Insights</h3>
+            <ul className="space-y-2 text-sm text-[var(--ink-muted)]">
               {formattedData.length === 1 ? (
                 // Single month insights
                 (() => {
@@ -174,21 +185,21 @@ export default function TasteEvolution({ months = 12 }: TasteEvolutionProps) {
                   return (
                     <>
                       <li>
-                        • You averaged <span className="text-[var(--color-primary-safe)] font-medium">{playsPerDay} plays per day</span> this month
+                        • You averaged <span className="text-[var(--ink-signal)] font-medium">{playsPerDay} plays per day</span> this month
                         {playsPerDay >= 50 ? ' — a power listener!' : playsPerDay >= 20 ? ' — solid listening habits.' : '.'}
                       </li>
                       <li>
-                        • Your taste profile is <span className="text-[var(--color-accent-safe)] font-medium">{tasteProfile}</span> with
+                        • Your taste profile is <span className="text-[var(--ink-signal)] font-medium">{tasteProfile}</span> with
                         an average popularity score of {month.avgPopularity}/100.
                       </li>
                       <li>
-                        • Discovery rate: <span className="text-[var(--color-vibrant-safe)] font-medium">{discoveryRate}%</span> —
+                        • Discovery rate: <span className="text-[var(--ink-signal)] font-medium">{discoveryRate}%</span> —
                         {parseFloat(discoveryRate) >= 50 ? " you're exploring lots of different artists!"
                           : parseFloat(discoveryRate) >= 30 ? " a healthy mix of favorites and new discoveries."
                           : " you tend to stick with artists you love."}
                       </li>
                       <li>
-                        • You listened to <span className="text-[var(--color-primary-safe)] font-medium">{month.uniqueArtists} unique artists</span> across {month.totalPlays} plays.
+                        • You listened to <span className="text-[var(--ink-signal)] font-medium">{month.uniqueArtists} unique artists</span> across {month.totalPlays} plays.
                       </li>
                     </>
                   );
@@ -213,23 +224,23 @@ export default function TasteEvolution({ months = 12 }: TasteEvolutionProps) {
                   return (
                     <>
                       <li>
-                        • Your popularity trend is <span className="text-[var(--color-accent-safe)] font-medium">
+                        • Your popularity trend is <span className="text-[var(--ink-signal)] font-medium">
                           {popularityChange > 5 ? 'shifting mainstream' : popularityChange < -5 ? 'going more indie' : 'staying consistent'}
                         </span>
                         {popularityChange !== 0 && ` (${popularityChange > 0 ? '+' : ''}${popularityChange} points)`}.
                       </li>
                       <li>
-                        • Most active: <span className="text-[var(--color-primary-safe)] font-medium">{mostActive.monthLabel}</span> ({mostActive.totalPlays} plays)
-                        vs least active: <span className="text-[var(--color-text-secondary)]">{leastActive.monthLabel}</span> ({leastActive.totalPlays} plays).
+                        • Most active: <span className="text-[var(--ink-signal)] font-medium">{mostActive.monthLabel}</span> ({mostActive.totalPlays} plays)
+                        vs least active: <span className="text-[var(--ink-muted)]">{leastActive.monthLabel}</span> ({leastActive.totalPlays} plays).
                       </li>
                       <li>
-                        • Artist variety is <span className="text-[var(--color-vibrant-safe)] font-medium">
+                        • Artist variety is <span className="text-[var(--ink-signal)] font-medium">
                           {artistTrend > 20 ? 'expanding' : artistTrend < -20 ? 'narrowing' : 'stable'}
                         </span> —
                         {artistTrend > 0 ? `discovering ${artistTrend} more artists per month.` : artistTrend < 0 ? `${Math.abs(artistTrend)} fewer artists per month.` : 'steady exploration rate.'}
                       </li>
                       <li>
-                        • Listening consistency: <span className="text-[var(--color-primary-safe)] font-medium">{Math.round(consistency)}%</span>
+                        • Listening consistency: <span className="text-[var(--ink-signal)] font-medium">{Math.round(consistency)}%</span>
                         {consistency >= 80 ? ' — very steady habits!' : consistency >= 50 ? ' — some variation month to month.' : ' — listening varies a lot!'}
                       </li>
                     </>

@@ -5,6 +5,7 @@ import useSWR from 'swr';
 import fetcher from '@/lib/fetcher';
 import { motion } from 'framer-motion';
 import AnimatedCard from '@/components/AnimatedCard';
+import SectionRule from '@/components/Interface/SectionRule';
 import Button from '@/components/Button';
 import Spinner from '@/components/Spinner';
 
@@ -27,31 +28,31 @@ const PERSONAS = {
     name: 'The Explorer',
     emoji: '🧭',
     description: 'You love discovering new artists and have eclectic taste',
-    color: 'var(--color-vibrant-safe)',
+    color: 'var(--ink-signal)',
   },
   curator: {
     name: 'The Curator',
     emoji: '🎨',
     description: 'You seek out underground gems before they go mainstream',
-    color: 'var(--color-accent-safe)',
+    color: 'var(--ink-signal)',
   },
   loyalist: {
     name: 'The Loyalist',
     emoji: '💎',
     description: 'You know what you love and stick with your favorites',
-    color: 'var(--color-primary-safe)',
+    color: 'var(--ink-signal)',
   },
   mainstream: {
     name: 'The Trendsetter',
     emoji: '📈',
     description: 'You stay current with what\'s popular and trending',
-    color: 'var(--color-secondary-safe)',
+    color: 'var(--ink-signal)',
   },
   eclectic: {
     name: 'The Eclectic',
     emoji: '🎭',
     description: 'Your taste spans many genres and moods',
-    color: 'var(--color-vibrant-safe)',
+    color: 'var(--ink-signal)',
   },
 };
 
@@ -162,11 +163,10 @@ export default function TasteProfilePage() {
       <div className="max-w-7xl">
         {/* Header */}
         <div className="mb-8 pt-14 md:pt-0 md:pr-82">
-	        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2 text-[var(--color-text-primary)]">
-            Your Taste
-		        <span className="text-[var(--color-vibrant-safe)]"> Profile</span>
+	        <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl mb-3 text-[var(--ink-primary)]">
+            The shape of your taste
           </h1>
-	        <p className="text-[var(--color-text-secondary)] text-lg">
+	        <p className="text-[var(--ink-muted)] max-w-[52ch]">
             Explore your music preferences and favorites
           </p>
         </div>
@@ -190,7 +190,7 @@ export default function TasteProfilePage() {
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <Spinner size="xl" className="mx-auto mb-4" />
-              <p className="text-[var(--color-text-secondary)]">Loading your taste profile...</p>
+              <p className="text-[var(--ink-muted)]">Loading your taste profile...</p>
             </div>
           </div>
         )}
@@ -198,76 +198,86 @@ export default function TasteProfilePage() {
         {/* Content */}
         {!isLoading && tracks.length > 0 && (
           <>
-            {/* Listening Persona */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-8"
-            >
-              <AnimatedCard opacity="bold" weight="medium">
-                <div className="flex flex-col md:flex-row items-center gap-6 p-2">
-                  <div className="text-6xl">{persona.emoji}</div>
-                  <div className="text-center md:text-left">
-                    <h2 className="text-3xl font-bold mb-2" style={{ color: persona.color }}>
-                      {persona.name}
-                    </h2>
-                    <p className="text-[var(--color-text-secondary)] text-lg">{persona.description}</p>
-                  </div>
-                </div>
-              </AnimatedCard>
-            </motion.div>
-
-            {/* Stats Overview - Enhanced */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-                <AnimatedCard size="compact" opacity="bold" weight="light">
-                  <div className="text-center p-2">
-                    <p className="text-[var(--color-text-secondary)] text-xs mb-1">Obscurity Score</p>
-                    <p className="text-3xl font-bold text-[var(--color-accent-safe)]">{obscurityScore}</p>
-                    <p className="text-xs text-[var(--color-text-secondary)] mt-1">
-                      {obscurityScore >= 60 ? 'Deep underground' : obscurityScore >= 40 ? 'Off the beaten path' : 'Chart adjacent'}
-                    </p>
-                  </div>
-                </AnimatedCard>
-              </motion.div>
-
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
-                <AnimatedCard size="compact" opacity="bold" weight="light">
-                  <div className="text-center p-2">
-                    <p className="text-[var(--color-text-secondary)] text-xs mb-1">Artist Diversity</p>
-                    <p className="text-3xl font-bold text-[var(--color-vibrant-safe)]">{diversityMetrics.artistDiversity}%</p>
-                    <p className="text-xs text-[var(--color-text-secondary)] mt-1">
-                      {diversityMetrics.artistDiversity >= 70 ? 'Variety seeker' : diversityMetrics.artistDiversity >= 40 ? 'Balanced mix' : 'Loyal listener'}
-                    </p>
-                  </div>
-                </AnimatedCard>
-              </motion.div>
-
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-                <AnimatedCard size="compact" opacity="bold" weight="light">
-                  <div className="text-center p-2">
-                    <p className="text-[var(--color-text-secondary)] text-xs mb-1">Genres</p>
-                    <p className="text-3xl font-bold text-[var(--color-primary-safe)]">{diversityMetrics.uniqueGenres}</p>
-                    <p className="text-xs text-[var(--color-text-secondary)] mt-1">unique genres</p>
-                  </div>
-                </AnimatedCard>
-              </motion.div>
-
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-                <AnimatedCard size="compact" opacity="bold" weight="light">
-                  <div className="text-center p-2">
-                    <p className="text-[var(--color-text-secondary)] text-xs mb-1">Avg Popularity</p>
-                    <p className="text-3xl font-bold text-[var(--color-secondary-safe)]">{avgPopularity}</p>
-                    <p className="text-xs text-[var(--color-text-secondary)] mt-1">out of 100</p>
-                  </div>
-                </AnimatedCard>
-              </motion.div>
+            {/*
+              * Persona sits on the page directly, with no panel behind it and
+              * no entrance. It is a verdict, not a data readout, so a card
+              * would file it alongside the metrics rather than above them.
+              * The emoji is decorative; the name carries the meaning.
+              */}
+            <div className="flex items-center gap-5 mb-10">
+              <span className="text-5xl leading-none" aria-hidden>{persona.emoji}</span>
+              <div>
+                <h2 className="text-3xl sm:text-4xl" style={{ color: persona.color }}>
+                  {persona.name}
+                </h2>
+                <p className="text-[var(--ink-muted)] mt-1 max-w-[52ch]">{persona.description}</p>
+              </div>
             </div>
+
+            {/*
+              * Obscurity leads: it is the number that characterises a taste
+              * profile. The rest are supporting readouts. Four equal tiles,
+              * each with its own staggered entrance, gave them all the same
+              * weight and made the page assemble itself on every visit.
+              */}
+            <section className="mb-10">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div className="lg:col-span-5">
+                  <AnimatedCard tier="feature">
+                    <p className="text-sm text-[var(--ink-muted)] mb-2">Obscurity score</p>
+                    <p className="font-figure text-7xl sm:text-8xl text-[var(--ink-primary)]">
+                      {obscurityScore}
+                    </p>
+                    <p className="text-sm text-[var(--ink-muted)] mt-3">
+                      {obscurityScore >= 60
+                        ? 'Deep underground'
+                        : obscurityScore >= 40
+                          ? 'Off the beaten path'
+                          : 'Chart adjacent'}
+                    </p>
+                  </AnimatedCard>
+                </div>
+
+                <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-6">
+                  <AnimatedCard tier="chip">
+                    <p className="text-xs text-[var(--ink-muted)] mb-1">Artist diversity</p>
+                    <p className="font-figure text-4xl text-[var(--ink-primary)]">
+                      {diversityMetrics.artistDiversity}%
+                    </p>
+                    <p className="text-xs text-[var(--ink-muted)] mt-1.5">
+                      {diversityMetrics.artistDiversity >= 70
+                        ? 'Variety seeker'
+                        : diversityMetrics.artistDiversity >= 40
+                          ? 'Balanced mix'
+                          : 'Loyal listener'}
+                    </p>
+                  </AnimatedCard>
+
+                  <AnimatedCard tier="chip">
+                    <p className="text-xs text-[var(--ink-muted)] mb-1">Genres</p>
+                    <p className="font-figure text-4xl text-[var(--ink-primary)]">
+                      {diversityMetrics.uniqueGenres}
+                    </p>
+                    <p className="text-xs text-[var(--ink-muted)] mt-1.5">unique</p>
+                  </AnimatedCard>
+
+                  <AnimatedCard tier="chip">
+                    <p className="text-xs text-[var(--ink-muted)] mb-1">Avg popularity</p>
+                    <p className="font-figure text-4xl text-[var(--ink-primary)]">
+                      {avgPopularity}
+                    </p>
+                    <p className="text-xs text-[var(--ink-muted)] mt-1.5">out of 100</p>
+                  </AnimatedCard>
+                </div>
+              </div>
+            </section>
+
+            <SectionRule label="Genre DNA" note="from your top artists" />
+
 
             {/* Genre Breakdown */}
             {genreData.length > 0 && (
-              <AnimatedCard opacity="bold" weight="medium" className="mb-8">
-                <AnimatedCard.Header title="Your Genre DNA" description="Based on your top artists" />
+              <AnimatedCard tier="panel" className="mb-10">
                 <div className="flex flex-wrap gap-2 mt-4">
                   {genreData.map((item, index) => {
                     const maxCount = genreData[0].count;
@@ -283,7 +293,7 @@ export default function TasteProfilePage() {
                           backgroundColor: `color-mix(in srgb, var(--color-accent) ${20 + intensity * 40}%, transparent)`,
                           borderWidth: '1px',
                           borderColor: `color-mix(in srgb, var(--color-accent) ${30 + intensity * 50}%, transparent)`,
-                          color: intensity > 0.5 ? 'var(--color-accent-safe)' : 'var(--color-text-secondary)',
+                          color: intensity > 0.5 ? 'var(--ink-signal)' : 'var(--ink-muted)',
                         }}
                       >
                         {item.genre}
@@ -296,7 +306,7 @@ export default function TasteProfilePage() {
             )}
 
             {/* Top Artists Grid */}
-            <AnimatedCard opacity="subtle" weight="light" className="mb-8">
+            <AnimatedCard tier="panel" className="mb-8">
               <AnimatedCard.Header title="Your Top Artists" description={timeRangeLabels[timeRange]} />
               <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
                 {artists.slice(0, 10).map((artist: any, index: number) => (
@@ -319,7 +329,7 @@ export default function TasteProfilePage() {
                     <p className="font-semibold text-sm group-hover:text-[var(--color-accent)] transition-colors">
                       {artist.name}
                     </p>
-                    <p className="text-xs text-[var(--color-text-secondary)]">#{index + 1}</p>
+                    <p className="text-xs text-[var(--ink-muted)]">#{index + 1}</p>
                   </motion.div>
                 ))}
               </div>
@@ -327,7 +337,7 @@ export default function TasteProfilePage() {
 
             {/* Actual Plays vs Spotify Ranking */}
             {actualTopTracks.length > 0 && (
-              <AnimatedCard opacity="bold" weight="medium" className="mb-8">
+              <AnimatedCard tier="panel" className="mb-8">
                 <AnimatedCard.Header
                   title="What You Actually Play"
                   description="Your real listening data vs Spotify's algorithm"
@@ -335,8 +345,8 @@ export default function TasteProfilePage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                   {/* Database Top Tracks */}
                   <div>
-                    <h3 className="text-sm font-semibold text-[var(--color-primary-safe)] mb-3 flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-[var(--color-primary-safe)]" />
+                    <h3 className="text-sm font-semibold text-[var(--ink-signal)] mb-3 flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-[var(--ink-signal)]" />
                       Most Played (Database)
                     </h3>
                     <div className="space-y-2">
@@ -346,9 +356,9 @@ export default function TasteProfilePage() {
                           initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: index * 0.05 }}
-                          className="flex items-center gap-3 p-2 rounded-lg bg-[var(--color-bg-2)]/30 hover:bg-[var(--color-bg-2)]/50 transition-colors"
+                          className="flex items-center gap-3 p-2 rounded-lg bg-[var(--surface-panel)]/30 hover:bg-[var(--surface-panel)]/50 transition-colors"
                         >
-                          <span className="text-xs text-[var(--color-text-secondary)] w-5">#{index + 1}</span>
+                          <span className="text-xs text-[var(--ink-muted)] w-5">#{index + 1}</span>
                           <img
                             src={track.albumImage}
                             alt={track.trackName}
@@ -356,11 +366,11 @@ export default function TasteProfilePage() {
                           />
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium truncate">{track.trackName}</p>
-                            <p className="text-xs text-[var(--color-text-secondary)] truncate">
+                            <p className="text-xs text-[var(--ink-muted)] truncate">
                               {track.artists?.map((a: any) => a.name).join(', ')}
                             </p>
                           </div>
-                          <span className="text-xs font-bold text-[var(--color-primary-safe)]">
+                          <span className="text-xs font-bold text-[var(--ink-signal)]">
                             {track.playCount}×
                           </span>
                         </motion.div>
@@ -370,8 +380,8 @@ export default function TasteProfilePage() {
 
                   {/* Spotify Top Tracks */}
                   <div>
-                    <h3 className="text-sm font-semibold text-[var(--color-accent-safe)] mb-3 flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-[var(--color-accent-safe)]" />
+                    <h3 className="text-sm font-semibold text-[var(--ink-signal)] mb-3 flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-[var(--ink-signal)]" />
                       Spotify's Top Picks
                     </h3>
                     <div className="space-y-2">
@@ -381,9 +391,9 @@ export default function TasteProfilePage() {
                           initial={{ opacity: 0, x: 10 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: index * 0.05 }}
-                          className="flex items-center gap-3 p-2 rounded-lg bg-[var(--color-bg-2)]/30 hover:bg-[var(--color-bg-2)]/50 transition-colors"
+                          className="flex items-center gap-3 p-2 rounded-lg bg-[var(--surface-panel)]/30 hover:bg-[var(--surface-panel)]/50 transition-colors"
                         >
-                          <span className="text-xs text-[var(--color-text-secondary)] w-5">#{index + 1}</span>
+                          <span className="text-xs text-[var(--ink-muted)] w-5">#{index + 1}</span>
                           <img
                             src={track.album.images[2]?.url || track.album.images[0]?.url}
                             alt={track.album.name}
@@ -391,11 +401,11 @@ export default function TasteProfilePage() {
                           />
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium truncate">{track.name}</p>
-                            <p className="text-xs text-[var(--color-text-secondary)] truncate">
+                            <p className="text-xs text-[var(--ink-muted)] truncate">
                               {track.artists.map((a: any) => a.name).join(', ')}
                             </p>
                           </div>
-                          <span className="text-xs font-bold text-[var(--color-accent-safe)]">
+                          <span className="text-xs font-bold text-[var(--ink-signal)]">
                             {track.popularity}
                           </span>
                         </motion.div>
@@ -407,7 +417,7 @@ export default function TasteProfilePage() {
             )}
 
             {/* Album Collage */}
-            <AnimatedCard opacity="bold" weight="medium">
+            <AnimatedCard tier="panel">
               <AnimatedCard.Header title="Your Musical Universe" />
               <div className="grid grid-cols-5 md:grid-cols-10 gap-1">
                 {tracks.map((track: any, index: number) => (
