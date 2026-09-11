@@ -11,7 +11,7 @@ import Spinner from '@/components/Spinner';
 
 // Dynamically import 3D components to avoid SSR
 const Scene = dynamic(() => import('@/components/3D/Scene'), { ssr: false });
-const TrackParticle = dynamic(() => import('@/components/3D/TrackParticle'), { ssr: false });
+const TrackWall = dynamic(() => import('@/components/3D/TrackWall'), { ssr: false });
 
 export default function Tracks3DPage() {
   const [timeRange, setTimeRange] = useState<'short_term' | 'medium_term' | 'long_term'>('short_term');
@@ -19,27 +19,11 @@ export default function Tracks3DPage() {
 
   // Fetch tracks
   const { data: tracksData, isLoading } = useSWR(
-    `/api/top-tracks-timerange?time_range=${timeRange}&limit=20`,
+    `/api/top-tracks-timerange?time_range=${timeRange}&limit=50`,
     fetcher
   );
 
   const tracks = tracksData?.items || [];
-
-  // Calculate 3D positions in a spiral pattern
-  const getPosition = (index: number, total: number): [number, number, number] => {
-    const radius = 8;
-    const height = 10;
-    const turns = 2; // Number of spiral turns
-
-    const t = index / total;
-    const angle = t * Math.PI * 2 * turns;
-    const y = (t - 0.5) * height;
-
-    const x = Math.cos(angle) * radius;
-    const z = Math.sin(angle) * radius;
-
-    return [x, y, z];
-  };
 
   const timeRangeLabels = {
     short_term: 'Last 4 Weeks',
@@ -50,11 +34,10 @@ export default function Tracks3DPage() {
   return (
     <div className="relative h-screen overflow-hidden">
       {/* Header */}
-      <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/80 to-transparent p-6">
+      <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/90 via-black/70 to-transparent pb-16 px-6 pt-6">
         <div className="max-w-7xl">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl text-white mb-2 pt-14 md:pt-0 md:pr-82">
-            Your Top Tracks
-            <span className="text-cyan-500"> in 3D</span>
+          <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl text-[var(--ink-primary)] mb-2 pt-14 md:pt-0 md:pr-82">
+            Your top tracks, in space
           </h1>
 
           {/* Time Range Selector */}
@@ -73,8 +56,8 @@ export default function Tracks3DPage() {
           </div>
 
           {/* Instructions */}
-          <div className="mt-4 text-sm text-gray-400 space-y-1">
-            <p>🖱️ Drag to rotate • 🔍 Scroll to zoom • 🎵 Hover over tracks for details</p>
+          <div className="mt-4 text-sm text-[var(--ink-muted)] space-y-1">
+            <p>Scroll to pan the wall. Move the pointer to tilt it. Bigger covers, leaning further out, are the ones you played most.</p>
           </div>
         </div>
       </div>
@@ -89,18 +72,11 @@ export default function Tracks3DPage() {
         </div>
       )}
 
-      {/* 3D Scene */}
+      {/* 3D Scene. Orbit controls are off: the wall drives its own pan and
+          tilt, and free orbiting made it easy to end up behind the wall. */}
       {!isLoading && tracks.length > 0 && (
-        <Scene enableControls={true} cameraPosition={[0, 0, 12]}>
-          {tracks.map((track: any, index: number) => (
-            <TrackParticle
-              key={track.id}
-              track={track}
-              position={getPosition(index, tracks.length)}
-              index={index}
-              onClick={() => setSelectedTrack(track)}
-            />
-          ))}
+        <Scene enableControls={false} cameraPosition={[0, 0, 15]}>
+          <TrackWall tracks={tracks} onSelect={setSelectedTrack} />
         </Scene>
       )}
 
@@ -153,7 +129,7 @@ export default function Tracks3DPage() {
                       <div className="flex justify-between">
                         <span className="text-[var(--ink-muted)]">Popularity</span>
                         <div className="flex items-center gap-2">
-                          <div className="w-32 h-2 bg-gray-700 rounded-full overflow-hidden">
+                          <div className="w-32 h-2 bg-[var(--surface-raised)] rounded-full overflow-hidden">
                             <div
                               className="h-full bg-[var(--ink-signal)] rounded-full"
                               style={{ width: `${selectedTrack.popularity}%` }}
@@ -195,8 +171,8 @@ export default function Tracks3DPage() {
         <AnimatedCard tier="chip">
           <h3 className=" mb-2 text-[var(--ink-signal)]">Stats</h3>
           <div className="text-sm space-y-1 text-[var(--ink-muted)]">
-            <p>Tracks Loaded: <span className="text-[var(--ink-primary)] font-bold">{tracks.length}</span></p>
-            <p>Time Range: <span className="text-[var(--ink-primary)] font-bold">{timeRangeLabels[timeRange]}</span></p>
+            <p>Tracks: <span className="font-data text-[var(--ink-primary)]">{tracks.length}</span></p>
+            <p>Range: <span className="text-[var(--ink-primary)]">{timeRangeLabels[timeRange]}</span></p>
           </div>
         </AnimatedCard>
       </div>
