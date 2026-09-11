@@ -36,6 +36,24 @@ const jetbrainsMono = localFont({
   display: "swap",
 });
 
+/*
+ * Display face. Anybody carries width (50-150) and weight (100-900) axes, so
+ * headlines can be set genuinely condensed rather than just large. JetBrains
+ * Mono stays the voice for data, labels and UI; this exists to give headings
+ * and feature figures a register the mono cannot reach.
+ */
+const anybody = localFont({
+  src: [
+    {
+      path: "../public/fonts/Anybody/Anybody-Variable.woff2",
+      weight: "100 900",
+      style: "normal",
+    },
+  ],
+  variable: "--font-anybody",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "oldski unwrapped",
   description: "A fun project diving into Spotify's API",
@@ -51,7 +69,7 @@ export default function RootLayout({
 	
   return (
     <html lang="en">
-      <body className={jetbrainsMono.className}>
+      <body className={`${jetbrainsMono.className} ${jetbrainsMono.variable} ${anybody.variable} palette-transition`}>
         <ColorThemeProvider>
           <ErrorBoundary componentName="App Root">
             <VisualizerProvider>

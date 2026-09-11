@@ -42,6 +42,13 @@ type AnimationVariant = 'lift' | 'float' | 'tilt' | 'glow' | 'scale' | 'slide' |
 type SizeVariant = 'compact' | 'default' | 'expanded';
 type OpacityPreset = 'subtle' | 'medium' | 'bold' | 'solid';
 type WeightVariant = 'light' | 'medium' | 'heavy';
+/**
+ * Visual rank on the page. Pages previously used one card treatment for
+ * everything, so a headline metric and a footnote carried identical weight
+ * and the grid read as undifferentiated tiles. Tier varies radius, padding,
+ * fill and edge together, so rank is legible before any text is read.
+ */
+type CardTier = 'feature' | 'panel' | 'chip';
 
 interface AnimatedCardProps {
   children: ReactNode;
@@ -52,6 +59,7 @@ interface AnimatedCardProps {
   opacity?: OpacityPreset;
   weight?: WeightVariant;
   size?: SizeVariant;
+  tier?: CardTier;
   disabled?: boolean;
   enableHoverEffect?: boolean;
   /** Enable opacity transition on hover. Pass true for default (to: 1) or a number for custom 'to' value. 'from' uses the opacity prop value. */
@@ -93,6 +101,7 @@ const AnimatedCardBase: React.FC<AnimatedCardProps> = ({
   opacity = 'medium',
   weight = 'medium',
   size = 'default',
+  tier,
   disabled = false,
   enableHoverEffect = true,
   hoverOpacity,
@@ -117,6 +126,13 @@ const AnimatedCardBase: React.FC<AnimatedCardProps> = ({
   };
 
   const glassOpacity = opacityValues[opacity];
+
+  // Radius and padding climb with rank; the edge treatment marks it.
+  const tierClasses: Record<CardTier, string> = {
+    feature: 'rounded-2xl p-7 border-t-2 border-[var(--ink-signal)] shadow-layered-sm',
+    panel: 'rounded-xl p-5 border border-[var(--line)]',
+    chip: 'rounded-lg p-4 border-l-2 border-[var(--line)]',
+  };
 
   // Hover opacity configuration - 'from' uses glassOpacity, 'to' is specified or defaults to 1
   const hoverOpacityConfig = hoverOpacity
@@ -451,12 +467,22 @@ const AnimatedCardBase: React.FC<AnimatedCardProps> = ({
       onMouseMove={handleMouseMove}
       className={`
         relative overflow-hidden
-        ${sizeClasses[size]}
+        ${tier ? tierClasses[tier] : sizeClasses[size]}
         ${onClick && !disabled ? 'cursor-pointer' : ''}
         ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
         ${className}
       `}
-      style={getCardStyles()}
+      style={
+        tier
+          ? {
+              ...getCardStyles(),
+              // Flat, known fill: the palette guarantees ink contrast against
+              // this exact token. The glass gradient composites album colours
+              // at partial alpha, which no contrast check can account for.
+              background: tier === 'chip' ? 'var(--surface-raised)' : 'var(--surface-panel)',
+            }
+          : getCardStyles()
+      }
     >
       {/* Pattern Layer - only render after mount to avoid hydration issues with btoa */}
       {pattern && hasMounted && (
@@ -486,13 +512,13 @@ const Header: React.FC<HeaderProps> = ({ title, description, icon, children }) =
   }
 
   return (
-    <div className="mb-6">
-      <h2 className="text-2xl font-bold text-[var(--color-vibrant-safe)] flex items-center gap-2">
-        {icon && <span>{icon}</span>}
+    <div className="mb-5">
+      <h2 className="font-display text-xl text-[var(--ink-primary)] flex items-center gap-2">
+        {icon && <span aria-hidden>{icon}</span>}
         {title}
       </h2>
       {description && (
-        <p className="text-[var(--color-text-secondary)] text-sm mt-1">
+        <p className="text-[var(--ink-muted)] text-sm mt-1.5 max-w-[60ch]">
           {description}
         </p>
       )}
@@ -506,14 +532,14 @@ const Content: React.FC<ContentProps> = ({ children, className = '' }) => {
 
 const Stat: React.FC<StatProps> = ({ label, value, trend, icon, className = '' }) => {
   return (
-    <div className={`space-y-2 ${className}`}>
-      <p className="text-sm text-[var(--color-text-secondary)]">{label}</p>
-      <p className="text-4xl font-black text-[var(--color-vibrant-safe)] flex items-center gap-2">
-        {icon && <span className="text-3xl">{icon}</span>}
+    <div className={className}>
+      <p className="text-xs text-[var(--ink-muted)] mb-1">{label}</p>
+      <p className="font-figure text-5xl text-[var(--ink-primary)] flex items-baseline gap-2">
+        {icon && <span className="text-2xl" aria-hidden>{icon}</span>}
         {value}
       </p>
       {trend && (
-        <p className="text-xs text-[var(--color-accent)]">{trend}</p>
+        <p className="text-xs text-[var(--ink-signal)] mt-1.5">{trend}</p>
       )}
     </div>
   );

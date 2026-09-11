@@ -28,25 +28,75 @@
   --background-end-rgb: 0, 0, 0;
 }
 
-/* Apply smooth transitions to all elements using CSS variables */
-* {
+/*
+ * Album palette tokens. Defaults here so server-rendered markup is legible
+ * before ColorThemeProvider runs; it overwrites them per track.
+ * See lib/color/palette.ts for how these are derived and guaranteed.
+ */
+:root {
+  --surface-base: #14141c;
+  --surface-panel: #1d1d28;
+  --surface-raised: #272734;
+  --surface-signal: #6f6ab8;
+  --line: #3a3a4c;
+  --ink-primary: #f1f0f6;
+  --ink-muted: #b6b4c6;
+  --ink-signal: #c3bcf5;
+  --ink-on-signal: #14121f;
+}
+
+/*
+ * The album palette crossfades when the track changes. Scoped to the elements
+ * that actually carry palette colours: as a `*` rule it also caught every
+ * hover and focus state in the app, so a button's hover took two seconds to
+ * arrive and interaction felt broken.
+ */
+.palette-transition,
+.palette-transition * {
   transition:
-    color 2s ease-in-out,
-    background-color 2s ease-in-out,
-    border-color 2s ease-in-out,
-    fill 2s ease-in-out,
-    stroke 2s ease-in-out,
-    box-shadow 0.3s ease-in-out;
+    color 900ms ease-in-out,
+    background-color 900ms ease-in-out,
+    border-color 900ms ease-in-out,
+    fill 900ms ease-in-out,
+    stroke 900ms ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .palette-transition,
+  .palette-transition * {
+    transition: none;
+  }
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  color: var(--ink-primary);
+  background-color: var(--surface-base);
+}
+
+/*
+ * Type roles. Mono is the default voice for data, labels and UI. The display
+ * face is opt-in per element so it stays reserved for headings and figures.
+ */
+.font-display {
+  font-family: var(--font-anybody), var(--font-jetbrains-mono), ui-sans-serif, system-ui, sans-serif;
+  font-variation-settings: "wdth" 88, "wght" 700;
+  letter-spacing: -0.02em;
+  line-height: 0.95;
+}
+
+/* Feature figures: condensed, light, and set very large. */
+.font-figure {
+  font-family: var(--font-anybody), var(--font-jetbrains-mono), ui-sans-serif, system-ui, sans-serif;
+  font-variation-settings: "wdth" 75, "wght" 300;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  line-height: 0.88;
+}
+
+/* Data figures inside panels stay mono so columns align. */
+.font-data {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "zero" 1;
 }
 
 @layer utilities {

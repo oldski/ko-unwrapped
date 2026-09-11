@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo, useRef, createContext, useContext } from 
 import useSWR from 'swr';
 import fetcher from '@/lib/fetcher';
 import useColorThief from 'use-color-thief';
+import { buildPalette, FALLBACK_PALETTE } from '@/lib/color/palette';
 
 // Context for ambient theme settings
 interface AmbientThemeContextType {
@@ -384,6 +385,60 @@ const ColorThemeProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [colors]);
 
+  /*
+   * Content palette: surfaces and inks with guaranteed contrast.
+   *
+   * Deliberately separate from `colorPalette` above, which still feeds the
+   * visualisers. Those read --color-1..8, --color-primary/secondary/accent and
+   * are working well, so they are left exactly as they were. This palette only
+   * governs text and panels, where legibility has to be provable.
+   */
+  const contentPalette = useMemo(() => {
+    const swatches = (colors as string[] | undefined)?.filter(Boolean) ?? [];
+    return swatches.length ? buildPalette(swatches) : FALLBACK_PALETTE;
+  }, [colors]);
+
+  // Apply the content palette. Runs for every track, and also when nothing is
+  // playing, so surfaces and text never fall back to an unverified colour.
+  useEffect(() => {
+    const root = document.documentElement;
+    const p = hasTrack ? contentPalette : FALLBACK_PALETTE;
+
+    root.style.setProperty('--surface-base', p.surfaceBase);
+    root.style.setProperty('--surface-panel', p.surfacePanel);
+    root.style.setProperty('--surface-raised', p.surfaceRaised);
+    root.style.setProperty('--surface-signal', p.surfaceSignal);
+    root.style.setProperty('--line', p.line);
+    root.style.setProperty('--ink-primary', p.inkPrimary);
+    root.style.setProperty('--ink-muted', p.inkMuted);
+    root.style.setProperty('--ink-signal', p.inkSignal);
+    root.style.setProperty('--ink-on-signal', p.inkOnSignal);
+    root.style.setProperty('--album-hue', String(Math.round(p.hue)));
+
+    /*
+     * Bridge for pages still on the old token names.
+     *
+     * The `*-safe` tokens were contrast-checked against white, which made them
+     * legible *behind* text, not *as* text — yet pages use them as text ~100
+     * times. On a dark sleeve --color-vibrant-safe resolved to #040747, about
+     * 1.1:1 on the real background. Pointing them at inkSignal fixes every one
+     * of those sites at once. It also suits their handful of background uses,
+     * which are dots, progress bars and chips that already set `text-black`.
+     */
+    root.style.setProperty('--color-vibrant-safe', p.inkSignal);
+    root.style.setProperty('--color-primary-safe', p.inkSignal);
+    root.style.setProperty('--color-accent-safe', p.inkSignal);
+    root.style.setProperty('--color-secondary-safe', p.inkSignal);
+    root.style.setProperty('--color-text-primary', p.inkPrimary);
+    root.style.setProperty('--color-text-secondary', p.inkMuted);
+    root.style.setProperty('--color-text-vivid', p.inkSignal);
+    root.style.setProperty('--color-text-vivid-muted', p.inkMuted);
+    root.style.setProperty('--color-bg-1', p.surfaceBase);
+    root.style.setProperty('--color-bg-2', p.surfacePanel);
+    root.style.setProperty('--color-bg-3', p.surfaceRaised);
+    root.style.setProperty('--color-border', p.line);
+  }, [contentPalette, hasTrack]);
+
   // Update CSS variables when colors change
   useEffect(() => {
     const root = document.documentElement;
@@ -412,28 +467,12 @@ const ColorThemeProvider = ({ children }: { children: React.ReactNode }) => {
       root.style.setProperty('--color-darker', colorPalette.darker);
       root.style.setProperty('--color-lighter', colorPalette.lighter);
 
-      // Backgrounds
-      root.style.setProperty('--color-bg-1', colorPalette.bg1);
-      root.style.setProperty('--color-bg-2', colorPalette.bg2);
-      root.style.setProperty('--color-bg-3', colorPalette.bg3);
-
-      // Text
-      root.style.setProperty('--color-text-primary', colorPalette.textPrimary);
-      root.style.setProperty('--color-text-secondary', colorPalette.textSecondary);
-      root.style.setProperty('--color-text-vivid', colorPalette.textVivid);
-      root.style.setProperty('--color-text-vivid-muted', colorPalette.textVividMuted);
-      root.style.setProperty('--color-border', colorPalette.border);
-
       // Complementary
       root.style.setProperty('--color-complementary-1', colorPalette.complementary1);
       root.style.setProperty('--color-complementary-2', colorPalette.complementary2);
 
       // Safe variants now equal the contrast-corrected base colors
       // (mixing toward textPrimary would reduce contrast against textPrimary)
-      root.style.setProperty('--color-vibrant-safe', colorPalette.vibrant);
-      root.style.setProperty('--color-accent-safe', colorPalette.accent);
-      root.style.setProperty('--color-primary-safe', colorPalette.primary);
-      root.style.setProperty('--color-secondary-safe', colorPalette.secondary);
     } else {
       // Reset to defaults when not playing
       root.style.setProperty('--color-1', '#0f172a');
@@ -453,22 +492,10 @@ const ColorThemeProvider = ({ children }: { children: React.ReactNode }) => {
       root.style.setProperty('--color-dark', '#111827');
       root.style.setProperty('--color-darker', '#030712');
       root.style.setProperty('--color-lighter', '#f9fafb');
-      root.style.setProperty('--color-bg-1', '#0f172a');
-      root.style.setProperty('--color-bg-2', '#1e293b');
-      root.style.setProperty('--color-bg-3', '#334155');
-      root.style.setProperty('--color-text-primary', '#ffffff');
-      root.style.setProperty('--color-text-secondary', '#d1d5db');
-      root.style.setProperty('--color-text-vivid', '#fbbf24');
-      root.style.setProperty('--color-text-vivid-muted', '#a5b4fc');
-      root.style.setProperty('--color-border', '#374151');
       root.style.setProperty('--color-complementary-1', '#fbbf24');
       root.style.setProperty('--color-complementary-2', '#f97316');
 
       // Safe variants (defaults)
-      root.style.setProperty('--color-vibrant-safe', 'color-mix(in srgb, #f59e0b 75%, #ffffff 25%)');
-      root.style.setProperty('--color-accent-safe', 'color-mix(in srgb, #ec4899 75%, #ffffff 25%)');
-      root.style.setProperty('--color-primary-safe', 'color-mix(in srgb, #06b6d4 75%, #ffffff 25%)');
-      root.style.setProperty('--color-secondary-safe', 'color-mix(in srgb, #8b5cf6 75%, #ffffff 25%)');
     }
   }, [colorPalette, hasTrack]);
 

@@ -5,87 +5,86 @@ import TasteEvolution from "@/components/TasteEvolution";
 import OnThisDay from "@/components/OnThisDay";
 import ListeningStreaks from "@/components/ListeningStreaks";
 import ExportData from "@/components/ExportData";
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
+
+/**
+ * Section rule. Carries the section's rank rather than decorating it: the
+ * label sits on a hairline that runs to the edge of the column, so scanning
+ * down the page reads as a contents list.
+ */
+const SectionRule = ({ label, note }: { label: string; note?: string }) => (
+  <div className="flex items-baseline gap-4 mb-4">
+    <h2 className="font-display text-sm text-[var(--ink-signal)] shrink-0">{label}</h2>
+    <span className="h-px flex-1 bg-[var(--line)]" aria-hidden />
+    {note && <span className="text-xs text-[var(--ink-muted)] shrink-0">{note}</span>}
+  </div>
+);
 
 export default function InsightsPage() {
-	
+  const reduceMotion = useReducedMotion();
+
+  // One orchestrated entrance, on the masthead only. Staggering every section
+  // on scroll is the default treatment and makes the page feel like it is
+  // assembling itself rather than already being there.
+  const enter = reduceMotion
+    ? {}
+    : {
+        initial: { opacity: 0, y: -12 },
+        animate: { opacity: 1, y: 0 },
+        transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] as const },
+      };
+
   return (
-    <div className="min-h-screen text-white p-8">
+    <div className="min-h-screen p-8 text-[var(--ink-primary)]">
       <div className="max-w-7xl">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8 pt-14 md:pt-0 md:pr-82"
-        >
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2 text-[var(--color-text-primary)]">
-            Your Listening
-            <span className="text-[var(--color-vibrant-safe)]"> Insights</span>
+        <motion.header {...enter} className="mb-12 pt-14 md:pt-0 md:pr-82">
+          <h1 className="font-display text-4xl sm:text-6xl lg:text-7xl text-[var(--ink-primary)]">
+            Your listening, in detail
           </h1>
-          <p className="text-[var(--color-text-secondary)] text-lg">
-            Deep dive into your music journey with historical data and trends
+          <p className="text-[var(--ink-muted)] mt-3 max-w-[52ch]">
+            A year of plays, the shape of the habit, and what your taste has been
+            drifting toward.
           </p>
-        </motion.div>
+        </motion.header>
 
-        {/* Main Content Grid */}
-        <div className="space-y-8">
-          {/* Row 1: Calendar Heatmap (Full Width) */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
+        <div className="space-y-14">
+          <section>
+            <SectionRule label="The year" note="last 365 days" />
             <CalendarHeatmap />
-          </motion.div>
+          </section>
 
-          {/* Row 2: Taste Evolution (Full Width) */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
+          <section>
+            <SectionRule label="Drift" note="12 months" />
             <TasteEvolution months={12} />
-          </motion.div>
+          </section>
 
-          {/* Row 3: On This Day + Listening Streaks (Side by Side) */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              <OnThisDay />
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              <ListeningStreaks />
-            </motion.div>
-          </div>
-					
-          {/* Row 4: Export Data (Development Only) */}
+          {/* Deliberately uneven: the streaks panel is the denser read, so it
+              takes the wider column instead of splitting the row in half. */}
+          <section>
+            <SectionRule label="Patterns" />
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              <div className="lg:col-span-5">
+                <OnThisDay />
+              </div>
+              <div className="lg:col-span-7">
+                <ListeningStreaks />
+              </div>
+            </div>
+          </section>
+
           {process.env.NODE_ENV === 'development' && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-            >
+            <section>
+              <SectionRule label="Export" note="development only" />
               <ExportData />
-            </motion.div>
+            </section>
           )}
         </div>
 
-        {/* Footer Note */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="mt-12 text-center text-gray-500 text-sm"
-        >
-          <p>All data is stored locally in your database and never shared with third parties.</p>
-        </motion.div>
+        <footer className="mt-16 pt-6 border-t border-[var(--line)]">
+          <p className="text-xs text-[var(--ink-muted)]">
+            Your listening history lives in your own database. Nothing here is shared.
+          </p>
+        </footer>
       </div>
     </div>
   );
