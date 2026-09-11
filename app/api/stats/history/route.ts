@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
-import { playHistory, tracks, artists, trackArtists, audioFeatures } from '@/db/schema';
+import { playHistory, tracks, audioFeatures } from '@/db/schema';
 import { desc, and, gte, lte, eq } from 'drizzle-orm';
+import { fetchArtistsByTrack } from '@/lib/stats/attachArtists';
 
 export async function GET(request: Request) {
   try {
@@ -57,32 +58,17 @@ export async function GET(request: Request) {
       ? await query.where(and(...conditions))
       : await query;
 
-    // For each play, get the artists
-    const historyWithArtists = await Promise.all(
-      history.map(async (play) => {
-        const trackArtistsData = await db
-          .select({
-            artistId: artists.id,
-            artistName: artists.artistName,
-            spotifyArtistId: artists.spotifyArtistId,
-          })
-          .from(trackArtists)
-          .innerJoin(artists, eq(trackArtists.artistId, artists.id))
-          .where(eq(trackArtists.trackId, play.track.id));
+    // Artists for every track in one query. This used to run a query per play
+    // inside a .map(), which is where this endpoint's ~13s came from.
+    const artistsByTrack = await fetchArtistsByTrack(history.map((p) => p.track.id));
 
-        return {
-          ...play,
-          track: {
-            ...play.track,
-            artists: trackArtistsData.map((a) => ({
-              id: a.artistId,
-              name: a.artistName,
-              spotifyArtistId: a.spotifyArtistId,
-            })),
-          },
-        };
-      })
-    );
+    const historyWithArtists = history.map((play) => ({
+      ...play,
+      track: {
+        ...play.track,
+        artists: artistsByTrack.get(play.track.id) ?? [],
+      },
+    }));
 
     return NextResponse.json({
       success: true,
