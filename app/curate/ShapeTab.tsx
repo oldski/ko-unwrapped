@@ -13,7 +13,7 @@ function ChipInput({
 }) {
   return (
     <label className="block">
-      <span className="text-xs uppercase tracking-widest text-[var(--color-text-secondary)]">{label}</span>
+      <span className="text-xs text-[var(--ink-muted)]">{label}</span>
       <input
         defaultValue={values.join(', ')}
         onBlur={(e) =>
@@ -24,8 +24,8 @@ function ChipInput({
               .filter(Boolean)
           )
         }
-        placeholder="comma-separated, e.g. downtempo, trip hop"
-        className="mt-1 w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 focus:border-[var(--color-primary)] outline-none text-sm"
+        placeholder="Separate with commas, like downtempo, trip hop"
+        className="mt-1 w-full px-3 py-2 rounded-lg border border-[var(--line)] bg-[var(--surface-raised)] outline-none focus:border-[var(--ink-signal)] text-sm"
       />
     </label>
   );
@@ -46,8 +46,8 @@ export default function ShapeTab({
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl">
       <div className="flex gap-3 items-end">
         <label className="block flex-1">
-          <span className="text-xs uppercase tracking-widest text-[var(--color-text-secondary)]">
-            Duration (min)
+          <span className="text-xs text-[var(--ink-muted)]">
+            Set length in minutes
           </span>
           <input
             type="number"
@@ -55,26 +55,26 @@ export default function ShapeTab({
             max={filters.durationMaxMinutes}
             value={filters.durationMinMinutes}
             onChange={num('durationMinMinutes')}
-            className="mt-1 w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm"
+            className="mt-1 w-full px-3 py-2 rounded-lg border border-[var(--line)] bg-[var(--surface-raised)] text-sm"
           />
         </label>
-        <span className="pb-2 text-[var(--color-text-secondary)]">to</span>
+        <span className="pb-2 text-[var(--ink-muted)]">to</span>
         <label className="block flex-1">
-          <span className="text-xs uppercase tracking-widest text-transparent select-none">max</span>
+          <span className="text-xs text-transparent select-none">max</span>
           <input
             type="number"
             min={filters.durationMinMinutes}
             max={240}
             value={filters.durationMaxMinutes}
             onChange={num('durationMaxMinutes')}
-            className="mt-1 w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm"
+            className="mt-1 w-full px-3 py-2 rounded-lg border border-[var(--line)] bg-[var(--surface-raised)] text-sm"
           />
         </label>
       </div>
       <div className="flex gap-3 items-end">
         <label className="block flex-1">
-          <span className="text-xs uppercase tracking-widest text-[var(--color-text-secondary)]">
-            Popularity
+          <span className="text-xs text-[var(--ink-muted)]">
+            Popularity, 0 to 100
           </span>
           <input
             type="number"
@@ -82,19 +82,19 @@ export default function ShapeTab({
             max={filters.popularityMax}
             value={filters.popularityMin}
             onChange={num('popularityMin')}
-            className="mt-1 w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm"
+            className="mt-1 w-full px-3 py-2 rounded-lg border border-[var(--line)] bg-[var(--surface-raised)] text-sm"
           />
         </label>
-        <span className="pb-2 text-[var(--color-text-secondary)]">to</span>
+        <span className="pb-2 text-[var(--ink-muted)]">to</span>
         <label className="block flex-1">
-          <span className="text-xs uppercase tracking-widest text-transparent select-none">max</span>
+          <span className="text-xs text-transparent select-none">max</span>
           <input
             type="number"
             min={filters.popularityMin}
             max={100}
             value={filters.popularityMax}
             onChange={num('popularityMax')}
-            className="mt-1 w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm"
+            className="mt-1 w-full px-3 py-2 rounded-lg border border-[var(--line)] bg-[var(--surface-raised)] text-sm"
           />
         </label>
       </div>

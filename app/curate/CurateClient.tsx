@@ -12,6 +12,7 @@ import SessionsTab from './SessionsTab';
 import ShapeTab from './ShapeTab';
 import SetTimeline from './SetTimeline';
 import PushDialog from './PushDialog';
+import SectionRule from '@/components/Interface/SectionRule';
 
 type Tab = 'search' | 'vibes' | 'sessions' | 'shape';
 
@@ -109,7 +110,7 @@ export default function CurateClient({ displayName }: { displayName: string }) {
       setTransitions(data.transitions ?? []);
       setNarrative(data.narrative ?? '');
       if (data.mode === 'fallback') {
-        setFallbackNotice('Agent unavailable — classic sequencing used.');
+        setFallbackNotice('The set director was unavailable, so this set was sequenced the classic way.');
       }
       setSmoothed(false);
       setBaseOrder([]);
@@ -172,82 +173,141 @@ export default function CurateClient({ displayName }: { displayName: string }) {
 
   const [pushOpen, setPushOpen] = useState(false);
 
+  const sourceTabs: { id: Tab; label: string; hint: string }[] = [
+    { id: 'search', label: 'Search', hint: 'your whole library' },
+    { id: 'vibes', label: 'Vibes', hint: 'by mood and tag' },
+    { id: 'sessions', label: 'Sessions', hint: 'listens that hung together' },
+    { id: 'shape', label: 'Shape', hint: 'tempo, key, era' },
+  ];
+
   return (
-    <div className="min-h-screen text-white p-6 md:p-8">
-      <div className="max-w-6xl mx-auto flex flex-col gap-4">
-        <header className="flex items-baseline justify-between">
-          <h1 className="text-3xl font-bold text-[var(--color-text-primary)]">
-            Curate<span className="text-[var(--color-vibrant-safe)]">.</span>
+    <div className="min-h-screen p-6 md:p-8 text-[var(--ink-primary)]">
+      {/*
+        Two columns, not one stack.
+        
+        The page does two jobs — build the set, and feed it — and used to give
+        them identical weight in a vertical run of equal boxes. The set is the
+        thing you judge, so it takes the wider column; the sources sit beside
+        it. On one column the order still puts the set first.
+      */}
+      <div className="max-w-7xl">
+        <header className="masthead mb-8 pt-14 md:pt-0 md:pr-82">
+          <h1 className="font-display text-4xl sm:text-5xl text-[var(--ink-primary)]">
+            Build a set
           </h1>
-          <span className="text-xs text-[var(--color-text-secondary)]">{displayName}</span>
+          <p className="text-[var(--ink-muted)] mt-2 max-w-[52ch]">
+            Pick a few tracks to anchor it, then let the rest fall in around them,
+            mixed in key and in tempo.
+          </p>
         </header>
 
-        {/* The Set */}
-        <section className="rounded-2xl bg-white/5 border border-white/10 p-4 min-h-40">
-          <SetTimeline
-            set={set}
-            alternates={alternates}
-            smoothed={smoothed}
-            onToggleSmoothed={toggleSmoothed}
-            onReorder={reorder}
-            onRemove={removeFromSet}
-            onSwap={swapInSet}
-            onPush={() => setPushOpen(true)}
-            pushDisabled={set.length === 0}
-            transitions={transitions}
-            narrative={narrative}
-          />
-          {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
-        </section>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
+          {/* The set */}
+          <div className="lg:col-span-7 min-w-0">
+            <SectionRule
+              label="The set"
+              note={set.length > 0 ? `${set.length} tracks` : 'nothing yet'}
+            />
 
-        <SeedTray
-          seeds={seeds}
-          onRemove={removeSeed}
-          onGenerate={generate}
-          generating={generating}
-          preset={preset}
-          onPresetChange={setPreset}
-          progressLabel={progressStage}
-        />
+            <SetTimeline
+              set={set}
+              alternates={alternates}
+              smoothed={smoothed}
+              onToggleSmoothed={toggleSmoothed}
+              onReorder={reorder}
+              onRemove={removeFromSet}
+              onSwap={swapInSet}
+              onPush={() => setPushOpen(true)}
+              pushDisabled={set.length === 0}
+              transitions={transitions}
+              narrative={narrative}
+            />
 
-        {fallbackNotice && (
-          <div className="flex items-center gap-2 text-xs text-amber-300/90 bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2">
-            <span>{fallbackNotice}</span>
-            <button onClick={() => setFallbackNotice(null)} className="ml-auto hover:text-white">✕</button>
+            {error && (
+              <p className="mt-3 text-sm text-rose-400">{error}</p>
+            )}
+
+            <div className="mt-8">
+              <SectionRule label="Seeds" note="what the set is built around" />
+              <SeedTray
+                seeds={seeds}
+                onRemove={removeSeed}
+                onGenerate={generate}
+                generating={generating}
+                preset={preset}
+                onPresetChange={setPreset}
+                progressLabel={progressStage}
+              />
+            </div>
+
+            {fallbackNotice && (
+              <div className="mt-4 flex items-start gap-3 rounded-lg border border-[var(--line)] bg-[var(--surface-raised)] px-3 py-2 text-xs text-[var(--ink-muted)]">
+                <span className="flex-1">{fallbackNotice}</span>
+                <button
+                  onClick={() => setFallbackNotice(null)}
+                  className="shrink-0 text-[var(--ink-muted)] hover:text-[var(--ink-primary)]"
+                  aria-label="Dismiss"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
           </div>
-        )}
 
-        <nav className="flex gap-1">
-          {(['search', 'vibes', 'sessions', 'shape'] as const).map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`px-4 py-2 rounded-t-lg text-sm capitalize transition ${
-                tab === t ? 'bg-white/10 text-white' : 'text-[var(--color-text-secondary)] hover:text-white'
-              }`}
+          {/* Where tracks come from */}
+          <div className="lg:col-span-5 min-w-0">
+            <SectionRule label="Add tracks" />
+
+            {/*
+              A plain row of choices rather than the browser-tab strip this had.
+              The strip implied the panel below was a different document each
+              time; it is one panel with four ways of filling it.
+            */}
+            <div className="flex flex-wrap gap-1.5 mb-4">
+              {sourceTabs.map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => setTab(t.id)}
+                  aria-pressed={tab === t.id}
+                  title={t.hint}
+                  className={`rounded-lg px-3 py-1.5 text-sm transition-colors ${
+                    tab === t.id
+                      ? 'bg-[var(--surface-signal)] text-[var(--ink-on-signal)]'
+                      : 'bg-[var(--surface-panel)] text-[var(--ink-muted)] hover:text-[var(--ink-primary)] hover:bg-[var(--surface-raised)]'
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="rounded-xl border border-[var(--line)] bg-[var(--surface-panel)] p-4">
+              {tab === 'search' && (
+                <SearchTab onAddSeed={addSeed} seedIds={new Set(seeds.map((s) => s.trackId))} />
+              )}
+              {tab === 'vibes' && (
+                <VibesTab onAddSeed={addSeed} seedIds={new Set(seeds.map((s) => s.trackId))} />
+              )}
+              {tab === 'sessions' && <SessionsTab onSeedFromSession={seedFromSession} />}
+              {tab === 'shape' && <ShapeTab filters={filters} onChange={setFilters} />}
+            </div>
+          </div>
+        </div>
+
+        <footer className="mt-12 pt-6 border-t border-[var(--line)] flex items-baseline justify-between gap-4">
+          <p className="text-xs text-[var(--ink-muted)]">
+            Tempo and key data by{' '}
+            <a
+              href="https://getsongbpm.com"
+              target="_blank"
+              rel="noreferrer"
+              className="underline hover:text-[var(--ink-primary)]"
             >
-              {t}
-            </button>
-          ))}
-        </nav>
-
-        <section className="rounded-2xl rounded-tl-none bg-white/5 border border-white/10 p-4 min-h-64">
-          {tab === 'search' && (
-            <SearchTab onAddSeed={addSeed} seedIds={new Set(seeds.map((s) => s.trackId))} />
-          )}
-          {tab === 'vibes' && (
-            <VibesTab onAddSeed={addSeed} seedIds={new Set(seeds.map((s) => s.trackId))} />
-          )}
-          {tab === 'sessions' && <SessionsTab onSeedFromSession={seedFromSession} />}
-          {tab === 'shape' && <ShapeTab filters={filters} onChange={setFilters} />}
-        </section>
-
-        <p className="text-[10px] text-[var(--color-text-secondary)] text-center">
-          BPM &amp; key data by{' '}
-          <a href="https://getsongbpm.com" target="_blank" rel="noreferrer" className="underline hover:text-white">
-            GetSongBPM
-          </a>
-        </p>
+              GetSongBPM
+            </a>
+          </p>
+          <span className="text-xs text-[var(--ink-muted)]">{displayName}</span>
+        </footer>
 
         {pushOpen && (
           <PushDialog

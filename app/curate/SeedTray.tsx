@@ -20,58 +20,80 @@ export default function SeedTray({
   progressLabel?: string | null;
 }) {
   return (
-    <div className="flex items-center gap-3 flex-wrap py-3 border-y border-white/10">
-      <span className="text-xs uppercase tracking-widest text-[var(--color-text-secondary)]">
-        Seeds
-      </span>
-      {seeds.length === 0 && (
-        <span className="text-sm text-[var(--color-text-secondary)]">
-          add tracks from below to anchor the set
-        </span>
-      )}
-      {seeds.map((s) => (
-        <button
-          key={s.trackId}
-          onClick={() => onRemove(s.trackId)}
-          className="group flex items-center gap-2 pl-1 pr-3 py-1 rounded-full bg-white/10 hover:bg-white/20 transition text-sm"
-          title="Remove seed"
-        >
-          {s.albumImageUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={s.albumImageUrl} alt="" className="w-6 h-6 rounded-full object-cover" />
-          )}
-          <span className="max-w-48 truncate">{s.trackName}</span>
-          <span className="text-white/40 group-hover:text-white/80">✕</span>
-        </button>
-      ))}
-      <div className="flex gap-1 ml-auto mr-3">
-        {(['familiar', 'balanced', 'adventurous'] as const).map((p) => (
-          <button
-            key={p}
-            onClick={() => onPresetChange(p)}
-            className={`px-3 py-1 rounded-full text-xs capitalize transition ${
-              preset === p ? 'bg-[var(--color-primary)] text-black' : 'bg-white/10 hover:bg-white/20'
-            }`}
-            title={
-              p === 'familiar'
-                ? 'Library only'
-                : p === 'balanced'
-                ? '~30% new music'
-                : '~60% new music'
-            }
-          >
-            {p}
-          </button>
-        ))}
+    <div className="flex flex-col gap-3">
+      {/*
+        Seeds read as a row of records you have pulled, not as buttons. The
+        whole chip removes on click, so the cross is a marker rather than a
+        separate control.
+      */}
+      <div className="flex flex-wrap items-center gap-2">
+        {seeds.length === 0 ? (
+          <p className="text-sm text-[var(--ink-muted)]">
+            Nothing yet. Add tracks from the right to anchor the set.
+          </p>
+        ) : (
+          seeds.map((s) => (
+            <button
+              key={s.trackId}
+              onClick={() => onRemove(s.trackId)}
+              className="group flex items-center gap-2 rounded-lg border border-[var(--line)] bg-[var(--surface-panel)] py-1 pl-1 pr-2.5 text-sm transition-colors hover:border-[var(--ink-signal)]"
+              title={`Remove ${s.trackName}`}
+            >
+              {s.albumImageUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={s.albumImageUrl} alt="" className="h-6 w-6 rounded object-cover" />
+              )}
+              <span className="max-w-44 truncate text-[var(--ink-primary)]">{s.trackName}</span>
+              <span
+                aria-hidden
+                className="text-[var(--ink-muted)] transition-colors group-hover:text-[var(--ink-primary)]"
+              >
+                ✕
+              </span>
+            </button>
+          ))
+        )}
       </div>
-      <button
-        onClick={onGenerate}
-        disabled={seeds.length === 0 || generating}
-        className="px-5 py-2 rounded-full font-semibold bg-[var(--color-vibrant-safe)] text-black disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition"
-        title={seeds.length === 0 ? 'Pick at least one seed first' : 'Generate the set'}
-      >
-        {generating ? (progressLabel ?? 'Generating…') : 'Generate'}
-      </button>
+
+      <div className="flex flex-wrap items-center gap-3">
+        {/*
+          How far from the library the set may wander. Named for what it does
+          to the result rather than for the setting: "familiar" is the library
+          only, "adventurous" reaches well outside it.
+        */}
+        <div className="flex items-center gap-1.5">
+          {(['familiar', 'balanced', 'adventurous'] as const).map((p) => (
+            <button
+              key={p}
+              onClick={() => onPresetChange(p)}
+              aria-pressed={preset === p}
+              className={`rounded-lg px-3 py-1.5 text-xs capitalize transition-colors ${
+                preset === p
+                  ? 'bg-[var(--surface-signal)] text-[var(--ink-on-signal)]'
+                  : 'bg-[var(--surface-panel)] text-[var(--ink-muted)] hover:text-[var(--ink-primary)] hover:bg-[var(--surface-raised)]'
+              }`}
+              title={
+                p === 'familiar'
+                  ? 'Only tracks already in your library'
+                  : p === 'balanced'
+                    ? 'About a third new to you'
+                    : 'About two thirds new to you'
+              }
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+
+        <button
+          onClick={onGenerate}
+          disabled={seeds.length === 0 || generating}
+          className="ml-auto rounded-lg bg-[var(--surface-signal)] px-5 py-2 text-sm font-semibold text-[var(--ink-on-signal)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+          title={seeds.length === 0 ? 'Add at least one seed first' : undefined}
+        >
+          {generating ? (progressLabel ?? 'Building the set…') : 'Build the set'}
+        </button>
+      </div>
     </div>
   );
 }

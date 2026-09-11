@@ -40,12 +40,12 @@ export default function PushDialog({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={onClose}>
       <div
-        className="w-full max-w-md rounded-2xl bg-neutral-900 border border-white/10 p-6"
+        className="shadow-echo w-full max-w-md rounded-2xl border border-[var(--line)] bg-[var(--surface-raised)] p-6"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-lg font-bold mb-4">Push to Spotify</h2>
+        <h2 className="font-display text-2xl mb-4 text-[var(--ink-primary)]">Push to Spotify</h2>
         {state === 'done' ? (
           <div className="text-center">
             <p className="mb-4 text-sm">
@@ -55,40 +55,40 @@ export default function PushDialog({
               href={result}
               target="_blank"
               rel="noreferrer"
-              className="inline-block px-5 py-2 rounded-full bg-[var(--color-vibrant-safe)] text-black font-semibold hover:opacity-90 transition"
+              className="inline-block px-5 py-2 rounded-lg bg-[var(--surface-signal)] text-[var(--ink-on-signal)] font-semibold hover:opacity-90 transition"
             >
-              Open in Spotify ↗
+              Open in Spotify
             </a>
           </div>
         ) : (
           <>
             <label className="block mb-4">
-              <span className="text-xs uppercase tracking-widest text-[var(--color-text-secondary)]">
+              <span className="text-xs text-[var(--ink-muted)]">
                 Playlist name
               </span>
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="mt-1 w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 focus:border-[var(--color-primary)] outline-none text-sm"
+                className="mt-1 w-full px-3 py-2 rounded-lg border border-[var(--line)] bg-[var(--surface-panel)] outline-none focus:border-[var(--ink-signal)] text-sm"
               />
             </label>
-            <p className="text-xs text-[var(--color-text-secondary)] mb-4">
-              {set.length} tracks · private playlist on your account
+            <p className="text-xs text-[var(--ink-muted)] mb-4">
+              Saves {set.length} tracks as a private playlist on your account.
             </p>
             {state === 'error' && (
-              <p className="text-sm text-red-400 mb-3">Failed: {result}</p>
+              <p className="text-sm text-rose-400 mb-3">Could not create the playlist: {result}</p>
             )}
             <div className="flex gap-2 justify-end">
               <button
                 onClick={onClose}
-                className="px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-sm transition"
+                className="px-4 py-2 rounded-lg bg-[var(--surface-panel)] hover:bg-[var(--surface-raised)] text-sm transition"
               >
                 Cancel
               </button>
               <button
                 onClick={push}
                 disabled={state === 'pushing' || !name.trim()}
-                className="px-5 py-2 rounded-full bg-[var(--color-primary)] text-black font-semibold text-sm disabled:opacity-40 hover:opacity-90 transition"
+                className="px-5 py-2 rounded-lg bg-[var(--surface-signal)] text-[var(--ink-on-signal)] font-semibold text-sm disabled:opacity-40 hover:opacity-90 transition"
               >
                 {state === 'pushing' ? 'Pushing…' : state === 'error' ? 'Retry' : 'Create playlist'}
               </button>

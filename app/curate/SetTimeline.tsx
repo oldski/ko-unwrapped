@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { harmonicCompat } from '@/lib/curation/mix/compat';
+import { useSequentialRamp } from '@/hooks/useChartPalette';
 import type { SetTrack, Transition } from './types';
 
 function fmtDuration(ms: number): string {
@@ -37,6 +38,7 @@ export default function SetTimeline({
   const [openSlot, setOpenSlot] = useState<number | null>(null);
   const [swapping, setSwapping] = useState(false);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const ramp = useSequentialRamp(5);
 
   const totalMs = set.reduce((s, t) => s + t.durationMs, 0);
   const usedIds = new Set(set.map((t) => t.trackId));
@@ -44,33 +46,37 @@ export default function SetTimeline({
 
   if (set.length === 0) {
     return (
-      <p className="text-sm text-[var(--color-text-secondary)]">
-        The set will appear here. Pick seeds below and hit Generate.
+      <p className="text-sm text-[var(--ink-muted)]">
+        Add a few seeds below, then build the set. It lands here as an energy
+        arc you can reorder.
       </p>
     );
   }
 
   return (
     <div>
-      <div className="flex items-center gap-4 mb-3">
-        <span className="text-xs uppercase tracking-widest text-[var(--color-text-secondary)]">
-          The set · {fmtDuration(totalMs)} · {set.length} tracks
-        </span>
-        <label className="flex items-center gap-2 text-xs cursor-pointer select-none">
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mb-4">
+        <p className="font-figure text-3xl text-[var(--ink-primary)]">
+          {fmtDuration(totalMs)}
+          <span className="ml-2 text-sm text-[var(--ink-muted)]">
+            over {set.length} tracks
+          </span>
+        </p>
+        <label className="flex items-center gap-2 text-xs text-[var(--ink-muted)] cursor-pointer select-none">
           <input type="checkbox" checked={smoothed} onChange={onToggleSmoothed} />
-          smooth transitions
+          Reorder for smoother mixing
         </label>
         <button
           onClick={onPush}
           disabled={pushDisabled}
-          className="ml-auto px-4 py-1.5 rounded-full text-sm font-semibold bg-[var(--color-primary)] text-black disabled:opacity-40 hover:opacity-90 transition"
+          className="ml-auto rounded-lg px-4 py-1.5 text-sm font-semibold bg-[var(--surface-signal)] text-[var(--ink-on-signal)] transition-opacity hover:opacity-90 disabled:opacity-40"
         >
           Push to Spotify
         </button>
       </div>
 
       {narrative && (
-        <p className="text-xs text-[var(--color-text-secondary)] italic mb-3 max-w-3xl">{narrative}</p>
+        <p className="text-xs text-[var(--ink-muted)] italic mb-3 max-w-3xl">{narrative}</p>
       )}
 
       {/* Energy arc timeline */}
@@ -89,16 +95,16 @@ export default function SetTimeline({
               setOpenSlot(openSlot === i ? null : i);
               setSwapping(false);
             }}
-            className={`flex-1 min-w-0 rounded-t-lg border transition relative overflow-hidden ${
+            className={`relative min-w-0 flex-1 overflow-hidden rounded-t-[4px] border transition-colors ${
               openSlot === i
-                ? 'border-[var(--color-vibrant-safe)]'
-                : 'border-white/10 hover:border-white/40'
+                ? 'border-[var(--ink-signal)]'
+                : 'border-transparent hover:border-[var(--ink-muted)]'
             }`}
             style={{
               height: `${25 + t.energy * 75}%`,
-              backgroundColor: `color-mix(in srgb, var(--color-primary) ${Math.round(
-                15 + t.energy * 60
-              )}%, transparent)`,
+              // Energy drives height and step on the album ramp together, so a
+              // loud track is both taller and brighter.
+              backgroundColor: ramp[Math.min(ramp.length - 1, Math.floor(t.energy * ramp.length))],
             }}
             title={`${t.trackName} — ${t.artistNames.join(', ')}`}
           >
@@ -111,20 +117,21 @@ export default function SetTimeline({
               />
             )}
             {t.source === 'discovery' && (
-              <span className="absolute top-1 left-1/2 -translate-x-1/2 text-[9px] px-1 rounded bg-[var(--color-vibrant-safe)] text-black font-bold">
+              <span className="absolute top-1 left-1/2 -translate-x-1/2 rounded bg-[var(--ink-on-signal)] px-1 text-[9px] font-semibold text-[var(--ink-signal)]">
                 new
               </span>
             )}
           </button>
         ))}
       </div>
-      <p className="text-[10px] text-[var(--color-text-secondary)] mb-3">
-        bar height = energy · drag bars to reorder · click a bar for actions
+      <p className="mb-4 text-xs text-[var(--ink-muted)]">
+        Taller and brighter means more energy. Drag a bar to move it, click one
+        to swap or drop it.
       </p>
 
       {/* Slot detail panel */}
       {openSlot !== null && set[openSlot] && (
-        <div className="rounded-xl bg-white/5 border border-white/10 p-3 text-sm">
+        <div className="rounded-xl border border-[var(--line)] bg-[var(--surface-raised)] p-3 text-sm">
           <div className="flex items-center gap-3 mb-2">
             {set[openSlot].albumImageUrl && (
               // eslint-disable-next-line @next/next/no-img-element
@@ -134,33 +141,33 @@ export default function SetTimeline({
               <p className="truncate font-semibold">
                 {openSlot + 1}. {set[openSlot].trackName}
                 {set[openSlot].source === 'discovery' && (
-                  <span className="ml-2 text-[10px] align-middle px-1.5 py-0.5 rounded bg-[var(--color-vibrant-safe)] text-black font-bold">NEW TO YOU</span>
+                  <span className="ml-2 align-middle rounded px-1.5 py-0.5 text-[10px] font-semibold bg-[var(--surface-signal)] text-[var(--ink-on-signal)]">New to you</span>
                 )}
               </p>
-              <p className="truncate text-xs text-[var(--color-text-secondary)]">
-                {set[openSlot].artistNames.join(', ')} · energy {set[openSlot].energy.toFixed(2)}
-                {set[openSlot].bpm != null && <> · {Math.round(set[openSlot].bpm!)} BPM</>}
-                {set[openSlot].camelotKey && <> · {set[openSlot].camelotKey}</>}
+              <p className="truncate text-xs text-[var(--ink-muted)]">
+                {set[openSlot].artistNames.join(', ')}, energy {set[openSlot].energy.toFixed(2)}
+                {set[openSlot].bpm != null && <>, {Math.round(set[openSlot].bpm!)} BPM</>}
+                {set[openSlot].camelotKey && <> in {set[openSlot].camelotKey}</>}
               </p>
             </div>
             <button
               onClick={() => setSwapping(!swapping)}
-              className="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-xs transition"
+              className="rounded-lg px-3 py-1 text-xs bg-[var(--surface-panel)] text-[var(--ink-muted)] hover:text-[var(--ink-primary)] transition-colors"
             >
-              swap ⇄
+              Swap
             </button>
             <button
               onClick={() => {
                 onRemove(openSlot);
                 setOpenSlot(null);
               }}
-              className="px-3 py-1 rounded-full bg-white/10 hover:bg-red-500/40 text-xs transition"
+              className="rounded-lg px-3 py-1 text-xs bg-[var(--surface-panel)] text-[var(--ink-muted)] hover:text-rose-400 transition-colors"
             >
-              remove ✕
+              Remove
             </button>
           </div>
-          <p className="text-xs text-[var(--color-text-secondary)]">
-            {set[openSlot].placementNote || set[openSlot].reasons.join('; ') || 'seed-adjacent pick'}
+          <p className="text-xs text-[var(--ink-muted)]">
+            {set[openSlot].placementNote || set[openSlot].reasons.join('; ') || 'Picked for sitting close to your seeds.'}
           </p>
           {(() => {
             const t = transitions.find((tr) => tr.fromIndex === openSlot - 1);
@@ -187,11 +194,11 @@ export default function SetTimeline({
                     : null,
                 ]
                   .filter(Boolean)
-                  .join(' · ')
+                  .join(', ')
               : null;
             if (!t && !chipLabel) return null;
             return (
-              <p className="mt-1 text-xs text-[var(--color-primary)]">
+              <p className="mt-1 text-xs text-[var(--ink-signal)]">
                 {t && <>↪ transition in: {t.note}</>}
                 {chipLabel && (
                   <span className={`ml-2 px-1.5 py-0.5 rounded text-[10px] font-semibold ${chipClass}`}>
@@ -202,7 +209,7 @@ export default function SetTimeline({
             );
           })()}
           {swapping && (
-            <ul className="mt-3 space-y-1 border-t border-white/10 pt-2">
+            <ul className="mt-3 space-y-1 border-t border-[var(--line)] pt-2">
               {freeAlternates.slice(0, 5).map((a) => (
                 <li key={a.trackId}>
                   <button
@@ -210,19 +217,19 @@ export default function SetTimeline({
                       onSwap(openSlot, a);
                       setSwapping(false);
                     }}
-                    className="w-full flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-white/10 text-left"
+                    className="w-full flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-[var(--surface-panel)] text-left"
                   >
                     <span className="flex-1 min-w-0 truncate text-xs">
                       {a.trackName} — {a.artistNames.join(', ')}
                     </span>
-                    <span className="text-[10px] text-[var(--color-text-secondary)]">
-                      {a.score != null ? `score ${a.score.toFixed(2)}` : 'new'} · energy {a.energy.toFixed(2)}
+                    <span className="text-[10px] text-[var(--ink-muted)]">
+                      {a.score != null ? `score ${a.score.toFixed(2)}` : 'new'}, energy {a.energy.toFixed(2)}
                     </span>
                   </button>
                 </li>
               ))}
               {freeAlternates.length === 0 && (
-                <li className="text-xs text-[var(--color-text-secondary)]">no alternates left — regenerate</li>
+                <li className="text-xs text-[var(--ink-muted)]">no alternates left — regenerate</li>
               )}
             </ul>
           )}

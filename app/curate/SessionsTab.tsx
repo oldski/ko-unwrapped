@@ -32,21 +32,21 @@ export default function SessionsTab({
       {sessions.map((s) => {
         const date = new Date(s.startedAt);
         return (
-          <li key={s.id} className="rounded-xl bg-white/5 border border-white/10 p-3">
+          <li key={s.id} className="rounded-xl border border-[var(--line)] bg-[var(--surface-raised)] p-3 transition-colors hover:border-[var(--ink-muted)]">
             <div className="flex items-baseline justify-between mb-1">
               <span className="text-sm font-semibold">
-                {DAYS[s.dayOfWeek]} {date.toLocaleDateString()} · {s.hourOfDay}:00
+                {DAYS[s.dayOfWeek]} {date.toLocaleDateString()} at {s.hourOfDay}:00
               </span>
-              <span className="text-xs text-[var(--color-text-secondary)]">{s.trackCount} tracks</span>
+              <span className="text-xs text-[var(--ink-muted)]">{s.trackCount} tracks</span>
             </div>
-            <p className="text-xs text-[var(--color-text-secondary)] truncate mb-2">
-              {s.sampleTracks.map((t) => t.trackName).join(' · ')}
+            <p className="text-xs text-[var(--ink-muted)] truncate mb-2">
+              {s.sampleTracks.map((t) => t.trackName).join(', ')}
             </p>
             <button
               onClick={() => onSeedFromSession(s.sampleTracks.map((t) => t.trackId))}
-              className="text-xs px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 transition"
+              className="rounded-lg px-3 py-1 text-xs bg-[var(--surface-raised)] text-[var(--ink-muted)] transition-colors hover:text-[var(--ink-primary)]"
             >
-              Use as seeds ⊕
+              Use as seeds
             </button>
           </li>
         );
