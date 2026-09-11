@@ -84,7 +84,7 @@ export default function Tracks3DPage() {
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="text-center">
             <Spinner size="xl" variant="vibrant" className="mx-auto mb-4" />
-            <p className="text-[var(--color-text-primary)] text-lg">Loading your tracks...</p>
+            <p className="text-[var(--ink-primary)] text-lg">Loading your tracks...</p>
           </div>
         </div>
       )}
@@ -134,32 +134,32 @@ export default function Tracks3DPage() {
 
                   {/* Track Info */}
                   <div className="flex-1 flex flex-col">
-                    <h2 className="text-3xl font-bold text-[var(--color-text-primary)] mb-2">
+                    <h2 className="text-3xl font-bold text-[var(--ink-primary)] mb-2">
                       {selectedTrack.name}
                     </h2>
-                    <p className="text-xl text-[var(--color-vibrant-safe)] mb-4">
+                    <p className="text-xl text-[var(--ink-signal)] mb-4">
                       {selectedTrack.artists.map((a: any) => a.name).join(', ')}
                     </p>
 
                     <div className="space-y-2 text-sm mb-4">
                       <div className="flex justify-between">
-                        <span className="text-[var(--color-text-secondary)]">Album</span>
-                        <span className="text-[var(--color-text-primary)]">{selectedTrack.album.name}</span>
+                        <span className="text-[var(--ink-muted)]">Album</span>
+                        <span className="text-[var(--ink-primary)]">{selectedTrack.album.name}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[var(--color-text-secondary)]">Release Date</span>
-                        <span className="text-[var(--color-text-primary)]">{selectedTrack.album.release_date}</span>
+                        <span className="text-[var(--ink-muted)]">Release Date</span>
+                        <span className="text-[var(--ink-primary)]">{selectedTrack.album.release_date}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[var(--color-text-secondary)]">Popularity</span>
+                        <span className="text-[var(--ink-muted)]">Popularity</span>
                         <div className="flex items-center gap-2">
                           <div className="w-32 h-2 bg-gray-700 rounded-full overflow-hidden">
                             <div
-                              className="h-full bg-[var(--color-vibrant-safe)] rounded-full"
+                              className="h-full bg-[var(--ink-signal)] rounded-full"
                               style={{ width: `${selectedTrack.popularity}%` }}
                             />
                           </div>
-                          <span className="text-[var(--color-text-primary)]">{selectedTrack.popularity}%</span>
+                          <span className="text-[var(--ink-primary)]">{selectedTrack.popularity}%</span>
                         </div>
                       </div>
                     </div>
@@ -193,10 +193,10 @@ export default function Tracks3DPage() {
       {/* Stats Panel */}
       <div className="absolute bottom-4 right-4">
         <AnimatedCard size="compact" opacity="bold" weight="medium">
-          <h3 className="font-bold mb-2 text-[var(--color-vibrant-safe)]">Stats</h3>
-          <div className="text-sm space-y-1 text-[var(--color-text-secondary)]">
-            <p>Tracks Loaded: <span className="text-[var(--color-text-primary)] font-bold">{tracks.length}</span></p>
-            <p>Time Range: <span className="text-[var(--color-text-primary)] font-bold">{timeRangeLabels[timeRange]}</span></p>
+          <h3 className="font-bold mb-2 text-[var(--ink-signal)]">Stats</h3>
+          <div className="text-sm space-y-1 text-[var(--ink-muted)]">
+            <p>Tracks Loaded: <span className="text-[var(--ink-primary)] font-bold">{tracks.length}</span></p>
+            <p>Time Range: <span className="text-[var(--ink-primary)] font-bold">{timeRangeLabels[timeRange]}</span></p>
           </div>
         </AnimatedCard>
       </div>

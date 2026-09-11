@@ -37,20 +37,18 @@ const jetbrainsMono = localFont({
 });
 
 /*
- * Display face. Anybody carries width (50-150) and weight (100-900) axes, so
- * headlines can be set genuinely condensed rather than just large. JetBrains
- * Mono stays the voice for data, labels and UI; this exists to give headings
- * and feature figures a register the mono cannot reach.
+ * Display face. Clash Display (Fontshare, ITF Free Font Licence) carries the
+ * headings and feature figures. JetBrains Mono stays the voice for data,
+ * labels and UI; this exists to give headings a register mono cannot reach.
  */
-const anybody = localFont({
+const clashDisplay = localFont({
   src: [
-    {
-      path: "../public/fonts/Anybody/Anybody-Variable.woff2",
-      weight: "100 900",
-      style: "normal",
-    },
+    { path: "../public/fonts/ClashDisplay/ClashDisplay-400.woff2", weight: "400", style: "normal" },
+    { path: "../public/fonts/ClashDisplay/ClashDisplay-500.woff2", weight: "500", style: "normal" },
+    { path: "../public/fonts/ClashDisplay/ClashDisplay-600.woff2", weight: "600", style: "normal" },
+    { path: "../public/fonts/ClashDisplay/ClashDisplay-700.woff2", weight: "700", style: "normal" },
   ],
-  variable: "--font-anybody",
+  variable: "--font-display",
   display: "swap",
 });
 
@@ -69,7 +67,7 @@ export default function RootLayout({
 	
   return (
     <html lang="en">
-      <body className={`${jetbrainsMono.className} ${jetbrainsMono.variable} ${anybody.variable} palette-transition`}>
+      <body className={`${jetbrainsMono.className} ${jetbrainsMono.variable} ${clashDisplay.variable} palette-transition`}>
         <ColorThemeProvider>
           <ErrorBoundary componentName="App Root">
             <VisualizerProvider>

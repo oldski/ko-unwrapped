@@ -141,7 +141,7 @@ export default function CalendarHeatmap() {
   }
 
   return (
-    <AnimatedCard>
+    <AnimatedCard tier="feature">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <AnimatedCard.Header
           title="Listening Calendar"
@@ -172,7 +172,7 @@ export default function CalendarHeatmap() {
       {/* Legend and Heatmap - hide while loading */}
       {!isLoading && heatmapData.length > 0 && (
         <>
-          <div className="mb-4 flex items-center gap-4 text-sm text-gray-400">
+          <div className="mb-4 flex items-center gap-4 text-sm text-[var(--ink-muted)]">
             {viewMode === 'plays' ? (
               <>
                 <span>Less</span>
@@ -263,14 +263,14 @@ export default function CalendarHeatmap() {
                 {viewMode === 'popularity' && hoveredDay.avgPopularity !== undefined && (
                   <p className="text-purple-400 text-sm mt-1">
                     Avg Popularity: {hoveredDay.avgPopularity}/100
-                    <span className="text-gray-500 ml-1">
+                    <span className="text-[var(--ink-muted)] ml-1">
                       ({hoveredDay.avgPopularity >= 70 ? 'Mainstream' : hoveredDay.avgPopularity >= 40 ? 'Mid-tier' : 'Niche'})
                     </span>
                   </p>
                 )}
                 {hoveredDay.tracks.length > 0 && (
                   <div className="mt-2 pt-2 border-t border-gray-700">
-                    <p className="text-gray-400 text-xs mb-1">Top track:</p>
+                    <p className="text-[var(--ink-muted)] text-xs mb-1">Top track:</p>
                     <p className="text-white text-sm truncate">{hoveredDay.tracks[0].name}</p>
                   </div>
                 )}
@@ -284,15 +284,15 @@ export default function CalendarHeatmap() {
       {isLoading && (
         <div className="flex flex-col items-center justify-center py-12 gap-3">
           <Spinner size="lg" variant="accent" />
-          <p className="text-gray-400 text-sm">Loading listening history...</p>
+          <p className="text-[var(--ink-muted)] text-sm">Loading listening history...</p>
         </div>
       )}
 
       {/* Empty State */}
       {!isLoading && heatmapData.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-gray-400">No listening data available yet</p>
-          <p className="text-gray-500 text-sm mt-1">Start listening to see your calendar fill up!</p>
+          <p className="text-[var(--ink-muted)]">No listening data available yet</p>
+          <p className="text-[var(--ink-muted)] text-sm mt-1">Start listening to see your calendar fill up!</p>
         </div>
       )}
     </AnimatedCard>

@@ -24,37 +24,37 @@ const PERIOD_PERSONAS = {
     name: 'Night Owl',
     emoji: '🦉',
     description: 'You come alive after dark',
-    color: 'var(--color-accent-safe)',
+    color: 'var(--ink-signal)',
   },
   earlyBird: {
     name: 'Early Bird',
     emoji: '🐦',
     description: 'You start your day with music',
-    color: 'var(--color-primary-safe)',
+    color: 'var(--ink-signal)',
   },
   weekendWarrior: {
     name: 'Weekend Warrior',
     emoji: '🎉',
     description: 'Your listening peaks on weekends',
-    color: 'var(--color-vibrant-safe)',
+    color: 'var(--ink-signal)',
   },
   workdayListener: {
     name: 'Workday Listener',
     emoji: '💼',
     description: 'Music powers your weekdays',
-    color: 'var(--color-secondary-safe)',
+    color: 'var(--ink-signal)',
   },
   eveningEnthusiast: {
     name: 'Evening Enthusiast',
     emoji: '🌆',
     description: 'Your prime listening time is evenings',
-    color: 'var(--color-accent-safe)',
+    color: 'var(--ink-signal)',
   },
   allDayPlayer: {
     name: 'All-Day Player',
     emoji: '🎧',
     description: 'You listen throughout the day',
-    color: 'var(--color-vibrant-safe)',
+    color: 'var(--ink-signal)',
   },
 };
 
@@ -410,14 +410,13 @@ export default function StatsPage() {
       <div className="max-w-7xl">
         {/* Header */}
         <div className="mb-8 pt-14 md:pt-0 md:pr-82">
-	        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2 text-[var(--color-text-primary)]">
-            Your Listening
-	          <span className="text-[var(--color-vibrant-safe)]"> Patterns</span>
+	        <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl mb-3 text-[var(--ink-primary)]">
+            When you listen, and to what
           </h1>
-	        <p className="text-[var(--color-text-secondary)] text-lg">
+	        <p className="text-[var(--ink-muted)] max-w-[52ch]">
             Discover when and what you love to listen to
           </p>
-          <p className="text-[var(--color-text-secondary)]/70 text-sm mt-2">
+          <p className="text-[var(--ink-muted)]/70 text-sm mt-2">
             Based on your complete listening history from the database
           </p>
         </div>
@@ -486,7 +485,7 @@ export default function StatsPage() {
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <Spinner size="xl" className="mx-auto mb-4" />
-              <p className="text-[var(--color-text-secondary)]">Loading your listening history...</p>
+              <p className="text-[var(--ink-muted)]">Loading your listening history...</p>
             </div>
           </div>
         )}
@@ -555,7 +554,7 @@ export default function StatsPage() {
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: index * 0.02 }}
                           whileHover={{ scale: 1.02, x: 4 }}
-                          className="flex items-center gap-4 bg-[var(--color-bg-2)]/30 border border-[var(--color-border)]/10 p-4 rounded-xl hover:bg-[var(--color-bg-2)]/50 hover:border-[var(--color-accent)]/30 transition-all group cursor-pointer"
+                          className="flex items-center gap-4 bg-[var(--surface-panel)]/30 border border-[var(--line)]/10 p-4 rounded-xl hover:bg-[var(--surface-panel)]/50 hover:border-[var(--color-accent)]/30 transition-all group cursor-pointer"
                         >
                           <img
                             src={item.track.albumImage}
@@ -563,16 +562,16 @@ export default function StatsPage() {
                             className="w-16 h-16 rounded-lg shadow-lg group-hover:shadow-xl transition-shadow"
                           />
                           <div className="flex-1 min-w-0">
-                            <p className="font-bold text-[var(--color-text-primary)] truncate group-hover:text-[var(--color-vibrant-safe)] transition-colors">
+                            <p className="font-bold text-[var(--ink-primary)] truncate group-hover:text-[var(--ink-signal)] transition-colors">
                               {item.track.name}
                             </p>
-                            <p className="text-sm text-[var(--color-text-secondary)] truncate">
+                            <p className="text-sm text-[var(--ink-muted)] truncate">
                               {item.track.artists?.map((a: any) => a.name).join(', ')}
                             </p>
                           </div>
                           <div className="text-right">
-                            <p className="text-sm text-[var(--color-accent-safe)] font-semibold">{timeAgo}</p>
-                            <p className="text-xs text-[var(--color-text-secondary)]/70">
+                            <p className="text-sm text-[var(--ink-signal)] font-semibold">{timeAgo}</p>
+                            <p className="text-xs text-[var(--ink-muted)]/70">
                               {playedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </p>
                           </div>
@@ -598,8 +597,8 @@ export default function StatsPage() {
                         <h2 className="text-2xl font-bold mb-1" style={{ color: periodPersona.color }}>
                           {periodPersona.name}
                         </h2>
-                        <p className="text-[var(--color-text-secondary)]">{periodPersona.description}</p>
-                        <p className="text-xs text-[var(--color-text-secondary)]/60 mt-1">Based on this period</p>
+                        <p className="text-[var(--ink-muted)]">{periodPersona.description}</p>
+                        <p className="text-xs text-[var(--ink-muted)]/60 mt-1">Based on this period</p>
                       </div>
                     </div>
                   </AnimatedCard>
@@ -632,7 +631,7 @@ export default function StatsPage() {
                               {hour === 0 ? '12a' : hour < 12 ? `${hour}a` : hour === 12 ? '12p' : `${hour - 12}p`}
                             </span>
                             {count > 0 && (
-                              <span className="text-[10px] text-[var(--color-accent-safe)] font-bold">{count}</span>
+                              <span className="text-[10px] text-[var(--ink-signal)] font-bold">{count}</span>
                             )}
                           </div>
                         );
@@ -653,7 +652,7 @@ export default function StatsPage() {
                       return (
                         <div key={day} className="text-center">
                           <div className="mb-2">
-                            <p className={`text-lg md:text-2xl font-bold ${isPeak ? 'text-[var(--color-accent-safe)]' : 'text-[var(--color-lighter)]'}`}>
+                            <p className={`text-lg md:text-2xl font-bold ${isPeak ? 'text-[var(--ink-signal)]' : 'text-[var(--color-lighter)]'}`}>
                               {count}
                             </p>
                             <p className="text-xs md:text-sm text-[var(--color-muted)]">{dayNames[day]}</p>
@@ -692,11 +691,11 @@ export default function StatsPage() {
                           >
                             <div className="flex items-center justify-between">
                               <span className="font-medium text-sm truncate flex-1 mr-2">{artist.name}</span>
-                              <span className="text-[var(--color-accent-safe)] font-bold text-sm">{artist.count}</span>
+                              <span className="text-[var(--ink-signal)] font-bold text-sm">{artist.count}</span>
                             </div>
                             <div className="h-2 bg-[var(--color-darker)] rounded-full overflow-hidden">
                               <motion.div
-                                className="h-full bg-[var(--color-accent-safe)]"
+                                className="h-full bg-[var(--ink-signal)]"
                                 initial={{ width: 0 }}
                                 animate={{ width: `${percentage}%` }}
                                 transition={{ duration: 1, delay: index * 0.1 }}
@@ -718,9 +717,9 @@ export default function StatsPage() {
                           initial={{ opacity: 0, x: 10 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: index * 0.1 }}
-                          className="flex items-center gap-3 p-2 rounded-lg bg-[var(--color-bg-2)]/30 hover:bg-[var(--color-bg-2)]/50 transition-colors"
+                          className="flex items-center gap-3 p-2 rounded-lg bg-[var(--surface-panel)]/30 hover:bg-[var(--surface-panel)]/50 transition-colors"
                         >
-                          <span className="text-xs text-[var(--color-text-secondary)] w-4">#{index + 1}</span>
+                          <span className="text-xs text-[var(--ink-muted)] w-4">#{index + 1}</span>
                           <img
                             src={track.albumImage}
                             alt={track.trackName}
@@ -728,11 +727,11 @@ export default function StatsPage() {
                           />
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium truncate">{track.trackName}</p>
-                            <p className="text-xs text-[var(--color-text-secondary)] truncate">
+                            <p className="text-xs text-[var(--ink-muted)] truncate">
                               {track.artists?.map((a: any) => a.name).join(', ')}
                             </p>
                           </div>
-                          <span className="text-sm font-bold text-[var(--color-primary-safe)]">
+                          <span className="text-sm font-bold text-[var(--ink-signal)]">
                             {track.playCount}×
                           </span>
                         </motion.div>
@@ -757,7 +756,7 @@ export default function StatsPage() {
                         <h2 className="text-2xl font-bold mb-1" style={{ color: periodPersona.color }}>
                           {periodPersona.name}
                         </h2>
-                        <p className="text-[var(--color-text-secondary)]">{periodPersona.description}</p>
+                        <p className="text-[var(--ink-muted)]">{periodPersona.description}</p>
                       </div>
                     </div>
                   </AnimatedCard>
@@ -781,8 +780,8 @@ export default function StatsPage() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <AnimatedCard size="compact" opacity="bold" weight="light">
                     <div className="text-center p-2">
-                      <p className="text-[var(--color-text-secondary)] text-xs mb-1">Peak Hour</p>
-                      <p className="text-2xl font-bold text-[var(--color-accent-safe)]">
+                      <p className="text-[var(--ink-muted)] text-xs mb-1">Peak Hour</p>
+                      <p className="text-2xl font-bold text-[var(--ink-signal)]">
                         {patterns.peakHour > 12 ? patterns.peakHour - 12 : patterns.peakHour || 12}
                         {patterns.peakHour >= 12 ? 'PM' : 'AM'}
                       </p>
@@ -790,24 +789,24 @@ export default function StatsPage() {
                   </AnimatedCard>
                   <AnimatedCard size="compact" opacity="bold" weight="light">
                     <div className="text-center p-2">
-                      <p className="text-[var(--color-text-secondary)] text-xs mb-1">Peak Day</p>
-                      <p className="text-2xl font-bold text-[var(--color-vibrant-safe)]">
+                      <p className="text-[var(--ink-muted)] text-xs mb-1">Peak Day</p>
+                      <p className="font-display text-xl text-[var(--ink-primary)]">
                         {dayNames[patterns.peakDay]}
                       </p>
                     </div>
                   </AnimatedCard>
                   <AnimatedCard size="compact" opacity="bold" weight="light">
                     <div className="text-center p-2">
-                      <p className="text-[var(--color-text-secondary)] text-xs mb-1">Total Plays</p>
-                      <p className="text-2xl font-bold text-[var(--color-primary-safe)]">
+                      <p className="text-[var(--ink-muted)] text-xs mb-1">Total Plays</p>
+                      <p className="text-2xl font-bold text-[var(--ink-signal)]">
                         {patterns.totalTracks}
                       </p>
                     </div>
                   </AnimatedCard>
                   <AnimatedCard size="compact" opacity="bold" weight="light">
                     <div className="text-center p-2">
-                      <p className="text-[var(--color-text-secondary)] text-xs mb-1">Listen Time</p>
-                      <p className="text-2xl font-bold text-[var(--color-secondary-safe)]">
+                      <p className="text-[var(--ink-muted)] text-xs mb-1">Listen Time</p>
+                      <p className="text-2xl font-bold text-[var(--ink-signal)]">
                         {patterns.totalHours}h
                       </p>
                     </div>
@@ -825,7 +824,7 @@ export default function StatsPage() {
               <div className="flex items-center justify-center h-64">
                 <div className="text-center">
                   <Spinner size="xl" className="mx-auto mb-4" />
-                  <p className="text-[var(--color-text-secondary)]">Loading comparison data...</p>
+                  <p className="text-[var(--ink-muted)]">Loading comparison data...</p>
                 </div>
               </div>
             )}
@@ -836,7 +835,7 @@ export default function StatsPage() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <AnimatedCard size="compact" opacity="bold" weight="light">
                     <div className="text-center p-2">
-                      <p className="text-[var(--color-text-secondary)] text-xs mb-1">Plays Change</p>
+                      <p className="text-[var(--ink-muted)] text-xs mb-1">Plays Change</p>
                       <p className={`text-2xl font-bold ${comparisonDeltas.playsDelta >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                         {comparisonDeltas.playsDelta >= 0 ? '+' : ''}{comparisonDeltas.playsDelta}
                       </p>
@@ -847,7 +846,7 @@ export default function StatsPage() {
                   </AnimatedCard>
                   <AnimatedCard size="compact" opacity="bold" weight="light">
                     <div className="text-center p-2">
-                      <p className="text-[var(--color-text-secondary)] text-xs mb-1">Hours Change</p>
+                      <p className="text-[var(--ink-muted)] text-xs mb-1">Hours Change</p>
                       <p className={`text-2xl font-bold ${comparisonDeltas.hoursDelta >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                         {comparisonDeltas.hoursDelta >= 0 ? '+' : ''}{comparisonDeltas.hoursDelta}h
                       </p>
@@ -858,11 +857,11 @@ export default function StatsPage() {
                   </AnimatedCard>
                   <AnimatedCard size="compact" opacity="bold" weight="light">
                     <div className="text-center p-2">
-                      <p className="text-[var(--color-text-secondary)] text-xs mb-1">Peak Hour</p>
+                      <p className="text-[var(--ink-muted)] text-xs mb-1">Peak Hour</p>
                       <p className={`text-lg font-bold ${comparisonDeltas.peakHourChanged ? 'text-yellow-400' : 'text-gray-400'}`}>
                         {comparisonDeltas.peakHourChanged ? 'Changed' : 'Same'}
                       </p>
-                      <p className="text-xs text-[var(--color-text-secondary)]">
+                      <p className="text-xs text-[var(--ink-muted)]">
                         {periodBPatterns.peakHour > 12 ? periodBPatterns.peakHour - 12 : periodBPatterns.peakHour || 12}
                         {periodBPatterns.peakHour >= 12 ? 'PM' : 'AM'}
                         {' → '}
@@ -873,11 +872,11 @@ export default function StatsPage() {
                   </AnimatedCard>
                   <AnimatedCard size="compact" opacity="bold" weight="light">
                     <div className="text-center p-2">
-                      <p className="text-[var(--color-text-secondary)] text-xs mb-1">Peak Day</p>
+                      <p className="text-[var(--ink-muted)] text-xs mb-1">Peak Day</p>
                       <p className={`text-lg font-bold ${comparisonDeltas.peakDayChanged ? 'text-yellow-400' : 'text-gray-400'}`}>
                         {comparisonDeltas.peakDayChanged ? 'Changed' : 'Same'}
                       </p>
-                      <p className="text-xs text-[var(--color-text-secondary)]">
+                      <p className="text-xs text-[var(--ink-muted)]">
                         {dayNames[periodBPatterns.peakDay]} → {dayNames[periodAPatterns.peakDay]}
                       </p>
                     </div>
@@ -894,20 +893,20 @@ export default function StatsPage() {
                       animate={{ opacity: 1, x: 0 }}
                       className="text-center"
                     >
-                      <p className="text-sm text-[var(--color-text-secondary)] mb-2">{comparisonRanges.periodB.label}</p>
+                      <p className="text-sm text-[var(--ink-muted)] mb-2">{comparisonRanges.periodB.label}</p>
                       <div className="text-5xl mb-2">{periodBPersona.emoji}</div>
                       <h3 className="text-xl font-bold" style={{ color: periodBPersona.color }}>
                         {periodBPersona.name}
                       </h3>
-                      <p className="text-sm text-[var(--color-text-secondary)]">{periodBPersona.description}</p>
-                      <div className="mt-3 text-xs text-[var(--color-text-secondary)]/60">
+                      <p className="text-sm text-[var(--ink-muted)]">{periodBPersona.description}</p>
+                      <div className="mt-3 text-xs text-[var(--ink-muted)]/60">
                         {periodBPatterns.totalTracks} plays · {periodBPatterns.totalHours}h
                       </div>
                     </motion.div>
 
                     {/* Arrow / Divider */}
                     <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center justify-center">
-                      <div className="text-3xl text-[var(--color-text-secondary)]/30">→</div>
+                      <div className="text-3xl text-[var(--ink-muted)]/30">→</div>
                     </div>
 
                     {/* Period A (Current) */}
@@ -916,13 +915,13 @@ export default function StatsPage() {
                       animate={{ opacity: 1, x: 0 }}
                       className="text-center"
                     >
-                      <p className="text-sm text-[var(--color-text-secondary)] mb-2">{comparisonRanges.periodA.label}</p>
+                      <p className="text-sm text-[var(--ink-muted)] mb-2">{comparisonRanges.periodA.label}</p>
                       <div className="text-5xl mb-2">{periodAPersona.emoji}</div>
                       <h3 className="text-xl font-bold" style={{ color: periodAPersona.color }}>
                         {periodAPersona.name}
                       </h3>
-                      <p className="text-sm text-[var(--color-text-secondary)]">{periodAPersona.description}</p>
-                      <div className="mt-3 text-xs text-[var(--color-text-secondary)]/60">
+                      <p className="text-sm text-[var(--ink-muted)]">{periodAPersona.description}</p>
+                      <div className="mt-3 text-xs text-[var(--ink-muted)]/60">
                         {periodAPatterns.totalTracks} plays · {periodAPatterns.totalHours}h
                       </div>
                     </motion.div>
@@ -1010,11 +1009,11 @@ export default function StatsPage() {
                   <div className="flex justify-center gap-6 mt-4 text-xs">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded bg-purple-600/60" />
-                      <span className="text-[var(--color-text-secondary)]">{comparisonRanges.periodB.label}</span>
+                      <span className="text-[var(--ink-muted)]">{comparisonRanges.periodB.label}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded bg-cyan-500" />
-                      <span className="text-[var(--color-text-secondary)]">{comparisonRanges.periodA.label}</span>
+                      <span className="text-[var(--ink-muted)]">{comparisonRanges.periodA.label}</span>
                     </div>
                   </div>
                 </AnimatedCard>
@@ -1030,7 +1029,7 @@ export default function StatsPage() {
                           initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: index * 0.05 }}
-                          className="flex items-center justify-between p-2 rounded bg-[var(--color-bg-2)]/30"
+                          className="flex items-center justify-between p-2 rounded bg-[var(--surface-panel)]/30"
                         >
                           <span className="text-sm truncate flex-1">{artist.name}</span>
                           <span className="text-purple-400 font-bold text-sm ml-2">{artist.count}</span>
@@ -1053,7 +1052,7 @@ export default function StatsPage() {
                             initial={{ opacity: 0, x: 10 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: index * 0.05 }}
-                            className="flex items-center justify-between p-2 rounded bg-[var(--color-bg-2)]/30"
+                            className="flex items-center justify-between p-2 rounded bg-[var(--surface-panel)]/30"
                           >
                             <span className="text-sm truncate flex-1">
                               {artist.name}

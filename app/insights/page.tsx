@@ -5,7 +5,6 @@ import TasteEvolution from "@/components/TasteEvolution";
 import OnThisDay from "@/components/OnThisDay";
 import ListeningStreaks from "@/components/ListeningStreaks";
 import ExportData from "@/components/ExportData";
-import { motion, useReducedMotion } from 'framer-motion';
 
 /**
  * Section rule. Carries the section's rank rather than decorating it: the
@@ -21,23 +20,13 @@ const SectionRule = ({ label, note }: { label: string; note?: string }) => (
 );
 
 export default function InsightsPage() {
-  const reduceMotion = useReducedMotion();
-
   // One orchestrated entrance, on the masthead only. Staggering every section
-  // on scroll is the default treatment and makes the page feel like it is
-  // assembling itself rather than already being there.
-  const enter = reduceMotion
-    ? {}
-    : {
-        initial: { opacity: 0, y: -12 },
-        animate: { opacity: 1, y: 0 },
-        transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] as const },
-      };
-
+  // is the default treatment and makes the page feel like it is assembling
+  // itself rather than already being there. See `.masthead` in globals.css.
   return (
     <div className="min-h-screen p-8 text-[var(--ink-primary)]">
       <div className="max-w-7xl">
-        <motion.header {...enter} className="mb-12 pt-14 md:pt-0 md:pr-82">
+        <header className="masthead mb-12 pt-14 md:pt-0 md:pr-82">
           <h1 className="font-display text-4xl sm:text-6xl lg:text-7xl text-[var(--ink-primary)]">
             Your listening, in detail
           </h1>
@@ -45,7 +34,7 @@ export default function InsightsPage() {
             A year of plays, the shape of the habit, and what your taste has been
             drifting toward.
           </p>
-        </motion.header>
+        </header>
 
         <div className="space-y-14">
           <section>

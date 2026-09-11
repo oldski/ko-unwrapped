@@ -28,7 +28,7 @@ export default function TasteEvolution({ months = 12 }: TasteEvolutionProps) {
   }));
 
   return (
-    <AnimatedCard>
+    <AnimatedCard tier="panel">
       <AnimatedCard.Header
         title="Taste Evolution"
         description="How your music taste has changed over time"
@@ -38,15 +38,15 @@ export default function TasteEvolution({ months = 12 }: TasteEvolutionProps) {
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <Spinner size="lg" className="mx-auto mb-3" />
-            <p className="text-[var(--color-text-secondary)] text-sm">Loading trends...</p>
+            <p className="text-[var(--ink-muted)] text-sm">Loading trends...</p>
           </div>
         </div>
       )}
 
       {!isLoading && formattedData.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-gray-400">No trend data available yet</p>
-          <p className="text-gray-500 text-sm mt-1">
+          <p className="text-[var(--ink-muted)]">No trend data available yet</p>
+          <p className="text-[var(--ink-muted)] text-sm mt-1">
             Listen to more music to see your taste evolution!
           </p>
         </div>
@@ -60,10 +60,10 @@ export default function TasteEvolution({ months = 12 }: TasteEvolutionProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-[var(--color-bg-2)]/30 border border-[var(--color-border)]/20 rounded-lg p-4 hover:bg-[var(--color-bg-2)]/50 transition-all hover:scale-105"
+              className="bg-[var(--surface-panel)]/30 border border-[var(--line)]/20 rounded-lg p-4 hover:bg-[var(--surface-panel)]/50 transition-all hover:scale-105"
             >
-              <p className="text-[var(--color-text-secondary)] text-sm mb-1">Total Plays</p>
-              <p className="text-2xl font-bold text-[var(--color-primary-safe)]">
+              <p className="text-[var(--ink-muted)] text-sm mb-1">Total Plays</p>
+              <p className="text-2xl font-bold text-[var(--ink-signal)]">
                 {formattedData.reduce((sum: number, m: any) => sum + m.totalPlays, 0)}
               </p>
             </motion.div>
@@ -71,10 +71,10 @@ export default function TasteEvolution({ months = 12 }: TasteEvolutionProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="bg-[var(--color-bg-2)]/30 border border-[var(--color-border)]/20 rounded-lg p-4 hover:bg-[var(--color-bg-2)]/50 transition-all hover:scale-105"
+              className="bg-[var(--surface-panel)]/30 border border-[var(--line)]/20 rounded-lg p-4 hover:bg-[var(--surface-panel)]/50 transition-all hover:scale-105"
             >
-              <p className="text-[var(--color-text-secondary)] text-sm mb-1">Avg Popularity</p>
-              <p className="text-2xl font-bold text-[var(--color-accent-safe)]">
+              <p className="text-[var(--ink-muted)] text-sm mb-1">Avg Popularity</p>
+              <p className="text-2xl font-bold text-[var(--ink-signal)]">
                 {Math.round(
                   formattedData.reduce((sum: number, m: any) => sum + m.avgPopularity, 0) /
                     formattedData.length
@@ -85,13 +85,13 @@ export default function TasteEvolution({ months = 12 }: TasteEvolutionProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="bg-[var(--color-bg-2)]/30 border border-[var(--color-border)]/20 rounded-lg p-4 hover:bg-[var(--color-bg-2)]/50 transition-all hover:scale-105"
+              className="bg-[var(--surface-panel)]/30 border border-[var(--line)]/20 rounded-lg p-4 hover:bg-[var(--surface-panel)]/50 transition-all hover:scale-105"
             >
-              <p className="text-[var(--color-text-secondary)] text-sm mb-1">Unique Artists</p>
-              <p className="text-2xl font-bold text-[var(--color-vibrant-safe)]">
+              <p className="text-[var(--ink-muted)] text-sm mb-1">Unique Artists</p>
+              <p className="font-display text-xl text-[var(--ink-primary)]">
                 {Math.max(...formattedData.map((m: any) => m.uniqueArtists))}
               </p>
-              <p className="text-[var(--color-text-secondary)]/70 text-xs mt-1">Peak in a month</p>
+              <p className="text-[var(--ink-muted)]/70 text-xs mt-1">Peak in a month</p>
             </motion.div>
           </div>
 
@@ -158,8 +158,8 @@ export default function TasteEvolution({ months = 12 }: TasteEvolutionProps) {
             transition={{ delay: 0.4 }}
             className="mt-6 p-4 bg-[var(--color-accent)]/10 border border-[var(--color-accent)]/30 rounded-lg"
           >
-            <h3 className="text-lg font-semibold text-[var(--color-accent-safe)] mb-2">Insights</h3>
-            <ul className="space-y-2 text-sm text-[var(--color-text-secondary)]">
+            <h3 className="text-lg font-semibold text-[var(--ink-signal)] mb-2">Insights</h3>
+            <ul className="space-y-2 text-sm text-[var(--ink-muted)]">
               {formattedData.length === 1 ? (
                 // Single month insights
                 (() => {
@@ -174,21 +174,21 @@ export default function TasteEvolution({ months = 12 }: TasteEvolutionProps) {
                   return (
                     <>
                       <li>
-                        • You averaged <span className="text-[var(--color-primary-safe)] font-medium">{playsPerDay} plays per day</span> this month
+                        • You averaged <span className="text-[var(--ink-signal)] font-medium">{playsPerDay} plays per day</span> this month
                         {playsPerDay >= 50 ? ' — a power listener!' : playsPerDay >= 20 ? ' — solid listening habits.' : '.'}
                       </li>
                       <li>
-                        • Your taste profile is <span className="text-[var(--color-accent-safe)] font-medium">{tasteProfile}</span> with
+                        • Your taste profile is <span className="text-[var(--ink-signal)] font-medium">{tasteProfile}</span> with
                         an average popularity score of {month.avgPopularity}/100.
                       </li>
                       <li>
-                        • Discovery rate: <span className="text-[var(--color-vibrant-safe)] font-medium">{discoveryRate}%</span> —
+                        • Discovery rate: <span className="text-[var(--ink-signal)] font-medium">{discoveryRate}%</span> —
                         {parseFloat(discoveryRate) >= 50 ? " you're exploring lots of different artists!"
                           : parseFloat(discoveryRate) >= 30 ? " a healthy mix of favorites and new discoveries."
                           : " you tend to stick with artists you love."}
                       </li>
                       <li>
-                        • You listened to <span className="text-[var(--color-primary-safe)] font-medium">{month.uniqueArtists} unique artists</span> across {month.totalPlays} plays.
+                        • You listened to <span className="text-[var(--ink-signal)] font-medium">{month.uniqueArtists} unique artists</span> across {month.totalPlays} plays.
                       </li>
                     </>
                   );
@@ -213,23 +213,23 @@ export default function TasteEvolution({ months = 12 }: TasteEvolutionProps) {
                   return (
                     <>
                       <li>
-                        • Your popularity trend is <span className="text-[var(--color-accent-safe)] font-medium">
+                        • Your popularity trend is <span className="text-[var(--ink-signal)] font-medium">
                           {popularityChange > 5 ? 'shifting mainstream' : popularityChange < -5 ? 'going more indie' : 'staying consistent'}
                         </span>
                         {popularityChange !== 0 && ` (${popularityChange > 0 ? '+' : ''}${popularityChange} points)`}.
                       </li>
                       <li>
-                        • Most active: <span className="text-[var(--color-primary-safe)] font-medium">{mostActive.monthLabel}</span> ({mostActive.totalPlays} plays)
-                        vs least active: <span className="text-[var(--color-text-secondary)]">{leastActive.monthLabel}</span> ({leastActive.totalPlays} plays).
+                        • Most active: <span className="text-[var(--ink-signal)] font-medium">{mostActive.monthLabel}</span> ({mostActive.totalPlays} plays)
+                        vs least active: <span className="text-[var(--ink-muted)]">{leastActive.monthLabel}</span> ({leastActive.totalPlays} plays).
                       </li>
                       <li>
-                        • Artist variety is <span className="text-[var(--color-vibrant-safe)] font-medium">
+                        • Artist variety is <span className="text-[var(--ink-signal)] font-medium">
                           {artistTrend > 20 ? 'expanding' : artistTrend < -20 ? 'narrowing' : 'stable'}
                         </span> —
                         {artistTrend > 0 ? `discovering ${artistTrend} more artists per month.` : artistTrend < 0 ? `${Math.abs(artistTrend)} fewer artists per month.` : 'steady exploration rate.'}
                       </li>
                       <li>
-                        • Listening consistency: <span className="text-[var(--color-primary-safe)] font-medium">{Math.round(consistency)}%</span>
+                        • Listening consistency: <span className="text-[var(--ink-signal)] font-medium">{Math.round(consistency)}%</span>
                         {consistency >= 80 ? ' — very steady habits!' : consistency >= 50 ? ' — some variation month to month.' : ' — listening varies a lot!'}
                       </li>
                     </>
