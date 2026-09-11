@@ -27,7 +27,7 @@ const TopTracks = () => {
 		return (
 			<div className="min-h-screen text-white p-8">
 				<div className="max-w-7xl">
-					<AnimatedCard opacity="bold" weight="medium">
+					<AnimatedCard tier="panel">
 						<p className="text-[var(--color-text-secondary)]">Error loading data</p>
 					</AnimatedCard>
 				</div>
@@ -39,7 +39,7 @@ const TopTracks = () => {
 		return (
 			<div className="min-h-screen text-white p-8">
 				<div className="max-w-7xl">
-					<AnimatedCard opacity="bold" weight="medium">
+					<AnimatedCard tier="panel">
 						<div className="flex items-center justify-center h-64">
 							<div className="text-center">
 								<Spinner size="xl" className="mx-auto mb-4" />
@@ -81,7 +81,7 @@ const TopTracks = () => {
 				</div>
 
 				{/* Tracks List */}
-				<AnimatedCard opacity="bold" weight="medium">
+				<AnimatedCard tier="panel">
 					<AnimatedCard.Header
 						title={`Top ${tracks.length} Tracks`}
 						description={`From ${timeRangeLabels[timeRange].toLowerCase()}`}

@@ -39,7 +39,7 @@ export default function OnThisDay() {
 
   if (!plays.length) {
     return (
-      <AnimatedCard opacity="bold" weight="medium">
+      <AnimatedCard tier="panel">
         <AnimatedCard.Header
           title="On This Day"
           icon="📅"
@@ -50,7 +50,7 @@ export default function OnThisDay() {
   }
 
   return (
-    <AnimatedCard opacity="bold" weight="medium">
+    <AnimatedCard tier="panel">
       <AnimatedCard.Header
         title="On This Day"
         icon="📅"

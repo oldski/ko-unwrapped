@@ -121,7 +121,7 @@ export default function Tracks3DPage() {
               className="max-w-2xl w-full"
               onClick={(e) => e.stopPropagation()}
             >
-              <AnimatedCard opacity="bold" weight="heavy">
+              <AnimatedCard tier="panel">
                 <div className="flex gap-6">
                   {/* Album Art */}
                   <div className="flex-shrink-0">
@@ -192,7 +192,7 @@ export default function Tracks3DPage() {
 
       {/* Stats Panel */}
       <div className="absolute bottom-4 right-4">
-        <AnimatedCard size="compact" opacity="bold" weight="medium">
+        <AnimatedCard tier="chip">
           <h3 className="font-bold mb-2 text-[var(--ink-signal)]">Stats</h3>
           <div className="text-sm space-y-1 text-[var(--ink-muted)]">
             <p>Tracks Loaded: <span className="text-[var(--ink-primary)] font-bold">{tracks.length}</span></p>

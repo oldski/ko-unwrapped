@@ -594,27 +594,19 @@ export default function StatsPage() {
 
             {selectedView === 'patterns' && (
               <div className="space-y-8">
-                {/* Period Persona */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
-                  <AnimatedCard opacity="bold" weight="medium">
-                    <div className="flex flex-col md:flex-row items-center gap-6 p-2">
-                      <div className="text-6xl">{periodPersona.emoji}</div>
-                      <div className="text-center md:text-left">
-                        <h2 className="text-2xl font-bold mb-1" style={{ color: periodPersona.color }}>
-                          {periodPersona.name}
-                        </h2>
-                        <p className="text-[var(--ink-muted)]">{periodPersona.description}</p>
-                        <p className="text-xs text-[var(--ink-muted)]/60 mt-1">Based on this period</p>
-                      </div>
-                    </div>
-                  </AnimatedCard>
-                </motion.div>
+                {/* Persona sits on the page directly: a verdict, not a metric. */}
+                <div className="flex items-center gap-5">
+                  <span className="text-5xl leading-none" aria-hidden>{periodPersona.emoji}</span>
+                  <div>
+                    <h2 className="text-2xl sm:text-3xl" style={{ color: periodPersona.color }}>
+                      {periodPersona.name}
+                    </h2>
+                    <p className="text-[var(--ink-muted)] mt-1 max-w-[52ch]">{periodPersona.description}</p>
+                  </div>
+                </div>
 
                 {/* Listening by Hour - Scrollable on mobile */}
-                <AnimatedCard opacity="bold" weight="medium" hoverOpacity>
+                <AnimatedCard tier="panel">
                   <AnimatedCard.Header title="Listening by Hour" description="Drag to scroll on mobile" />
                   <div
                     ref={hourScrollRef}
@@ -650,7 +642,7 @@ export default function StatsPage() {
                 </AnimatedCard>
 
                 {/* Day of Week Distribution */}
-                <AnimatedCard opacity="bold" weight="medium" hoverOpacity={1}>
+                <AnimatedCard tier="panel">
                   <AnimatedCard.Header title="Listening by Day" />
                   <div className="grid grid-cols-7 gap-2 md:gap-4">
                     {patterns.dayOfWeekCounts.map((count, day) => {
@@ -683,7 +675,7 @@ export default function StatsPage() {
                 {/* Top Artists & Top Tracks side by side */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Top Artists */}
-                  <AnimatedCard opacity="bold" weight="medium">
+                  <AnimatedCard tier="panel">
                     <AnimatedCard.Header title="Most Played Artists" />
                     <div className="space-y-3">
                       {patterns.topArtists.map((artist, index) => {
@@ -717,7 +709,7 @@ export default function StatsPage() {
                   </AnimatedCard>
 
                   {/* Top Tracks for Period */}
-                  <AnimatedCard opacity="bold" weight="medium">
+                  <AnimatedCard tier="panel">
                     <AnimatedCard.Header title="Most Played Tracks" />
                     <div className="space-y-2">
                       {topTracks.slice(0, 5).map((track: any, index: number) => (
@@ -758,7 +750,7 @@ export default function StatsPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                 >
-                  <AnimatedCard opacity="bold" weight="medium">
+                  <AnimatedCard tier="panel">
                     <div className="flex flex-col md:flex-row items-center gap-6 p-2">
                       <div className="text-6xl">{periodPersona.emoji}</div>
                       <div className="text-center md:text-left">
@@ -772,7 +764,7 @@ export default function StatsPage() {
                 </motion.div>
 
                 {/* Hour x Day Heatmap */}
-                <AnimatedCard opacity="bold" weight="medium">
+                <AnimatedCard tier="panel">
                   <AnimatedCard.Header
                     title="When You Listen"
                     description="Hour × Day of Week activity heatmap"
@@ -787,7 +779,7 @@ export default function StatsPage() {
 
                 {/* Stats Summary */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <AnimatedCard size="compact" opacity="bold" weight="light">
+                  <AnimatedCard tier="chip">
                     <div className="text-center p-2">
                       <p className="text-[var(--ink-muted)] text-xs mb-1">Peak Hour</p>
                       <p className="text-2xl font-bold text-[var(--ink-signal)]">
@@ -796,7 +788,7 @@ export default function StatsPage() {
                       </p>
                     </div>
                   </AnimatedCard>
-                  <AnimatedCard size="compact" opacity="bold" weight="light">
+                  <AnimatedCard tier="chip">
                     <div className="text-center p-2">
                       <p className="text-[var(--ink-muted)] text-xs mb-1">Peak Day</p>
                       <p className="font-display text-xl text-[var(--ink-primary)]">
@@ -804,7 +796,7 @@ export default function StatsPage() {
                       </p>
                     </div>
                   </AnimatedCard>
-                  <AnimatedCard size="compact" opacity="bold" weight="light">
+                  <AnimatedCard tier="chip">
                     <div className="text-center p-2">
                       <p className="text-[var(--ink-muted)] text-xs mb-1">Total Plays</p>
                       <p className="text-2xl font-bold text-[var(--ink-signal)]">
@@ -812,7 +804,7 @@ export default function StatsPage() {
                       </p>
                     </div>
                   </AnimatedCard>
-                  <AnimatedCard size="compact" opacity="bold" weight="light">
+                  <AnimatedCard tier="chip">
                     <div className="text-center p-2">
                       <p className="text-[var(--ink-muted)] text-xs mb-1">Listen Time</p>
                       <p className="text-2xl font-bold text-[var(--ink-signal)]">
@@ -842,7 +834,7 @@ export default function StatsPage() {
               <div className="space-y-8">
                 {/* Summary Delta Cards */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <AnimatedCard size="compact" opacity="bold" weight="light">
+                  <AnimatedCard tier="chip">
                     <div className="text-center p-2">
                       <p className="text-[var(--ink-muted)] text-xs mb-1">Plays Change</p>
                       <p className={`text-2xl font-bold ${comparisonDeltas.playsDelta >= 0 ? 'text-green-400' : 'text-red-400'}`}>
@@ -853,7 +845,7 @@ export default function StatsPage() {
                       </p>
                     </div>
                   </AnimatedCard>
-                  <AnimatedCard size="compact" opacity="bold" weight="light">
+                  <AnimatedCard tier="chip">
                     <div className="text-center p-2">
                       <p className="text-[var(--ink-muted)] text-xs mb-1">Hours Change</p>
                       <p className={`text-2xl font-bold ${comparisonDeltas.hoursDelta >= 0 ? 'text-green-400' : 'text-red-400'}`}>
@@ -864,7 +856,7 @@ export default function StatsPage() {
                       </p>
                     </div>
                   </AnimatedCard>
-                  <AnimatedCard size="compact" opacity="bold" weight="light">
+                  <AnimatedCard tier="chip">
                     <div className="text-center p-2">
                       <p className="text-[var(--ink-muted)] text-xs mb-1">Peak Hour</p>
                       <p className={`text-lg font-bold ${comparisonDeltas.peakHourChanged ? 'text-yellow-400' : 'text-gray-400'}`}>
@@ -879,7 +871,7 @@ export default function StatsPage() {
                       </p>
                     </div>
                   </AnimatedCard>
-                  <AnimatedCard size="compact" opacity="bold" weight="light">
+                  <AnimatedCard tier="chip">
                     <div className="text-center p-2">
                       <p className="text-[var(--ink-muted)] text-xs mb-1">Peak Day</p>
                       <p className={`text-lg font-bold ${comparisonDeltas.peakDayChanged ? 'text-yellow-400' : 'text-gray-400'}`}>
@@ -893,7 +885,7 @@ export default function StatsPage() {
                 </div>
 
                 {/* Persona Comparison */}
-                <AnimatedCard opacity="bold" weight="medium">
+                <AnimatedCard tier="panel">
                   <AnimatedCard.Header title="Listening Persona Comparison" />
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-4">
                     {/* Period B (Previous) */}
@@ -946,7 +938,7 @@ export default function StatsPage() {
 
                 {/* Side-by-side Heatmaps */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <AnimatedCard opacity="bold" weight="medium">
+                  <AnimatedCard tier="panel">
                     <AnimatedCard.Header
                       title={comparisonRanges.periodB.label}
                       description={`${periodBPatterns.totalTracks} plays`}
@@ -959,7 +951,7 @@ export default function StatsPage() {
                     </div>
                   </AnimatedCard>
 
-                  <AnimatedCard opacity="bold" weight="medium">
+                  <AnimatedCard tier="panel">
                     <AnimatedCard.Header
                       title={comparisonRanges.periodA.label}
                       description={`${periodAPatterns.totalTracks} plays`}
@@ -974,7 +966,7 @@ export default function StatsPage() {
                 </div>
 
                 {/* Day-by-Day Comparison */}
-                <AnimatedCard opacity="bold" weight="medium">
+                <AnimatedCard tier="panel">
                   <AnimatedCard.Header title="Day-by-Day Comparison" />
                   <div className="grid grid-cols-7 gap-2 md:gap-4">
                     {dayNames.map((day, index) => {
@@ -1029,7 +1021,7 @@ export default function StatsPage() {
 
                 {/* Top Artists Comparison */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <AnimatedCard opacity="bold" weight="medium">
+                  <AnimatedCard tier="panel">
                     <AnimatedCard.Header title={`Top Artists - ${comparisonRanges.periodB.label}`} />
                     <div className="space-y-2">
                       {periodBPatterns.topArtists.slice(0, 5).map((artist, index) => (
@@ -1047,7 +1039,7 @@ export default function StatsPage() {
                     </div>
                   </AnimatedCard>
 
-                  <AnimatedCard opacity="bold" weight="medium">
+                  <AnimatedCard tier="panel">
                     <AnimatedCard.Header title={`Top Artists - ${comparisonRanges.periodA.label}`} />
                     <div className="space-y-2">
                       {periodAPatterns.topArtists.slice(0, 5).map((artist, index) => {

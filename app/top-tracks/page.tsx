@@ -37,7 +37,7 @@ export default function AudioFeaturesPage() {
 
         {/* Error State */}
         {error && (
-          <AnimatedCard opacity="bold" weight="medium">
+          <AnimatedCard tier="panel">
             <div className="text-center py-8">
               <p className="text-red-400 text-lg">Failed to load insights</p>
               <p className="text-[var(--ink-muted)] text-sm mt-2">{error.message}</p>
@@ -218,7 +218,7 @@ export default function AudioFeaturesPage() {
               </AnimatedCard>
 
               {/* Artist Diversity */}
-              <AnimatedCard opacity="bold" weight="medium" hoverOpacity>
+              <AnimatedCard tier="panel">
                 <AnimatedCard.Header title="Artist Diversity" />
                 <div className="flex flex-col items-center justify-center h-full">
                   <div className="relative w-32 h-32">
@@ -259,7 +259,7 @@ export default function AudioFeaturesPage() {
               </AnimatedCard>
 
               {/* Top Artists */}
-              <AnimatedCard opacity="bold" weight="medium" hoverOpacity>
+              <AnimatedCard tier="panel">
                 <AnimatedCard.Header title="Top Artists" />
                 <div className="space-y-2">
                   {insights.artists.top.slice(0, 5).map((artist: any, index: number) => {
@@ -292,7 +292,7 @@ export default function AudioFeaturesPage() {
             </div>
 
             {/* Top Tracks List */}
-            <AnimatedCard opacity="bold" weight="medium">
+            <AnimatedCard tier="panel">
               <AnimatedCard.Header
                 title="Your Most Played"
                 description={`Top ${insights.tracks.length} tracks by play count`}

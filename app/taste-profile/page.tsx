@@ -198,24 +198,22 @@ export default function TasteProfilePage() {
         {/* Content */}
         {!isLoading && tracks.length > 0 && (
           <>
-            {/* Listening Persona */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-8"
-            >
-              <AnimatedCard opacity="bold" weight="medium">
-                <div className="flex flex-col md:flex-row items-center gap-6 p-2">
-                  <div className="text-6xl">{persona.emoji}</div>
-                  <div className="text-center md:text-left">
-                    <h2 className="text-3xl font-bold mb-2" style={{ color: persona.color }}>
-                      {persona.name}
-                    </h2>
-                    <p className="text-[var(--ink-muted)] text-lg">{persona.description}</p>
-                  </div>
-                </div>
-              </AnimatedCard>
-            </motion.div>
+            {/*
+              * Persona sits on the page directly, with no panel behind it and
+              * no entrance. It is a verdict, not a data readout, so a card
+              * would file it alongside the metrics rather than above them.
+              * The emoji is decorative; the name carries the meaning.
+              */}
+            <div className="flex items-center gap-5 mb-10">
+              <span className="text-5xl leading-none" aria-hidden>{persona.emoji}</span>
+              <div>
+                <h2 className="text-3xl sm:text-4xl" style={{ color: persona.color }}>
+                  {persona.name}
+                </h2>
+                <p className="text-[var(--ink-muted)] mt-1 max-w-[52ch]">{persona.description}</p>
+              </div>
+            </div>
+
             {/*
               * Obscurity leads: it is the number that characterises a taste
               * profile. The rest are supporting readouts. Four equal tiles,
@@ -308,7 +306,7 @@ export default function TasteProfilePage() {
             )}
 
             {/* Top Artists Grid */}
-            <AnimatedCard opacity="subtle" weight="light" className="mb-8">
+            <AnimatedCard tier="panel" className="mb-8">
               <AnimatedCard.Header title="Your Top Artists" description={timeRangeLabels[timeRange]} />
               <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
                 {artists.slice(0, 10).map((artist: any, index: number) => (
@@ -339,7 +337,7 @@ export default function TasteProfilePage() {
 
             {/* Actual Plays vs Spotify Ranking */}
             {actualTopTracks.length > 0 && (
-              <AnimatedCard opacity="bold" weight="medium" className="mb-8">
+              <AnimatedCard tier="panel" className="mb-8">
                 <AnimatedCard.Header
                   title="What You Actually Play"
                   description="Your real listening data vs Spotify's algorithm"
@@ -419,7 +417,7 @@ export default function TasteProfilePage() {
             )}
 
             {/* Album Collage */}
-            <AnimatedCard opacity="bold" weight="medium">
+            <AnimatedCard tier="panel">
               <AnimatedCard.Header title="Your Musical Universe" />
               <div className="grid grid-cols-5 md:grid-cols-10 gap-1">
                 {tracks.map((track: any, index: number) => (

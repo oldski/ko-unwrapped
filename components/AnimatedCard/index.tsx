@@ -499,7 +499,15 @@ const AnimatedCardBase: React.FC<AnimatedCardProps> = ({
       )}
 
       {/* Content */}
-      <div className="relative z-10 h-full flex flex-col">{children}</div>
+      {/*
+       * Tiered cards distribute their content down the card. In a grid the
+       * feature card stretches to the tallest column, which left a block of
+       * dead space under its figure; spreading label, figure and caption
+       * across that height turns it into deliberate spacing instead.
+       */}
+      <div className={`relative z-10 h-full flex flex-col${tier ? ' justify-between gap-3' : ''}`}>
+        {children}
+      </div>
     </div>
   );
 };
