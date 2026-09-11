@@ -655,7 +655,7 @@ export default function StatsPage() {
                       return (
                         <div key={day} className="text-center">
                           <div className="mb-2">
-                            <p className={`text-lg md:text-2xl font-bold ${isPeak ? 'text-[var(--ink-signal)]' : 'text-[var(--color-lighter)]'}`}>
+                            <p className={`font-figure text-lg md:text-2xl ${isPeak ? 'text-[var(--ink-signal)]' : 'text-[var(--color-lighter)]'}`}>
                               {count}
                             </p>
                             <p className="text-xs md:text-sm text-[var(--color-muted)]">{dayNames[day]}</p>
@@ -756,7 +756,7 @@ export default function StatsPage() {
                     <div className="flex flex-col md:flex-row items-center gap-6 p-2">
                       <div className="text-6xl">{periodPersona.emoji}</div>
                       <div className="text-center md:text-left">
-                        <h2 className="text-2xl font-bold mb-1" style={{ color: periodPersona.color }}>
+                        <h2 className="text-2xl mb-1" style={{ color: periodPersona.color }}>
                           {periodPersona.name}
                         </h2>
                         <p className="text-[var(--ink-muted)]">{periodPersona.description}</p>
@@ -784,7 +784,7 @@ export default function StatsPage() {
                   <AnimatedCard tier="chip">
                     <div className="text-center p-2">
                       <p className="text-[var(--ink-muted)] text-xs mb-1">Peak Hour</p>
-                      <p className="text-2xl font-bold text-[var(--ink-signal)]">
+                      <p className="font-figure text-2xl text-[var(--ink-primary)]">
                         {patterns.peakHour > 12 ? patterns.peakHour - 12 : patterns.peakHour || 12}
                         {patterns.peakHour >= 12 ? 'PM' : 'AM'}
                       </p>
@@ -801,7 +801,7 @@ export default function StatsPage() {
                   <AnimatedCard tier="chip">
                     <div className="text-center p-2">
                       <p className="text-[var(--ink-muted)] text-xs mb-1">Total Plays</p>
-                      <p className="text-2xl font-bold text-[var(--ink-signal)]">
+                      <p className="font-figure text-2xl text-[var(--ink-primary)]">
                         {patterns.totalTracks}
                       </p>
                     </div>
@@ -809,7 +809,7 @@ export default function StatsPage() {
                   <AnimatedCard tier="chip">
                     <div className="text-center p-2">
                       <p className="text-[var(--ink-muted)] text-xs mb-1">Listen Time</p>
-                      <p className="text-2xl font-bold text-[var(--ink-signal)]">
+                      <p className="font-figure text-2xl text-[var(--ink-primary)]">
                         {patterns.totalHours}h
                       </p>
                     </div>
@@ -839,7 +839,7 @@ export default function StatsPage() {
                   <AnimatedCard tier="chip">
                     <div className="text-center p-2">
                       <p className="text-[var(--ink-muted)] text-xs mb-1">Plays Change</p>
-                      <p className={`text-2xl font-bold ${comparisonDeltas.playsDelta >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      <p className={`font-figure text-2xl ${comparisonDeltas.playsDelta >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                         {comparisonDeltas.playsDelta >= 0 ? '+' : ''}{comparisonDeltas.playsDelta}
                       </p>
                       <p className={`text-xs ${comparisonDeltas.playsPercent >= 0 ? 'text-green-400/70' : 'text-red-400/70'}`}>
@@ -850,7 +850,7 @@ export default function StatsPage() {
                   <AnimatedCard tier="chip">
                     <div className="text-center p-2">
                       <p className="text-[var(--ink-muted)] text-xs mb-1">Hours Change</p>
-                      <p className={`text-2xl font-bold ${comparisonDeltas.hoursDelta >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      <p className={`font-figure text-2xl ${comparisonDeltas.hoursDelta >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                         {comparisonDeltas.hoursDelta >= 0 ? '+' : ''}{comparisonDeltas.hoursDelta}h
                       </p>
                       <p className={`text-xs ${comparisonDeltas.hoursPercent >= 0 ? 'text-green-400/70' : 'text-red-400/70'}`}>
@@ -898,7 +898,7 @@ export default function StatsPage() {
                     >
                       <p className="text-sm text-[var(--ink-muted)] mb-2">{comparisonRanges.periodB.label}</p>
                       <div className="text-5xl mb-2">{periodBPersona.emoji}</div>
-                      <h3 className="text-xl font-bold" style={{ color: periodBPersona.color }}>
+                      <h3 className="text-xl" style={{ color: periodBPersona.color }}>
                         {periodBPersona.name}
                       </h3>
                       <p className="text-sm text-[var(--ink-muted)]">{periodBPersona.description}</p>
@@ -920,7 +920,7 @@ export default function StatsPage() {
                     >
                       <p className="text-sm text-[var(--ink-muted)] mb-2">{comparisonRanges.periodA.label}</p>
                       <div className="text-5xl mb-2">{periodAPersona.emoji}</div>
-                      <h3 className="text-xl font-bold" style={{ color: periodAPersona.color }}>
+                      <h3 className="text-xl" style={{ color: periodAPersona.color }}>
                         {periodAPersona.name}
                       </h3>
                       <p className="text-sm text-[var(--ink-muted)]">{periodAPersona.description}</p>

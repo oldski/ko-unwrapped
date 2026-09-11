@@ -97,14 +97,14 @@ export default function AudioFeaturesPage() {
                   <div className="flex justify-between items-center">
                     <div>
                       <p className="text-[var(--ink-muted)] text-sm">Average Popularity</p>
-                      <p className="text-4xl font-bold text-[var(--ink-signal)]">
+                      <p className="font-figure text-4xl text-[var(--ink-primary)]">
                         {insights.popularity.average}
                         <span className="text-lg text-[var(--ink-muted)]">/100</span>
                       </p>
                     </div>
                     <div className="text-right">
                       <p className="text-[var(--ink-muted)] text-sm">Obscurity Score</p>
-                      <p className="text-4xl font-bold text-[var(--ink-signal)]">
+                      <p className="font-figure text-4xl text-[var(--ink-primary)]">
                         {insights.popularity.obscurityScore}
                       </p>
                     </div>
@@ -156,7 +156,7 @@ export default function AudioFeaturesPage() {
                   {/* Average Duration */}
                   <div className="text-center py-4">
                     <p className="text-[var(--ink-muted)] text-sm">Average Track Length</p>
-                    <p className="text-5xl font-bold text-[var(--ink-signal)]">
+                    <p className="font-figure text-5xl text-[var(--ink-primary)]">
                       {insights.duration.averageFormatted}
                     </p>
                   </div>
@@ -247,7 +247,7 @@ export default function AudioFeaturesPage() {
                       />
                     </svg>
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-3xl font-bold text-[var(--ink-signal)]">
+                      <span className="font-figure text-3xl text-[var(--ink-primary)]">
                         {insights.artists.diversity}%
                       </span>
                     </div>

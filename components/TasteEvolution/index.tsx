@@ -63,45 +63,40 @@ export default function TasteEvolution({ months = 12 }: TasteEvolutionProps) {
 
       {!isLoading && formattedData.length > 0 && (
         <>
-          {/* Stats Summary */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="bg-[var(--surface-panel)]/30 border border-[var(--line)]/20 rounded-lg p-4 hover:bg-[var(--surface-panel)]/50 transition-all hover:scale-105"
-            >
-              <p className="text-[var(--ink-muted)] text-sm mb-1">Total Plays</p>
-              <p className="text-2xl font-bold text-[var(--ink-signal)]">
-                {formattedData.reduce((sum: number, m: any) => sum + m.totalPlays, 0)}
+          {/*
+            * Three readouts of the same kind, so one treatment: figure face in
+            * primary ink over a muted label. They previously carried three
+            * different type treatments between them and a hand-rolled card
+            * style, and each animated in on its own delay.
+            */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <AnimatedCard tier="chip">
+              <p className="text-xs text-[var(--ink-muted)] mb-1">Total plays</p>
+              <p className="font-figure text-4xl text-[var(--ink-primary)]">
+                {formattedData
+                  .reduce((sum: number, m: any) => sum + m.totalPlays, 0)
+                  .toLocaleString()}
               </p>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="bg-[var(--surface-panel)]/30 border border-[var(--line)]/20 rounded-lg p-4 hover:bg-[var(--surface-panel)]/50 transition-all hover:scale-105"
-            >
-              <p className="text-[var(--ink-muted)] text-sm mb-1">Avg Popularity</p>
-              <p className="text-2xl font-bold text-[var(--ink-signal)]">
+            </AnimatedCard>
+
+            <AnimatedCard tier="chip">
+              <p className="text-xs text-[var(--ink-muted)] mb-1">Average popularity</p>
+              <p className="font-figure text-4xl text-[var(--ink-primary)]">
                 {Math.round(
                   formattedData.reduce((sum: number, m: any) => sum + m.avgPopularity, 0) /
                     formattedData.length
                 )}
               </p>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="bg-[var(--surface-panel)]/30 border border-[var(--line)]/20 rounded-lg p-4 hover:bg-[var(--surface-panel)]/50 transition-all hover:scale-105"
-            >
-              <p className="text-[var(--ink-muted)] text-sm mb-1">Unique Artists</p>
-              <p className="font-display text-xl text-[var(--ink-primary)]">
-                {Math.max(...formattedData.map((m: any) => m.uniqueArtists))}
+              <p className="text-xs text-[var(--ink-muted)] mt-1.5">out of 100</p>
+            </AnimatedCard>
+
+            <AnimatedCard tier="chip">
+              <p className="text-xs text-[var(--ink-muted)] mb-1">Unique artists</p>
+              <p className="font-figure text-4xl text-[var(--ink-primary)]">
+                {Math.max(...formattedData.map((m: any) => m.uniqueArtists)).toLocaleString()}
               </p>
-              <p className="text-[var(--ink-muted)]/70 text-xs mt-1">Peak in a month</p>
-            </motion.div>
+              <p className="text-xs text-[var(--ink-muted)] mt-1.5">peak in a month</p>
+            </AnimatedCard>
           </div>
 
           {/*

@@ -125,56 +125,52 @@ export default function ListeningStreaks() {
       />
 
       {/* Main Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="bg-gradient-to-br from-orange-500/20 to-red-500/20 border border-orange-500/50 rounded-xl p-6 text-center"
-        >
-          <p className="text-[var(--ink-muted)] text-sm mb-2">Current Streak</p>
-          <p className="text-5xl font-bold text-orange-400 mb-1">
+      {/*
+        * Three counts of the same kind, so one treatment.
+        *
+        * They previously had an orange, a yellow and a green gradient card
+        * each. Three different hues on three measures that share a unit reads
+        * as three categories, which is identity work the data does not need:
+        * the labels already say which is which. Colour here was decoration,
+        * and it also collided with the reserved status colours used for
+        * deltas elsewhere.
+        */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <AnimatedCard tier="chip">
+          <p className="text-xs text-[var(--ink-muted)] mb-1">Current streak</p>
+          <p className="font-figure text-5xl text-[var(--ink-primary)]">
             {streakData.currentStreak}
-          </p>
-          <p className="text-[var(--ink-muted)] text-sm">
-            {streakData.currentStreak === 1 ? 'day' : 'days'}
+            <span className="text-base ml-2 text-[var(--ink-muted)]">
+              {streakData.currentStreak === 1 ? 'day' : 'days'}
+            </span>
           </p>
           {streakData.currentStreak >= 3 && (
-            <div className="mt-2 text-2xl">
+            <p className="text-lg mt-1.5" aria-hidden>
               {streakData.currentStreak >= 30 ? '🏆' : streakData.currentStreak >= 14 ? '⭐' : '🔥'}
-            </div>
+            </p>
           )}
-        </motion.div>
+        </AnimatedCard>
 
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.1 }}
-          className="bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border border-yellow-500/50 rounded-xl p-6 text-center"
-        >
-          <p className="text-[var(--ink-muted)] text-sm mb-2">Longest Streak</p>
-          <p className="text-5xl font-bold text-yellow-400 mb-1">
+        <AnimatedCard tier="chip">
+          <p className="text-xs text-[var(--ink-muted)] mb-1">Longest streak</p>
+          <p className="font-figure text-5xl text-[var(--ink-primary)]">
             {streakData.longestStreak}
-          </p>
-          <p className="text-[var(--ink-muted)] text-sm">
-            {streakData.longestStreak === 1 ? 'day' : 'days'}
+            <span className="text-base ml-2 text-[var(--ink-muted)]">
+              {streakData.longestStreak === 1 ? 'day' : 'days'}
+            </span>
           </p>
           {streakData.longestStreak >= 7 && (
-            <p className="text-xs text-yellow-400 mt-2">Personal Best!</p>
+            <p className="text-xs text-[var(--ink-signal)] mt-1.5">Personal best</p>
           )}
-        </motion.div>
+        </AnimatedCard>
 
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
-          className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/50 rounded-xl p-6 text-center"
-        >
-          <p className="text-[var(--ink-muted)] text-sm mb-2">Total Active Days</p>
-          <p className="text-5xl font-bold text-green-400 mb-1">
+        <AnimatedCard tier="chip">
+          <p className="text-xs text-[var(--ink-muted)] mb-1">Total active days</p>
+          <p className="font-figure text-5xl text-[var(--ink-primary)]">
             {streakData.totalDaysWithPlays}
           </p>
-          <p className="text-[var(--ink-muted)] text-sm">days with plays</p>
-        </motion.div>
+          <p className="text-xs text-[var(--ink-muted)] mt-1.5">days with plays</p>
+        </AnimatedCard>
       </div>
 
       {/* Streak Message */}
@@ -210,7 +206,7 @@ export default function ListeningStreaks() {
                   <p className="text-xs font-semibold">
                     {dayDate.toLocaleDateString('en-US', { weekday: 'short' })}
                   </p>
-                  <p className="text-2xl font-bold">
+                  <p className="font-figure text-2xl text-[var(--ink-primary)]">
                     {dayDate.getDate()}
                   </p>
                   {isToday && (

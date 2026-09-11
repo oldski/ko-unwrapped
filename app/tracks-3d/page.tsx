@@ -52,7 +52,7 @@ export default function Tracks3DPage() {
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/80 to-transparent p-6">
         <div className="max-w-7xl">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2 pt-14 md:pt-0 md:pr-82">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl text-white mb-2 pt-14 md:pt-0 md:pr-82">
             Your Top Tracks
             <span className="text-cyan-500"> in 3D</span>
           </h1>
@@ -134,7 +134,7 @@ export default function Tracks3DPage() {
 
                   {/* Track Info */}
                   <div className="flex-1 flex flex-col">
-                    <h2 className="text-3xl font-bold text-[var(--ink-primary)] mb-2">
+                    <h2 className="text-3xl text-[var(--ink-primary)] mb-2">
                       {selectedTrack.name}
                     </h2>
                     <p className="text-xl text-[var(--ink-signal)] mb-4">
@@ -193,7 +193,7 @@ export default function Tracks3DPage() {
       {/* Stats Panel */}
       <div className="absolute bottom-4 right-4">
         <AnimatedCard tier="chip">
-          <h3 className="font-bold mb-2 text-[var(--ink-signal)]">Stats</h3>
+          <h3 className=" mb-2 text-[var(--ink-signal)]">Stats</h3>
           <div className="text-sm space-y-1 text-[var(--ink-muted)]">
             <p>Tracks Loaded: <span className="text-[var(--ink-primary)] font-bold">{tracks.length}</span></p>
             <p>Time Range: <span className="text-[var(--ink-primary)] font-bold">{timeRangeLabels[timeRange]}</span></p>
