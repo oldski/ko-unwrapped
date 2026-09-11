@@ -122,6 +122,39 @@ body {
 }
 
 /*
+ * Layered echo for artwork.
+ *
+ * The box-shadow counterpart to .nav-echo, and the same stepping the cards
+ * use: hard offsets at falling alpha, no blur. Unlike .shadow-layered-*, this
+ * takes --ink-signal, so it tracks the album rather than sitting on a
+ * visualiser token that never changes.
+ *
+ * The pulse breathes on the beat, like the homepage album art. `--beat` is one
+ * beat in seconds, published by whatever renders this.
+ */
+.shadow-echo {
+  box-shadow:
+    6px 6px 0 0 color-mix(in srgb, var(--ink-signal) 42%, transparent),
+    12px 12px 0 0 color-mix(in srgb, var(--ink-signal) 28%, transparent),
+    18px 18px 0 0 color-mix(in srgb, var(--ink-signal) 18%, transparent),
+    24px 24px 0 0 color-mix(in srgb, var(--ink-signal) 10%, transparent),
+    30px 30px 0 0 color-mix(in srgb, var(--ink-signal) 5%, transparent);
+}
+
+.shadow-echo--pulse {
+  animation: shadow-echo-breathe calc(var(--beat, 0.5s) * 2) ease-in-out infinite;
+}
+
+@keyframes shadow-echo-breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shadow-echo--pulse { animation: none; }
+}
+
+/*
  * Menu echo.
  *
  * The type equivalent of .shadow-layered-*: the same hard offset steps at

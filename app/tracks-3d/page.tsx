@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import AnimatedCard from '@/components/AnimatedCard';
 import Button from '@/components/Button';
 import Spinner from '@/components/Spinner';
+import { useVisualizer } from '@/contexts/VisualizerContext';
 
 // Dynamically import 3D components to avoid SSR
 const Scene = dynamic(() => import('@/components/3D/Scene'), { ssr: false });
@@ -16,6 +17,7 @@ const TrackWall = dynamic(() => import('@/components/3D/TrackWall'), { ssr: fals
 export default function Tracks3DPage() {
   const [timeRange, setTimeRange] = useState<'short_term' | 'medium_term' | 'long_term'>('short_term');
   const [selectedTrack, setSelectedTrack] = useState<any>(null);
+  const { bpm } = useVisualizer();
 
   // Fetch tracks
   const { data: tracksData, isLoading } = useSWR(
@@ -88,23 +90,36 @@ export default function Tracks3DPage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-30 bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
+            style={{ ['--beat' as string]: `${60 / Math.max(bpm, 40)}s` }}
             onClick={() => setSelectedTrack(null)}
           >
             <motion.div
               initial={{ scale: 0.8, y: 50 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.8, y: 50 }}
-              className="max-w-2xl w-full"
+              className="relative max-w-2xl w-full"
               onClick={(e) => e.stopPropagation()}
             >
-              <AnimatedCard tier="panel">
+              {/*
+                The panel carries the layered echo the cards and the menu use,
+                breathing on the beat like the homepage artwork. It sits on its
+                own layer behind the panel: pulsing the panel's own opacity
+                would fade its contents with it.
+              */}
+              <div
+                aria-hidden
+                className="absolute inset-0 rounded-xl shadow-echo shadow-echo--pulse"
+              />
+              {/* Hover lift is off: this is a dialog, not something to point at, and
+                  raising it on hover read as the panel being interactive. */}
+              <AnimatedCard tier="panel" className="relative" enableHoverEffect={false}>
                 <div className="flex gap-6">
                   {/* Album Art */}
                   <div className="flex-shrink-0">
                     <img
                       src={selectedTrack.album.images[0]?.url}
                       alt={selectedTrack.album.name}
-                      className="w-48 h-48 rounded-lg shadow-2xl"
+                      className="w-48 h-48 rounded-lg"
                     />
                   </div>
 
