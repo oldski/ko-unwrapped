@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
 import { playHistory, tracks, audioFeatures } from '@/db/schema';
-import { desc, and, gte, lte, eq } from 'drizzle-orm';
+import { desc, and, gte, lte, eq, count } from 'drizzle-orm';
 import { fetchArtistsByTrack } from '@/lib/stats/attachArtists';
 
 export async function GET(request: Request) {
@@ -10,6 +10,20 @@ export async function GET(request: Request) {
     const startDate = searchParams.get('start');
     const endDate = searchParams.get('end');
     const limit = parseInt(searchParams.get('limit') || '100');
+
+    /*
+     * Response shape.
+     *
+     * One endpoint serves five consumers and used to send the heaviest shape
+     * to all of them: every play row with nested track and audio features.
+     * Over a 365-day window that is ~5.6MB, and two of the consumers needed a
+     * play count and a timestamp. `fields` lets a caller ask for what it uses.
+     *
+     *   count    row count only, no rows at all
+     *   minimal  playedAt, duration and popularity — enough to aggregate
+     *   full     everything (default, so existing callers are unaffected)
+     */
+    const fields = searchParams.get('fields') ?? 'full';
 
     // Build base query
     let conditions = [];
@@ -20,6 +34,35 @@ export async function GET(request: Request) {
     }
     if (endDate) {
       conditions.push(lte(playHistory.playedAt, new Date(endDate)));
+    }
+
+    if (fields === 'count') {
+      const [row] = conditions.length > 0
+        ? await db.select({ value: count() }).from(playHistory).where(and(...conditions))
+        : await db.select({ value: count() }).from(playHistory);
+
+      return NextResponse.json({ success: true, count: row?.value ?? 0, data: [] });
+    }
+
+    if (fields === 'minimal') {
+      const minimalQuery = db
+        .select({
+          playedAt: playHistory.playedAt,
+          track: {
+            popularity: tracks.popularity,
+            durationMs: tracks.durationMs,
+          },
+        })
+        .from(playHistory)
+        .innerJoin(tracks, eq(playHistory.trackId, tracks.id))
+        .orderBy(desc(playHistory.playedAt))
+        .limit(limit);
+
+      const rows = conditions.length > 0
+        ? await minimalQuery.where(and(...conditions))
+        : await minimalQuery;
+
+      return NextResponse.json({ success: true, count: rows.length, data: rows });
     }
 
     // Query play history with track details, audio features, and artists

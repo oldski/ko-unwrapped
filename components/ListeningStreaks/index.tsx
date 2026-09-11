@@ -9,7 +9,8 @@ import Spinner from '@/components/Spinner';
 export default function ListeningStreaks() {
   // Fetch all history to calculate streaks
   const { data: historyData, isLoading } = useSWR(
-    '/api/stats/history?limit=10000',
+    // Reads playedAt only.
+    '/api/stats/history?limit=10000&fields=minimal',
     fetcher
   );
 
