@@ -112,6 +112,16 @@ body {
 }
 
 /*
+ * The wordmark sits above the menu's scrim so it stays part of the
+ * composition rather than being covered. Its multiply blend would render it
+ * black against that scrim, so while the menu is open it draws normally.
+ */
+.menu-open .wordmark,
+.menu-open .wordmark a {
+  mix-blend-mode: normal;
+}
+
+/*
  * Masthead entrance. Deliberately a CSS animation with no fill-mode: the
  * element's resting state is visible, so if the animation never runs, the
  * heading is still there. An entrance that starts at opacity 0 and relies on
@@ -177,16 +187,6 @@ h1, h2, h3 {
   }
   .animation-delay-4000 {
     animation-delay: 4s;
-  }
-
-  /* Off-canvas nav rows. Solid so the part that overhangs the panel
-     edge reads as an opaque key rather than a translucent tint. */
-  .bg-nav-row {
-    background-color: var(--color-bg-2);
-  }
-
-  .bg-nav-row-hover:hover {
-    background-color: color-mix(in srgb, var(--color-bg-2) 60%, var(--color-primary));
   }
 
   /* Layered shadow using theme colors - hover only */

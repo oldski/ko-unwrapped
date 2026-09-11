@@ -24,19 +24,24 @@ const navItems = [
 	{ href: "/top-tracks", label: "Top Tracks" },
 ];
 
+/*
+ * The cluster read --color-primary/accent/bg-2, which are visualiser tokens
+ * held fixed on purpose, so every hover and active state here stayed cyan
+ * whatever was playing. On the ink/surface family it tracks the artwork.
+ */
 const iconButtonClasses = `
 	relative w-11 h-11 rounded-lg border-2 flex items-center justify-center
-	bg-[var(--color-bg-2)]/80 backdrop-blur-md
-	text-[var(--color-text-secondary)] border-[var(--color-border)]
-	hover:text-[var(--color-text-primary)] hover:bg-[var(--color-primary)]/40
-	hover:border-[var(--color-accent)] hover:shadow-layered-sm
+	bg-[var(--surface-panel)]/80 backdrop-blur-md
+	text-[var(--ink-muted)] border-[var(--line)]
+	hover:text-[var(--ink-primary)] hover:bg-[var(--surface-raised)]
+	hover:border-[var(--ink-signal)] hover:shadow-layered-sm
 	transition-colors duration-200
 `;
 
 const activeIconButtonClasses = `
 	relative w-11 h-11 rounded-lg border-2 flex items-center justify-center
-	bg-[var(--color-primary)] backdrop-blur-md
-	text-[var(--color-text-primary)] border-[var(--color-accent)] shadow-layered-accent
+	bg-[var(--surface-signal)] backdrop-blur-md
+	text-[var(--ink-on-signal)] border-[var(--ink-signal)] shadow-layered-accent
 	transition-colors duration-200
 `;
 
@@ -71,20 +76,18 @@ const Navigation = () => {
 
 		const previousOverflow = document.body.style.overflow;
 		document.body.style.overflow = "hidden";
+		// Lets the wordmark drop its blend mode while the menu is open; see
+		// `.menu-open` in globals.css. A class avoids threading this one flag
+		// through a context just so two fixed elements can agree.
+		document.body.classList.add("menu-open");
 		window.addEventListener("keydown", onKeyDown);
 
 		return () => {
 			document.body.style.overflow = previousOverflow;
+			document.body.classList.remove("menu-open");
 			window.removeEventListener("keydown", onKeyDown);
 		};
 	}, [isOpen]);
-
-	const getRowClasses = (isActive: boolean) => {
-		if (isActive) {
-			return "bg-[var(--color-primary)] text-[var(--color-text-primary)] border-[var(--color-accent)] shadow-layered-accent";
-		}
-		return "bg-nav-row bg-nav-row-hover text-[var(--color-text-secondary)] border-[var(--color-border)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-accent)] hover:shadow-layered-sm";
-	};
 
 	const iconHover = reduceMotion ? undefined : { scale: 1.08, y: -2 };
 	const iconTap = reduceMotion ? undefined : { scale: 0.92 };
@@ -220,7 +223,20 @@ const Navigation = () => {
 							animate={{ opacity: 1 }}
 							exit={{ opacity: 0 }}
 							onClick={closeMenu}
-							className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[55]"
+							/*
+							 * Gradient scrim, not a flat blur.
+							 *
+							 * A 60% black wash with backdrop-blur dimmed the visualiser to
+							 * nothing across the whole screen, which is the opposite of what
+							 * this menu is for. This darkens only the right edge, where the
+							 * type sits, and clears to nothing on the left so the
+							 * visualisation keeps running in view.
+							 *
+							 * The right end is deliberately heavy: at 88% black a
+							 * full-white visualiser frame still leaves ink-primary above
+							 * 5:1, so legibility does not depend on what is being drawn.
+							 */
+							className="fixed inset-0 z-[55] bg-gradient-to-r from-transparent via-black/45 to-black/[0.88]"
 						/>
 
 						<motion.nav
@@ -237,26 +253,23 @@ const Navigation = () => {
 							className="fixed top-0 right-0 bottom-0 w-88 max-w-[90vw] z-[60] overflow-y-auto overscroll-contain"
 						>
 							{/*
-							  The nav is 32px wider than the painted surface so rows can hang
-							  past the panel's left edge without being clipped: a scroll
-							  container clips both axes, so the overhang has to live inside it.
-							  Surface starts at left-8 (32px); rows start at pl-3 (12px), so
-							  every row overhangs by 20px and the active/hovered row, nudged a
-							  further 12px, reaches the container edge at 32px.
+							  No panel behind the menu. The rows sit directly on the live
+							  visualiser, which is the thing this app is actually about; a
+							  slab of flat colour was hiding it and covering the wordmark in
+							  the bottom-right corner.
+							  Legibility comes from the rows' own solid fills plus the
+							  backdrop scrim, not from a surface. The container stays wider
+							  than the rows so the selection nudge has somewhere to go: a
+							  scroll container clips both axes.
 							*/}
 							<div className="relative min-h-full">
-								<div
-									aria-hidden
-									className="absolute inset-y-0 right-0 left-8 bg-[var(--color-bg-1)]/95 backdrop-blur-lg border-l border-[var(--color-border)]"
-								/>
 								<div className="relative pt-24 pb-6 pl-3 pr-8">
-								{/*<h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-6 pl-6">Menu</h2>*/}
 								<motion.div
 									variants={panelList}
 									initial="closed"
 									animate="open"
 									exit="closed"
-									className="flex flex-col gap-3"
+									className="flex flex-col gap-2 items-start"
 								>
 									{navItems.map((item) => {
 										const isActive = pathname === item.href;
@@ -267,39 +280,52 @@ const Navigation = () => {
 													onClick={() => setIsOpen(false)}
 													aria-current={isActive ? "page" : undefined}
 													className={`
-														relative block px-6 py-4 font-bold rounded-lg
-														border-2 transition-[colors,transform] duration-200
+														group relative flex items-center gap-3 py-1
+														font-display text-3xl sm:text-4xl
+														transition-[color,transform] duration-200
 														motion-reduce:transition-none
-														${isActive ? '-translate-x-3' : 'hover:-translate-x-3 focus-visible:-translate-x-3'}
-														${getRowClasses(isActive)}
+														${isActive
+															? 'text-[var(--ink-signal)] -translate-x-3'
+															: 'text-[var(--ink-primary)] hover:-translate-x-3 focus-visible:-translate-x-3'}
 													`}
 												>
+													{/*
+													  A rule rather than a fill marks the current page.
+													  Every item stays at full ink: dimming the others
+													  would put them below 4.5:1 whenever the visualiser
+													  runs bright behind them.
+													*/}
+													<span
+														aria-hidden
+														className={`
+															block w-[3px] rounded-full transition-all duration-200
+															${isActive
+																? 'h-8 bg-[var(--ink-signal)]'
+																: 'h-0 bg-[var(--ink-primary)] group-hover:h-8'}
+														`}
+													/>
 													{item.label}
-													{isActive && (
-														<span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white/50 rounded-r" />
-													)}
 												</Link>
 											</motion.div>
 										);
 									})}
 
-									<motion.div variants={panelRow}>
+									<motion.div variants={panelRow} className="pt-4">
 										<button
 											onClick={() => {
 												shuffleVisualizer();
 												setIsOpen(false);
 											}}
-											className={`
-												relative w-full px-6 py-4 font-bold rounded-lg
-												border-2 transition-[colors,transform] duration-200
+											className="
+												group flex items-center gap-3 text-sm
+												text-[var(--ink-muted)] hover:text-[var(--ink-primary)]
+												transition-[color,transform] duration-200
 												motion-reduce:transition-none
 												hover:-translate-x-3 focus-visible:-translate-x-3
-												${getRowClasses(false)}
-												flex items-center gap-3
-											`}
+											"
 										>
-											<LuShuffle className="w-5 h-5" />
-											<span>Switch Visualization</span>
+											<LuShuffle className="w-4 h-4" />
+											<span>Switch visualization</span>
 										</button>
 									</motion.div>
 								</motion.div>
