@@ -122,6 +122,65 @@ body {
 }
 
 /*
+ * Menu echo.
+ *
+ * The type equivalent of .shadow-layered-*: the same hard offset steps at
+ * falling alpha, as text-shadow rather than box-shadow, so a menu item carries
+ * the stacked screenprint look the cards have. Steps are 3px rather than 5px
+ * because they trail a 36px glyph, not a whole panel.
+ *
+ * The current page's echo breathes on the beat, the way the homepage album art
+ * does. Only opacity animates, which the compositor handles; animating
+ * text-shadow itself would repaint the glyph every frame.
+ *
+ * `--beat` is one beat in seconds, set from the track's BPM by the nav.
+ */
+.nav-echo {
+  position: relative;
+  z-index: 0;
+}
+
+.nav-echo::after {
+  content: attr(data-echo);
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: -1;
+  color: transparent;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 200ms ease-out;
+  text-shadow:
+    3px 3px 0 color-mix(in srgb, var(--ink-signal) 38%, transparent),
+    6px 6px 0 color-mix(in srgb, var(--ink-signal) 24%, transparent),
+    9px 9px 0 color-mix(in srgb, var(--ink-signal) 14%, transparent),
+    12px 12px 0 color-mix(in srgb, var(--ink-signal) 7%, transparent);
+}
+
+/* Hover reveals the stack, held still. */
+a:hover > .nav-echo::after,
+a:focus-visible > .nav-echo::after {
+  opacity: 1;
+}
+
+/* The current page keeps it, and breathes on the beat. */
+.nav-echo--active::after {
+  opacity: 1;
+  animation: nav-echo-breathe calc(var(--beat, 0.5s) * 2) ease-in-out infinite;
+}
+
+@keyframes nav-echo-breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-echo::after { transition: none; }
+  .nav-echo--active::after { animation: none; }
+}
+
+/*
  * Masthead entrance. Deliberately a CSS animation with no fill-mode: the
  * element's resting state is visible, so if the animation never runs, the
  * heading is still there. An entrance that starts at opacity 0 and relies on

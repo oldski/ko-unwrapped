@@ -50,7 +50,7 @@ const Navigation = () => {
 	const [isOpen, setIsOpen] = useState(false);
 	const [isHamburgerHovered, setIsHamburgerHovered] = useState(false);
 	const [shuffleSpins, setShuffleSpins] = useState(0);
-	const { activeVisualizer, setActiveVisualizer } = useVisualizer();
+	const { activeVisualizer, setActiveVisualizer, bpm } = useVisualizer();
 	const reduceMotion = useReducedMotion();
 	const hamburgerRef = useRef<HTMLButtonElement>(null);
 
@@ -251,6 +251,7 @@ const Navigation = () => {
 									: { type: "spring", damping: 25, stiffness: 200 }
 							}
 							className="fixed top-0 right-0 bottom-0 w-88 max-w-[90vw] z-[60] overflow-y-auto overscroll-contain"
+							style={{ ['--beat' as string]: `${60 / Math.max(bpm, 40)}s` }}
 						>
 							{/*
 							  No panel behind the menu. The rows sit directly on the live
@@ -304,7 +305,12 @@ const Navigation = () => {
 																: 'h-0 bg-[var(--ink-primary)] group-hover:h-8'}
 														`}
 													/>
-													{item.label}
+													<span
+														className={`nav-echo${isActive ? ' nav-echo--active' : ''}`}
+														data-echo={item.label}
+													>
+														{item.label}
+													</span>
 												</Link>
 											</motion.div>
 										);
