@@ -91,6 +91,26 @@ body {
   .page-enter { animation: none; }
 }
 
+/* Scrollbars follow the album palette rather than a fixed grey. */
+.palette-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+.palette-scrollbar::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+.palette-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.palette-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--line);
+  border-radius: 4px;
+}
+
 /*
  * Masthead entrance. Deliberately a CSS animation with no fill-mode: the
  * element's resting state is visible, so if the animation never runs, the

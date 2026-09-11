@@ -409,7 +409,7 @@ export default function StatsPage() {
   };
 
   return (
-    <div className="min-h-screen text-white p-8">
+    <div className="min-h-screen p-8 text-[var(--ink-primary)]">
       <div className="max-w-7xl">
         {/* Header */}
         <div className="mb-8 pt-14 md:pt-0 md:pr-82">
@@ -459,7 +459,7 @@ export default function StatsPage() {
         {/* Date Range Picker - only show for non-compare views */}
         {selectedView !== 'compare' && (
           <div className="mb-8">
-            <h3 className="text-lg font-semibold mb-3 text-gray-300">Time Period</h3>
+            <h3 className="text-sm mb-3 text-[var(--ink-muted)]">Time Period</h3>
             <DateRangePicker onRangeChange={handleDateRangeChange} defaultPreset="30d" />
           </div>
         )}
@@ -467,7 +467,7 @@ export default function StatsPage() {
         {/* Comparison Preset Selector */}
         {selectedView === 'compare' && (
           <div className="mb-8">
-            <h3 className="text-lg font-semibold mb-3 text-gray-300">Compare Periods</h3>
+            <h3 className="text-sm mb-3 text-[var(--ink-muted)]">Compare Periods</h3>
             <div className="flex flex-wrap gap-2">
               {COMPARISON_PRESETS.map((preset, index) => (
                 <Button
@@ -747,23 +747,12 @@ export default function StatsPage() {
 
             {selectedView === 'heatmap' && (
               <div className="space-y-8">
-                {/* Period Persona */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
-                  <AnimatedCard tier="panel">
-                    <div className="flex flex-col md:flex-row items-center gap-6 p-2">
-                      <div className="text-6xl">{periodPersona.emoji}</div>
-                      <div className="text-center md:text-left">
-                        <h2 className="text-2xl mb-1" style={{ color: periodPersona.color }}>
-                          {periodPersona.name}
-                        </h2>
-                        <p className="text-[var(--ink-muted)]">{periodPersona.description}</p>
-                      </div>
-                    </div>
-                  </AnimatedCard>
-                </motion.div>
+                {/*
+                  * No persona here. It is derived from when you listen, and
+                  * the hour-by-day heatmap directly below shows that same
+                  * thing in full rather than as a one-line verdict. The
+                  * Patterns tab still carries it, where it is the headline.
+                  */}
 
                 {/* Hour x Day Heatmap */}
                 <AnimatedCard tier="panel">
@@ -774,7 +763,6 @@ export default function StatsPage() {
                   <div className="mt-4">
                     <HourDayHeatmap
                       data={recentTracks.map((t: any) => ({ playedAt: t.playedAt }))}
-                      colorScheme="accent"
                     />
                   </div>
                 </AnimatedCard>
@@ -839,10 +827,10 @@ export default function StatsPage() {
                   <AnimatedCard tier="chip">
                     <div className="text-center p-2">
                       <p className="text-[var(--ink-muted)] text-xs mb-1">Plays Change</p>
-                      <p className={`font-figure text-2xl ${comparisonDeltas.playsDelta >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      <p className={`font-figure text-2xl ${comparisonDeltas.playsDelta >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                         {comparisonDeltas.playsDelta >= 0 ? '+' : ''}{comparisonDeltas.playsDelta}
                       </p>
-                      <p className={`text-xs ${comparisonDeltas.playsPercent >= 0 ? 'text-green-400/70' : 'text-red-400/70'}`}>
+                      <p className={`text-xs ${comparisonDeltas.playsPercent >= 0 ? 'text-emerald-400/80' : 'text-rose-400/80'}`}>
                         {comparisonDeltas.playsPercent >= 0 ? '+' : ''}{comparisonDeltas.playsPercent}%
                       </p>
                     </div>
@@ -850,10 +838,10 @@ export default function StatsPage() {
                   <AnimatedCard tier="chip">
                     <div className="text-center p-2">
                       <p className="text-[var(--ink-muted)] text-xs mb-1">Hours Change</p>
-                      <p className={`font-figure text-2xl ${comparisonDeltas.hoursDelta >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      <p className={`font-figure text-2xl ${comparisonDeltas.hoursDelta >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                         {comparisonDeltas.hoursDelta >= 0 ? '+' : ''}{comparisonDeltas.hoursDelta}h
                       </p>
-                      <p className={`text-xs ${comparisonDeltas.hoursPercent >= 0 ? 'text-green-400/70' : 'text-red-400/70'}`}>
+                      <p className={`text-xs ${comparisonDeltas.hoursPercent >= 0 ? 'text-emerald-400/80' : 'text-rose-400/80'}`}>
                         {comparisonDeltas.hoursPercent >= 0 ? '+' : ''}{comparisonDeltas.hoursPercent}%
                       </p>
                     </div>
@@ -861,7 +849,7 @@ export default function StatsPage() {
                   <AnimatedCard tier="chip">
                     <div className="text-center p-2">
                       <p className="text-[var(--ink-muted)] text-xs mb-1">Peak Hour</p>
-                      <p className={`text-lg font-bold ${comparisonDeltas.peakHourChanged ? 'text-yellow-400' : 'text-gray-400'}`}>
+                      <p className={`text-lg font-bold ${comparisonDeltas.peakHourChanged ? 'text-[var(--ink-signal)]' : 'text-[var(--ink-muted)]'}`}>
                         {comparisonDeltas.peakHourChanged ? 'Changed' : 'Same'}
                       </p>
                       <p className="text-xs text-[var(--ink-muted)]">
@@ -876,7 +864,7 @@ export default function StatsPage() {
                   <AnimatedCard tier="chip">
                     <div className="text-center p-2">
                       <p className="text-[var(--ink-muted)] text-xs mb-1">Peak Day</p>
-                      <p className={`text-lg font-bold ${comparisonDeltas.peakDayChanged ? 'text-yellow-400' : 'text-gray-400'}`}>
+                      <p className={`text-lg font-bold ${comparisonDeltas.peakDayChanged ? 'text-[var(--ink-signal)]' : 'text-[var(--ink-muted)]'}`}>
                         {comparisonDeltas.peakDayChanged ? 'Changed' : 'Same'}
                       </p>
                       <p className="text-xs text-[var(--ink-muted)]">
@@ -931,7 +919,7 @@ export default function StatsPage() {
                   </div>
                   {comparisonDeltas.personaChanged && (
                     <div className="text-center pb-4">
-                      <span className="inline-block px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-400 text-sm">
+                      <span className="inline-block px-3 py-1 rounded-full bg-[var(--surface-raised)] text-[var(--ink-signal)] text-sm">
                         Your listening style shifted!
                       </span>
                     </div>
@@ -948,7 +936,6 @@ export default function StatsPage() {
                     <div className="mt-4">
                       <HourDayHeatmap
                         data={periodBTracks.map((t: any) => ({ playedAt: t.playedAt }))}
-                        colorScheme="purple"
                       />
                     </div>
                   </AnimatedCard>
@@ -961,7 +948,6 @@ export default function StatsPage() {
                     <div className="mt-4">
                       <HourDayHeatmap
                         data={periodATracks.map((t: any) => ({ playedAt: t.playedAt }))}
-                        colorScheme="cyan"
                       />
                     </div>
                   </AnimatedCard>
@@ -1037,7 +1023,7 @@ export default function StatsPage() {
                           className="flex items-center justify-between p-2 rounded bg-[var(--surface-panel)]/30"
                         >
                           <span className="text-sm truncate flex-1">{artist.name}</span>
-                          <span className="text-purple-400 font-bold text-sm ml-2">{artist.count}</span>
+                          <span className="font-figure text-sm text-[var(--ink-primary)] ml-2">{artist.count}</span>
                         </motion.div>
                       ))}
                     </div>
@@ -1062,10 +1048,10 @@ export default function StatsPage() {
                             <span className="text-sm truncate flex-1">
                               {artist.name}
                               {isNew && (
-                                <span className="ml-2 text-xs text-green-400 bg-green-400/20 px-1.5 py-0.5 rounded">new</span>
+                                <span className="ml-2 text-xs text-emerald-400 bg-emerald-400/15 px-1.5 py-0.5 rounded">new</span>
                               )}
                             </span>
-                            <span className="text-cyan-400 font-bold text-sm ml-2">{artist.count}</span>
+                            <span className="font-figure text-sm text-[var(--ink-primary)] ml-2">{artist.count}</span>
                           </motion.div>
                         );
                       })}
@@ -1076,9 +1062,9 @@ export default function StatsPage() {
             )}
 
             {!isLoadingComparison && (!periodAPatterns || !periodBPatterns) && (
-              <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-2xl p-12 text-center">
-                <p className="text-gray-400 text-lg mb-2">Not enough data for comparison</p>
-                <p className="text-gray-500 text-sm">Try selecting different time periods with more listening history</p>
+              <div className="bg-[var(--surface-panel)] border border-[var(--line)] rounded-2xl p-12 text-center">
+                <p className="text-[var(--ink-primary)] text-lg mb-2">Not enough data for comparison</p>
+                <p className="text-[var(--ink-muted)] text-sm">Try selecting different time periods with more listening history</p>
               </div>
             )}
           </>
@@ -1086,9 +1072,9 @@ export default function StatsPage() {
 
         {/* Empty State */}
         {!isLoading && patterns && patterns.totalTracks === 0 && (
-          <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-2xl p-12 text-center">
-            <p className="text-gray-400 text-lg mb-2">No listening data for this time period</p>
-            <p className="text-gray-500 text-sm">Try selecting a different date range</p>
+          <div className="bg-[var(--surface-panel)] border border-[var(--line)] rounded-2xl p-12 text-center">
+            <p className="text-[var(--ink-primary)] text-lg mb-2">No listening data for this time period</p>
+            <p className="text-[var(--ink-muted)] text-sm">Try selecting a different date range</p>
           </div>
         )}
       </div>

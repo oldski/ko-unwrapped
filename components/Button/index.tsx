@@ -39,33 +39,40 @@ export default function Button({
     lg: 'px-8 py-4 text-lg',
   };
 
-  // Variant configurations using theme colors
+  /*
+   * Variants on the ink/surface family.
+   *
+   * The active state used --color-primary, which is a visualiser token and
+   * stays fixed cyan whatever the artwork, so every tab bar and period picker
+   * in the app ignored the album palette. Fills that hold text use
+   * surface-signal with ink-on-signal, which the palette guarantees together.
+   */
   const getVariantClasses = () => {
     if (isActive) {
-      return 'bg-[var(--color-primary)] text-[var(--color-text-primary)] border-[var(--color-accent)] shadow-layered-sm';
+      return 'bg-[var(--surface-signal)] text-[var(--ink-on-signal)] border-[var(--ink-signal)] shadow-layered-sm';
     }
 
     switch (variant) {
       case 'primary':
-        return 'bg-[var(--color-primary)] text-[var(--color-text-primary)] border-[var(--color-border)] hover:bg-[var(--color-primary)]/80 hover:border-[var(--color-accent)]';
+        return 'bg-[var(--surface-signal)] text-[var(--ink-on-signal)] border-[var(--line)] hover:border-[var(--ink-signal)]';
 
       case 'secondary':
-        return 'bg-[var(--color-bg-2)] text-[var(--color-text-secondary)] border-[var(--color-border)] hover:bg-[var(--color-primary)]/20 hover:text-[var(--color-text-primary)] hover:border-[var(--color-accent)]';
+        return 'bg-[var(--surface-panel)] text-[var(--ink-muted)] border-[var(--line)] hover:bg-[var(--surface-raised)] hover:text-[var(--ink-primary)] hover:border-[var(--ink-signal)]';
 
       case 'accent':
-        return 'bg-[var(--color-accent)] text-[var(--color-text-primary)] border-[var(--color-accent)] hover:bg-[var(--color-accent)]/80 hover:border-[var(--color-vibrant)]';
+        return 'bg-[var(--surface-signal)] text-[var(--ink-on-signal)] border-[var(--ink-signal)] hover:border-[var(--ink-primary)]';
 
       case 'success':
-        return 'bg-[var(--color-vibrant)] text-black border-[var(--color-vibrant)] hover:bg-[var(--color-vibrant)]/80 hover:border-[var(--color-accent)]';
+        return 'bg-emerald-500 text-black border-emerald-500 hover:bg-emerald-400';
 
       case 'danger':
-        return 'bg-red-600 text-white border-red-600 hover:bg-red-700 hover:border-red-500';
+        return 'bg-rose-600 text-white border-rose-600 hover:bg-rose-500';
 
       case 'ghost':
-        return 'bg-transparent text-[var(--color-text-secondary)] border-transparent hover:bg-[var(--color-primary)]/20 hover:text-[var(--color-text-primary)]';
+        return 'bg-transparent text-[var(--ink-muted)] border-transparent hover:bg-[var(--surface-raised)] hover:text-[var(--ink-primary)]';
 
       default:
-        return 'bg-[var(--color-primary)] text-[var(--color-text-primary)] border-[var(--color-border)]';
+        return 'bg-[var(--surface-panel)] text-[var(--ink-primary)] border-[var(--line)]';
     }
   };
 

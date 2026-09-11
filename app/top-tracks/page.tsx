@@ -5,9 +5,11 @@ import fetcher from '@/lib/fetcher';
 import { motion } from 'framer-motion';
 import AnimatedCard from '@/components/AnimatedCard';
 import SectionRule from '@/components/Interface/SectionRule';
+import { useSequentialRamp } from '@/hooks/useChartPalette';
 import Spinner from '@/components/Spinner';
 
 export default function AudioFeaturesPage() {
+  const popularityRamp = useSequentialRamp(4);
   const { data, isLoading, error } = useSWR('/api/top-tracks-insights', fetcher);
 
   const insights = data || null;
@@ -39,7 +41,7 @@ export default function AudioFeaturesPage() {
         {error && (
           <AnimatedCard tier="panel">
             <div className="text-center py-8">
-              <p className="text-red-400 text-lg">Failed to load insights</p>
+              <p className="text-rose-400 text-lg">Failed to load insights</p>
               <p className="text-[var(--ink-muted)] text-sm mt-2">{error.message}</p>
             </div>
           </AnimatedCard>
@@ -110,38 +112,47 @@ export default function AudioFeaturesPage() {
                     </div>
                   </div>
 
-                  {/* Distribution */}
+                  {/*
+                    * Distribution is ordinal, not categorical: mainstream,
+                    * popular, emerging, underground is a ranked sequence. It
+                    * used four unrelated hues, which made the ranking
+                    * invisible and implied four separate categories; they were
+                    * also visualiser tokens, fixed whatever the artwork.
+                    *
+                    * One album hue stepping in lightness instead, brightest at
+                    * the mainstream end, so the order reads in the colour.
+                    */}
                   <div>
                     <p className="text-[var(--ink-muted)] text-sm mb-3">Distribution</p>
                     <div className="space-y-2">
                       {[
-                        { label: 'Mainstream (70+)', value: insights.popularity.distribution.mainstream, color: 'var(--color-vibrant)' },
-                        { label: 'Popular (50-69)', value: insights.popularity.distribution.popular, color: 'var(--color-accent)' },
-                        { label: 'Emerging (30-49)', value: insights.popularity.distribution.emerging, color: 'var(--color-primary)' },
-                        { label: 'Underground (<30)', value: insights.popularity.distribution.underground, color: 'var(--color-secondary)' },
+                        { label: 'Mainstream', range: '70+', value: insights.popularity.distribution.mainstream },
+                        { label: 'Popular', range: '50–69', value: insights.popularity.distribution.popular },
+                        { label: 'Emerging', range: '30–49', value: insights.popularity.distribution.emerging },
+                        { label: 'Underground', range: 'under 30', value: insights.popularity.distribution.underground },
                       ].map((bucket, index) => {
                         const percentage = (bucket.value / insights.summary.tracksAnalyzed) * 100;
+                        // Brightest first, so rank descends with lightness.
+                        const fill = popularityRamp[popularityRamp.length - 1 - index];
+
                         return (
-                          <motion.div
-                            key={bucket.label}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: index * 0.1 }}
-                          >
+                          <div key={bucket.label}>
                             <div className="flex justify-between text-sm mb-1">
-                              <span className="text-[var(--ink-muted)]">{bucket.label}</span>
-                              <span style={{ color: bucket.color }}>{bucket.value} tracks</span>
+                              <span className="text-[var(--ink-muted)]">
+                                {bucket.label}{' '}
+                                <span className="text-xs">{bucket.range}</span>
+                              </span>
+                              <span className="font-data text-[var(--ink-primary)]">
+                                {bucket.value}
+                              </span>
                             </div>
-                            <div className="h-2 bg-[var(--color-darker)] rounded-full overflow-hidden">
-                              <motion.div
+                            <div className="h-2 rounded-full overflow-hidden bg-[var(--surface-raised)]">
+                              <div
                                 className="h-full rounded-full"
-                                style={{ backgroundColor: bucket.color }}
-                                initial={{ width: 0 }}
-                                animate={{ width: `${percentage}%` }}
-                                transition={{ duration: 0.8, delay: index * 0.1 }}
+                                style={{ width: `${percentage}%`, backgroundColor: fill }}
                               />
                             </div>
-                          </motion.div>
+                          </div>
                         );
                       })}
                     </div>
@@ -164,7 +175,7 @@ export default function AudioFeaturesPage() {
                   {/* Shortest & Longest */}
                   <div className="grid grid-cols-2 gap-4">
                     {insights.duration.shortest && (
-                      <div className="bg-[var(--color-darker)] rounded-lg p-4">
+                      <div className="bg-[var(--surface-raised)] rounded-lg p-4">
                         <p className="text-[var(--ink-muted)] text-xs mb-1">Shortest</p>
                         <p className="text-[var(--ink-signal)] font-bold text-lg">
                           {insights.duration.shortest.formatted}
@@ -175,7 +186,7 @@ export default function AudioFeaturesPage() {
                       </div>
                     )}
                     {insights.duration.longest && (
-                      <div className="bg-[var(--color-darker)] rounded-lg p-4">
+                      <div className="bg-[var(--surface-raised)] rounded-lg p-4">
                         <p className="text-[var(--ink-muted)] text-xs mb-1">Longest</p>
                         <p className="text-[var(--ink-signal)] font-bold text-lg">
                           {insights.duration.longest.formatted}
@@ -196,19 +207,19 @@ export default function AudioFeaturesPage() {
               <AnimatedCard tier="panel">
                 <AnimatedCard.Header title="Your Style" />
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-3 bg-[var(--color-darker)] rounded-lg">
+                  <div className="flex items-center justify-between p-3 bg-[var(--surface-raised)] rounded-lg">
                     <span className="text-[var(--ink-muted)]">Taste</span>
                     <span className={`font-bold ${insights.listeningStyle.mainstream ? 'text-[var(--ink-signal)]' : 'text-[var(--ink-signal)]'}`}>
                       {insights.listeningStyle.mainstream ? 'Mainstream' : 'Underground'}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between p-3 bg-[var(--color-darker)] rounded-lg">
+                  <div className="flex items-center justify-between p-3 bg-[var(--surface-raised)] rounded-lg">
                     <span className="text-[var(--ink-muted)]">Variety</span>
                     <span className={`font-bold ${insights.listeningStyle.diverse ? 'text-[var(--ink-signal)]' : 'text-[var(--ink-signal)]'}`}>
                       {insights.listeningStyle.diverse ? 'Diverse' : 'Focused'}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between p-3 bg-[var(--color-darker)] rounded-lg">
+                  <div className="flex items-center justify-between p-3 bg-[var(--surface-raised)] rounded-lg">
                     <span className="text-[var(--ink-muted)]">Loyalty</span>
                     <span className={`font-bold ${insights.listeningStyle.loyalist ? 'text-[var(--ink-signal)]' : 'text-[var(--ink-signal)]'}`}>
                       {insights.listeningStyle.loyalist ? 'Loyalist' : 'Explorer'}
@@ -227,7 +238,7 @@ export default function AudioFeaturesPage() {
                         cx="64"
                         cy="64"
                         r="56"
-                        stroke="var(--color-darker)"
+                        stroke="var(--surface-raised)"
                         strokeWidth="12"
                         fill="none"
                       />
@@ -235,7 +246,7 @@ export default function AudioFeaturesPage() {
                         cx="64"
                         cy="64"
                         r="56"
-                        stroke="var(--color-accent)"
+                        stroke={popularityRamp[popularityRamp.length - 1]}
                         strokeWidth="12"
                         fill="none"
                         strokeLinecap="round"
@@ -276,9 +287,10 @@ export default function AudioFeaturesPage() {
                           <span className="truncate flex-1 mr-2">{artist.name}</span>
                           <span className="text-[var(--ink-signal)] font-bold">{artist.plays}</span>
                         </div>
-                        <div className="h-1.5 bg-[var(--color-darker)] rounded-full overflow-hidden">
+                        <div className="h-1.5 bg-[var(--surface-raised)] rounded-full overflow-hidden">
                           <motion.div
-                            className="h-full rounded-full bg-[var(--color-vibrant)]"
+                            className="h-full rounded-full"
+                            style={{ backgroundColor: popularityRamp[popularityRamp.length - 1] }}
                             initial={{ width: 0 }}
                             animate={{ width: `${percentage}%` }}
                             transition={{ duration: 0.8, delay: index * 0.1 }}
@@ -304,7 +316,7 @@ export default function AudioFeaturesPage() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.03 }}
-                    className="flex items-center gap-3 p-2 rounded-lg bg-[var(--color-darker)]/50 hover:bg-[var(--color-darker)] transition-colors"
+                    className="flex items-center gap-3 p-2 rounded-lg bg-[var(--surface-raised)]/60 hover:bg-[var(--surface-raised)] transition-colors"
                   >
                     {/* Rank */}
                     <span className="w-6 text-center text-[var(--ink-muted)] text-sm font-bold">

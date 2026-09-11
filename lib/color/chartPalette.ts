@@ -90,15 +90,26 @@ export function buildChartPalette(albumHue: number): ChartPalette {
 }
 
 /**
- * A single-hue ramp for magnitude, light to dark reversed for a dark surface:
- * low values sit close to the substrate, high values read brightest.
+ * A single-hue ramp for magnitude, dark to light on a dark surface: low values
+ * sit closer to the substrate, high values read brightest.
+ *
+ * The ramp starts at L 0.48, not lower, because an empty cell in the calendar
+ * is `--surface-raised` at L 0.29. Starting nearer that made "one play" and
+ * "no plays" render 1.11:1 apart, which is indistinguishable. At 0.48 the
+ * lowest step clears 2:1 against an empty cell at every album hue, so the
+ * presence of data is always visible before its amount is judged.
  */
+export const RAMP_MIN_LIGHTNESS = 0.48;
+const RAMP_MAX_LIGHTNESS = 0.86;
+
 export function buildSequentialRamp(albumHue: number, steps = 5): string[] {
-  const from = 0.32;
-  const to = 0.78;
   return Array.from({ length: steps }, (_, i) => {
     const t = steps === 1 ? 1 : i / (steps - 1);
-    return oklchToHex({ l: from + (to - from) * t, c: 0.06 + 0.1 * t, h: albumHue });
+    return oklchToHex({
+      l: RAMP_MIN_LIGHTNESS + (RAMP_MAX_LIGHTNESS - RAMP_MIN_LIGHTNESS) * t,
+      c: 0.07 + 0.09 * t,
+      h: albumHue,
+    });
   });
 }
 

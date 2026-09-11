@@ -5,7 +5,7 @@ import {
   CHART_SURFACE,
   SERIES_HUE_OFFSETS,
 } from '@/lib/color/chartPalette';
-import { contrast, hexToOklch } from '@/lib/color/oklch';
+import { contrast, hexToOklch, oklchToHex } from '@/lib/color/oklch';
 
 /**
  * The six checks from the dataviz method, reimplemented here so they run in CI
@@ -153,6 +153,17 @@ describe('sequential ramp', () => {
       for (let i = 1; i < lightness.length; i++) {
         expect(lightness[i]).toBeGreaterThan(lightness[i - 1]);
       }
+    }
+  });
+
+  it('separates its lowest step from an empty calendar cell', () => {
+    // An empty day is painted --surface-raised. If the ramp starts too near
+    // it, "one play" and "no plays" look the same: measured at 1.11:1 before
+    // the floor was raised.
+    for (let hue = 0; hue < 360; hue += 10) {
+      const emptyCell = oklchToHex({ l: 0.29, c: 0.032, h: hue });
+      const lowest = buildSequentialRamp(hue, 5)[0];
+      expect(contrast(lowest, emptyCell), `album hue ${hue}`).toBeGreaterThanOrEqual(2);
     }
   });
 

@@ -19,7 +19,7 @@ const Hero = () => {
 						initial={{ opacity: 0, x: -50 }}
 						animate={{ opacity: 1, x: 0 }}
 						transition={{ duration: 0.8, delay: 0.5 }}
-						className="lg:hidden fixed left-[-1px] bottom-[-1px] font-extrabold font-mono italic text-[var(--color-primary)] text-4xl md:text-6xl mix-blend-multiply z-20 [writing-mode:vertical-lr] rotate-360 origin-center"
+						className="lg:hidden fixed left-[-5px] bottom-[-1px] font-extrabold font-mono italic text-[var(--color-primary)] text-4xl md:text-6xl mix-blend-multiply z-20 [writing-mode:vertical-lr] rotate-360 origin-center"
 					>
 						__<a target="_blank" style={{mixBlendMode:'overlay'}} className="mix-blend-overlay hover:mix-blend-exclusion hover:bg-white hover:text-[var(--color-accent)] hover:duration-300" href={data.external_urls?.spotify}>{data.display_name}</a>_UNWRAPPED__
 					</motion.h1>
