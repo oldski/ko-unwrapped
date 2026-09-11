@@ -34,14 +34,14 @@ export default function Tracks3DPage() {
   return (
     <div className="relative h-screen overflow-hidden">
       {/* Header */}
-      <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/90 via-black/70 to-transparent pb-16 px-6 pt-6">
+      <div className="pointer-events-none absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/90 via-black/70 to-transparent pb-16 px-6 pt-6">
         <div className="max-w-7xl">
           <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl text-[var(--ink-primary)] mb-2 pt-14 md:pt-0 md:pr-82">
             Your top tracks, in space
           </h1>
 
           {/* Time Range Selector */}
-          <div className="flex gap-2 mt-4">
+          <div className="pointer-events-auto flex gap-2 mt-4 w-fit">
             {(['short_term', 'medium_term', 'long_term'] as const).map((range) => (
               <Button
                 key={range}

@@ -163,7 +163,10 @@ function Cover({
           e.stopPropagation();
           setHovered(true);
         }}
-        onPointerOut={() => setHovered(false)}
+        onPointerOut={(e) => {
+          e.stopPropagation();
+          setHovered(false);
+        }}
         onClick={(e) => {
           e.stopPropagation();
           onSelect();
