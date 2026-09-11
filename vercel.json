@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/sync-listening-history",
-      "schedule": "0 2 * * *"
+      "schedule": "0 * * * *"
     }
   ]
 }

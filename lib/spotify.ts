@@ -170,8 +170,19 @@ const spotifyApi = async (endpoint: string) => {
  * Get recently played tracks for the user
  * @param limit - Number of tracks to return (max 50)
  */
-export async function getRecentlyPlayed(limit = 50): Promise<IRecentlyPlayedResponse> {
-	return spotifyApi(`/v1/me/player/recently-played?limit=${limit}`);
+export async function getRecentlyPlayed(
+	limit = 50,
+	after?: number,
+): Promise<IRecentlyPlayedResponse> {
+	// `after` is a Unix timestamp in milliseconds; Spotify returns only plays
+	// newer than it. Note the endpoint retains just the last 50 plays overall,
+	// so this narrows the response but cannot reach further back in time.
+	const params = new URLSearchParams({ limit: String(limit) });
+	if (after !== undefined) {
+		params.set('after', String(after));
+	}
+
+	return spotifyApi(`/v1/me/player/recently-played?${params.toString()}`);
 }
 
 /**

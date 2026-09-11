@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/db';
 import { tracks, artists, trackArtists, playHistory } from '@/db/schema';
 import { getRecentlyPlayed } from '@/lib/spotify';
-import { eq, and } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,95 +10,112 @@ export async function POST() {
   try {
     console.log('🔄 Starting listening history sync...');
 
-    // Fetch recently played from Spotify (last 50 tracks)
-    const recentlyPlayedData = await getRecentlyPlayed(50);
+    // Ask Spotify only for plays newer than the newest one already stored.
+    // Spotify retains just the last 50 plays, so this does not let us reach
+    // further back; it only avoids re-processing what we already have.
+    const [newest] = await db
+      .select({ playedAt: playHistory.playedAt })
+      .from(playHistory)
+      .orderBy(desc(playHistory.playedAt))
+      .limit(1);
+
+    const after = newest ? newest.playedAt.getTime() : undefined;
+    const recentlyPlayedData = await getRecentlyPlayed(50, after);
     const items = recentlyPlayedData?.items || [];
 
     if (!items.length) {
-      console.log('⚠️  No tracks to sync');
+      console.log('⚠️  Nothing new since the last sync');
       return NextResponse.json({
         success: true,
         newPlays: 0,
-        message: 'No tracks to sync',
+        message: 'Nothing new since the last sync',
       });
     }
 
     console.log(`📥 Fetched ${items.length} tracks from Spotify`);
 
+    // Spotify caps this endpoint at 50 plays. A full page means listening may
+    // have overflowed the window since the last run, so some plays are gone.
+    if (items.length === 50) {
+      console.warn(
+        '⚠️  Full page returned — plays may have been missed. Sync more often.'
+      );
+    }
+
     let newPlays = 0;
     let skippedPlays = 0;
+    let newTracks = 0;
+    let newArtists = 0;
 
     for (const item of items) {
       try {
-        // Check if track exists in database
-        const existingTracks = await db
-          .select()
-          .from(tracks)
-          .where(eq(tracks.spotifyTrackId, item.track.id))
-          .limit(1);
+        // Insert the track, or fall back to the existing row. ON CONFLICT
+        // rather than a read-then-write check so concurrent syncs cannot both
+        // decide the row is missing.
+        const [insertedTrack] = await db
+          .insert(tracks)
+          .values({
+            spotifyTrackId: item.track.id,
+            trackName: item.track.name,
+            durationMs: item.track.duration_ms,
+            albumName: item.track.album.name,
+            albumImageUrl: item.track.album.images[0]?.url || null,
+            popularity: item.track.popularity,
+          })
+          .onConflictDoNothing({ target: tracks.spotifyTrackId })
+          .returning();
 
-        let trackRecord;
+        let trackRecord = insertedTrack;
 
-        if (existingTracks.length === 0) {
-          // Insert new track
-          const [newTrack] = await db
-            .insert(tracks)
-            .values({
-              spotifyTrackId: item.track.id,
-              trackName: item.track.name,
-              durationMs: item.track.duration_ms,
-              albumName: item.track.album.name,
-              albumImageUrl: item.track.album.images[0]?.url || null,
-              popularity: item.track.popularity,
-            })
-            .returning();
-
-          trackRecord = newTrack;
+        if (trackRecord) {
+          newTracks++;
           console.log(`✅ New track: ${item.track.name}`);
         } else {
-          trackRecord = existingTracks[0];
+          [trackRecord] = await db
+            .select()
+            .from(tracks)
+            .where(eq(tracks.spotifyTrackId, item.track.id))
+            .limit(1);
         }
 
-        // Insert or link artists
+        if (!trackRecord) {
+          throw new Error(`Could not resolve track ${item.track.id}`);
+        }
+
         for (const artist of item.track.artists) {
-          // Check if artist exists
-          const existingArtists = await db
-            .select()
-            .from(artists)
-            .where(eq(artists.spotifyArtistId, artist.id))
-            .limit(1);
+          const [insertedArtist] = await db
+            .insert(artists)
+            .values({
+              spotifyArtistId: artist.id,
+              artistName: artist.name,
+            })
+            .onConflictDoNothing({ target: artists.spotifyArtistId })
+            .returning();
 
-          let artistRecord;
+          let artistRecord = insertedArtist;
 
-          if (existingArtists.length === 0) {
-            // Insert new artist
-            const [newArtist] = await db
-              .insert(artists)
-              .values({
-                spotifyArtistId: artist.id,
-                artistName: artist.name,
-              })
-              .returning();
-
-            artistRecord = newArtist;
+          if (artistRecord) {
+            newArtists++;
             console.log(`✅ New artist: ${artist.name}`);
           } else {
-            artistRecord = existingArtists[0];
+            [artistRecord] = await db
+              .select()
+              .from(artists)
+              .where(eq(artists.spotifyArtistId, artist.id))
+              .limit(1);
           }
 
-          // Link track and artist (check if link exists first)
+          if (!artistRecord) {
+            throw new Error(`Could not resolve artist ${artist.id}`);
+          }
+
           const existingLink = await db
             .select()
             .from(trackArtists)
-            .where(
-              and(
-                eq(trackArtists.trackId, trackRecord.id),
-                eq(trackArtists.artistId, artistRecord.id)
-              )
-            )
-            .limit(1);
+            .where(eq(trackArtists.trackId, trackRecord.id))
+            .limit(50);
 
-          if (existingLink.length === 0) {
+          if (!existingLink.some((link) => link.artistId === artistRecord.id)) {
             await db.insert(trackArtists).values({
               trackId: trackRecord.id,
               artistId: artistRecord.id,
@@ -106,22 +123,21 @@ export async function POST() {
           }
         }
 
-        // Check if this play already exists (by timestamp)
+        // played_at carries a unique index, so a duplicate play is rejected by
+        // the database rather than by a prior read. An empty result means the
+        // play was already recorded.
         const playedAtDate = new Date(item.played_at);
-        const existingPlay = await db
-          .select()
-          .from(playHistory)
-          .where(eq(playHistory.playedAt, playedAtDate))
-          .limit(1);
-
-        if (existingPlay.length === 0) {
-          // Insert new play history
-          await db.insert(playHistory).values({
+        const insertedPlay = await db
+          .insert(playHistory)
+          .values({
             trackId: trackRecord.id,
             playedAt: playedAtDate,
             contextType: item.context?.type || null,
-          });
+          })
+          .onConflictDoNothing({ target: playHistory.playedAt })
+          .returning({ id: playHistory.id });
 
+        if (insertedPlay.length > 0) {
           newPlays++;
           console.log(`🎵 New play: ${item.track.name} at ${playedAtDate.toISOString()}`);
         } else {
@@ -133,12 +149,17 @@ export async function POST() {
       }
     }
 
-    console.log(`✅ Sync complete: ${newPlays} new plays, ${skippedPlays} skipped`);
+    console.log(
+      `✅ Sync complete: ${newPlays} new plays, ${skippedPlays} already recorded, ` +
+      `${newTracks} first-time tracks, ${newArtists} first-time artists`
+    );
 
     return NextResponse.json({
       success: true,
       newPlays,
       skippedPlays,
+      newTracks,
+      newArtists,
       totalProcessed: items.length,
       message: `Synced ${newPlays} new plays`,
     });
