@@ -235,8 +235,12 @@ const Navigation = () => {
 							 * The right end is deliberately heavy: at 88% black a
 							 * full-white visualiser frame still leaves ink-primary above
 							 * 5:1, so legibility does not depend on what is being drawn.
+							 *
+							 * On phones the panel covers most of the width, so there is no
+							 * visualisation left to protect: the scrim goes darker end to
+							 * end and picks up a slight blur. Desktop keeps the clear left.
 							 */
-							className="fixed inset-0 z-[55] bg-gradient-to-r from-transparent via-black/45 to-black/[0.88]"
+							className="fixed inset-0 z-[55] bg-gradient-to-r from-black/15 via-black/55 to-black/[0.95] backdrop-blur-xs md:from-transparent md:via-black/45 md:to-black/[0.88] md:backdrop-blur-none"
 						/>
 
 						<motion.nav

@@ -24,12 +24,21 @@ const Hero = () => {
 						__<a target="_blank" style={{mixBlendMode:'overlay'}} className="mix-blend-overlay hover:mix-blend-exclusion hover:bg-white hover:text-[var(--color-accent)] hover:duration-300" href={data.external_urls?.spotify}>{data.display_name}</a>_UNWRAPPED__
 					</motion.h1>
 
-					{/* Desktop: Horizontal text at bottom */}
+					{/*
+					 * Desktop: vertical wordmark down the right edge.
+					 *
+					 * Set in vertical-rl, so the run of type is measured against the
+					 * viewport HEIGHT, not its width. A fixed 7xl only fits on a tall
+					 * display; on a shorter laptop panel the top of the wordmark ran
+					 * off the screen. Sizing in vh lets the type shrink with the
+					 * window, and the clamp keeps 7xl as the ceiling on big screens
+					 * and stops it collapsing to something unreadable on short ones.
+					 */}
 					<motion.h1
 						initial={{ opacity: 0, y: 50 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ duration: 0.8, delay: 0.5 }}
-						className="wordmark hidden backdrop-blur-3xl lg:block fixed bottom-[-10] right-[-10] font-extrabold font-mono italic text-[var(--color-primary)] text-7xl mix-blend-multiply z-[56] px-4 [writing-mode:vertical-rl] rotate-180 origin-center"
+						className="wordmark hidden backdrop-blur-3xl lg:block fixed bottom-[-10] right-[-10] font-extrabold font-mono italic text-[var(--color-primary)] text-[clamp(2.75rem,6vh,4.5rem)] leading-none mix-blend-multiply z-[56] px-4 [writing-mode:vertical-rl] rotate-180 origin-center"
 					>
 						__<a target="_blank" className="mix-blend-hue hover:mix-blend-exclusion hover:text-[var(--color-vibrant)] hover:duration-300" href={data.external_urls?.spotify}>{data.display_name}</a>_UNWRAPPED________
 					</motion.h1>
