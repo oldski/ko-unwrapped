@@ -19,7 +19,7 @@ export const tracks = pgTable('tracks', {
   updatedAt: timestamp('updated_at').defaultNow(),
 }, (table) => ({
   spotifyTrackIdIdx: index('spotify_track_id_idx').on(table.spotifyTrackId),
-}));
+})).enableRLS();
 
 // Artists table - Unique artists
 export const artists = pgTable('artists', {
@@ -29,7 +29,7 @@ export const artists = pgTable('artists', {
   createdAt: timestamp('created_at').defaultNow(),
 }, (table) => ({
   spotifyArtistIdIdx: index('spotify_artist_id_idx').on(table.spotifyArtistId),
-}));
+})).enableRLS();
 
 // Track-Artist join table (many-to-many)
 export const trackArtists = pgTable('track_artists', {
@@ -37,7 +37,7 @@ export const trackArtists = pgTable('track_artists', {
   artistId: uuid('artist_id').references(() => artists.id).notNull(),
 }, (table) => ({
   pk: index('track_artists_pk').on(table.trackId, table.artistId),
-}));
+})).enableRLS();
 
 // Play history - Every time a track is played
 export const playHistory = pgTable('play_history', {
@@ -52,7 +52,7 @@ export const playHistory = pgTable('play_history', {
   // and manual syncs and producing duplicate plays.
   playedAtIdx: uniqueIndex('played_at_idx').on(table.playedAt),
   trackIdIdx: index('track_id_idx').on(table.trackId),
-}));
+})).enableRLS();
 
 // Audio features - Lazy-loaded from Spotify API when Extended Quota is enabled
 export const audioFeatures = pgTable('audio_features', {
@@ -65,14 +65,14 @@ export const audioFeatures = pgTable('audio_features', {
   instrumentalness: real('instrumentalness'),
   speechiness: real('speechiness'),
   fetchedAt: timestamp('fetched_at').defaultNow(),
-});
+}).enableRLS();
 
 // Artist genre cache - populated from Spotify /v1/artists (genres array on each artist)
 export const artistGenres = pgTable('artist_genres', {
   artistId: uuid('artist_id').references(() => artists.id).primaryKey(),
   genres: text('genres').array().notNull().default(sql`'{}'::text[]`),
   fetchedAt: timestamp('fetched_at').defaultNow(),
-});
+}).enableRLS();
 
 // Listening sessions - derived from play_history by splitting on gaps > 30 minutes
 export const listeningSessions = pgTable('listening_sessions', {
@@ -85,7 +85,7 @@ export const listeningSessions = pgTable('listening_sessions', {
   createdAt: timestamp('created_at').defaultNow(),
 }, (table) => ({
   startedAtIdx: index('sessions_started_at_idx').on(table.startedAt),
-}));
+})).enableRLS();
 
 // Session-track join, preserves play order inside each session
 export const sessionTracks = pgTable('session_tracks', {
@@ -96,7 +96,7 @@ export const sessionTracks = pgTable('session_tracks', {
 }, (table) => ({
   sessionIdx: index('session_tracks_session_idx').on(table.sessionId),
   trackIdx: index('session_tracks_track_idx').on(table.trackId),
-}));
+})).enableRLS();
 
 // Vibe tags - multi-source classifications applied to tracks
 // source: 'llm' (Claude inference) | 'genre' (derived from artist genres) | 'context' (listening time/cohort)
@@ -111,7 +111,7 @@ export const vibeTags = pgTable('vibe_tags', {
   trackIdx: index('vibe_tags_track_idx').on(table.trackId),
   tagIdx: index('vibe_tags_tag_idx').on(table.tag),
   uniq: uniqueIndex('vibe_tags_unique').on(table.trackId, table.tag, table.source),
-}));
+})).enableRLS();
 
 // Discovery cache - memoizes external similarity/resolution lookups (30-day TTL enforced in code)
 export const discoveryCache = pgTable('discovery_cache', {
@@ -119,4 +119,4 @@ export const discoveryCache = pgTable('discovery_cache', {
   cacheKey: varchar('cache_key', { length: 300 }).unique().notNull(),
   payload: jsonb('payload').notNull(),
   fetchedAt: timestamp('fetched_at').defaultNow().notNull(),
-});
+}).enableRLS();
