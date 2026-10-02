@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
-import { playHistory, tracks, artists, trackArtists } from '@/db/schema';
+import { playHistory, tracks } from '@/db/schema';
 import { desc, count, sql, and, gte, lte, eq } from 'drizzle-orm';
+import { fetchArtistsByTrack } from '@/lib/stats/attachArtists';
 
 export async function GET(request: Request) {
   try {
@@ -50,29 +51,12 @@ export async function GET(request: Request) {
       ? await topTracksQuery.where(and(...conditions))
       : await topTracksQuery;
 
-    // For each track, get the artists
-    const topTracksWithArtists = await Promise.all(
-      topTracks.map(async (track) => {
-        const trackArtistsData = await db
-          .select({
-            artistId: artists.id,
-            artistName: artists.artistName,
-            spotifyArtistId: artists.spotifyArtistId,
-          })
-          .from(trackArtists)
-          .innerJoin(artists, eq(trackArtists.artistId, artists.id))
-          .where(eq(trackArtists.trackId, track.trackId));
-
-        return {
-          ...track,
-          artists: trackArtistsData.map((a) => ({
-            id: a.artistId,
-            name: a.artistName,
-            spotifyArtistId: a.spotifyArtistId,
-          })),
-        };
-      })
-    );
+    // Get artists for every track in one query
+    const artistsByTrack = await fetchArtistsByTrack(topTracks.map((track) => track.trackId));
+    const topTracksWithArtists = topTracks.map((track) => ({
+      ...track,
+      artists: artistsByTrack.get(track.trackId) ?? [],
+    }));
 
     return NextResponse.json({
       success: true,
