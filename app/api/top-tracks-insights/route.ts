@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
-import { playHistory, tracks, artists, trackArtists } from '@/db/schema';
+import { playHistory, tracks } from '@/db/schema';
 import { desc, count, sql, eq } from 'drizzle-orm';
+import { fetchArtistsByTrack } from '@/lib/stats/attachArtists';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,25 +37,12 @@ export async function GET(request: Request) {
       .orderBy(desc(sql`play_count`))
       .limit(limit);
 
-    // Get artists for each track
-    const tracksWithArtists = await Promise.all(
-      topTracks.map(async (track) => {
-        const trackArtistsData = await db
-          .select({
-            artistId: artists.id,
-            artistName: artists.artistName,
-            spotifyArtistId: artists.spotifyArtistId,
-          })
-          .from(trackArtists)
-          .innerJoin(artists, eq(trackArtists.artistId, artists.id))
-          .where(eq(trackArtists.trackId, track.trackId));
-
-        return {
-          ...track,
-          artists: trackArtistsData,
-        };
-      })
-    );
+    // Get artists for every track in one query
+    const artistsByTrack = await fetchArtistsByTrack(topTracks.map((track) => track.trackId));
+    const tracksWithArtists = topTracks.map((track) => ({
+      ...track,
+      artists: artistsByTrack.get(track.trackId) ?? [],
+    }));
 
     // Calculate insights
     const totalPlays = tracksWithArtists.reduce((sum, t) => sum + t.playCount, 0);
@@ -100,11 +88,11 @@ export async function GET(request: Request) {
     tracksWithArtists.forEach(track => {
       if (!track.artists) return;
       track.artists.forEach(artist => {
-        if (!artist || !artist.artistName) return;
-        if (!artistPlayCounts[artist.artistName]) {
-          artistPlayCounts[artist.artistName] = { name: artist.artistName, plays: 0 };
+        if (!artist || !artist.name) return;
+        if (!artistPlayCounts[artist.name]) {
+          artistPlayCounts[artist.name] = { name: artist.name, plays: 0 };
         }
-        artistPlayCounts[artist.artistName].plays += track.playCount;
+        artistPlayCounts[artist.name].plays += track.playCount;
       });
     });
 
@@ -170,7 +158,7 @@ export async function GET(request: Request) {
         popularity: t.popularity,
         durationMs: t.durationMs,
         playCount: t.playCount,
-        artists: t.artists?.map(a => a.artistName).filter(Boolean) || [],
+        artists: t.artists?.map(a => a.name).filter(Boolean) || [],
       })),
     });
 

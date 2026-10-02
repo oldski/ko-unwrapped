@@ -11,7 +11,11 @@ function createDb() {
     throw new Error('DATABASE_URL is not set');
   }
 
-  return drizzle(postgres(connectionString), { schema });
+  // Supabase's transaction pooler (port 6543) hands each query to whichever
+  // backend is free, so prepared statements can't be relied on to exist.
+  // Session mode would avoid that but caps clients at the pool size, which
+  // serverless instances exhaust quickly.
+  return drizzle(postgres(connectionString, { prepare: false }), { schema });
 }
 
 let instance: Database | null = null;

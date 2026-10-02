@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
-import { playHistory, tracks, artists, trackArtists } from '@/db/schema';
+import { playHistory, tracks } from '@/db/schema';
 import { desc, sql, eq } from 'drizzle-orm';
+import { fetchArtistsByTrack } from '@/lib/stats/attachArtists';
 
 export async function GET(request: Request) {
   try {
@@ -55,32 +56,15 @@ export async function GET(request: Request) {
       .orderBy(desc(playHistory.playedAt))
       .limit(50); // Limit to 50 to avoid too much data
 
-    // For each play, get the artists
-    const playsWithArtists = await Promise.all(
-      plays.map(async (play) => {
-        const trackArtistsData = await db
-          .select({
-            artistId: artists.id,
-            artistName: artists.artistName,
-            spotifyArtistId: artists.spotifyArtistId,
-          })
-          .from(trackArtists)
-          .innerJoin(artists, eq(trackArtists.artistId, artists.id))
-          .where(eq(trackArtists.trackId, play.track.id));
-
-        return {
-          ...play,
-          track: {
-            ...play.track,
-            artists: trackArtistsData.map((a) => ({
-              id: a.artistId,
-              name: a.artistName,
-              spotifyArtistId: a.spotifyArtistId,
-            })),
-          },
-        };
-      })
-    );
+    // Get artists for every played track in one query
+    const artistsByTrack = await fetchArtistsByTrack(plays.map((play) => play.track.id));
+    const playsWithArtists = plays.map((play) => ({
+      ...play,
+      track: {
+        ...play.track,
+        artists: artistsByTrack.get(play.track.id) ?? [],
+      },
+    }));
 
     // Group by year for better organization
     const groupedByYear = playsWithArtists.reduce((acc, play) => {
