@@ -60,54 +60,44 @@ const PERIOD_PERSONAS = {
   },
 };
 
-// Helper function to calculate patterns from tracks
-function calculatePatterns(tracks: any[]) {
-  if (tracks.length === 0) return null;
+/*
+ * Shape the aggregate endpoint's payload for the views.
+ *
+ * These numbers used to be counted here in the browser from raw play rows
+ * fetched with `limit=2000`. Past 2,000 plays that cap silently truncated the
+ * window, so 3 months, 6 months and a year all reported the same totals, peak
+ * hour and top artists. `/api/stats/patterns` groups in the database instead;
+ * this only reads the buckets back out.
+ */
+export interface PatternsPayload {
+  totalPlays: number;
+  totalDurationMs: number;
+  hourCounts: number[];
+  dayOfWeekCounts: number[];
+  grid: number[][];
+  topArtists: Array<{ name: string; count: number }>;
+}
 
-  const hourCounts = new Array(24).fill(0);
-  const dayOfWeekCounts = new Array(7).fill(0);
-  const artistCounts: { [key: string]: number } = {};
-  let totalDurationMs = 0;
+function shapePatterns(payload: PatternsPayload | undefined | null) {
+  if (!payload || payload.totalPlays === 0) return null;
 
-  tracks.forEach((item: any) => {
-    const date = new Date(item.playedAt);
-    const hour = date.getHours();
-    const dayOfWeek = date.getDay();
-
-    hourCounts[hour]++;
-    dayOfWeekCounts[dayOfWeek]++;
-    totalDurationMs += item.track?.durationMs || 0;
-
-    item.track?.artists?.forEach((artist: any) => {
-      artistCounts[artist.name] = (artistCounts[artist.name] || 0) + 1;
-    });
-  });
-
-  const peakHour = hourCounts.indexOf(Math.max(...hourCounts));
-  const peakDay = dayOfWeekCounts.indexOf(Math.max(...dayOfWeekCounts));
-
-  const topArtists = Object.entries(artistCounts)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 5)
-    .map(([name, count]) => ({ name, count }));
-
-  const totalHours = Math.floor(totalDurationMs / (1000 * 60 * 60));
-  const totalMinutes = Math.floor((totalDurationMs % (1000 * 60 * 60)) / (1000 * 60));
+  const { hourCounts, dayOfWeekCounts, totalDurationMs } = payload;
 
   return {
     hourCounts,
     dayOfWeekCounts,
-    peakHour,
-    peakDay,
-    topArtists,
-    totalTracks: tracks.length,
-    totalHours,
-    totalMinutes,
+    grid: payload.grid,
+    peakHour: hourCounts.indexOf(Math.max(...hourCounts)),
+    peakDay: dayOfWeekCounts.indexOf(Math.max(...dayOfWeekCounts)),
+    topArtists: payload.topArtists,
+    totalTracks: payload.totalPlays,
+    totalHours: Math.floor(totalDurationMs / (1000 * 60 * 60)),
+    totalMinutes: Math.floor((totalDurationMs % (1000 * 60 * 60)) / (1000 * 60)),
   };
 }
 
 // Helper to get persona from patterns
-function getPersonaFromPatterns(patterns: ReturnType<typeof calculatePatterns>) {
+function getPersonaFromPatterns(patterns: ReturnType<typeof shapePatterns>) {
   if (!patterns) return PERIOD_PERSONAS.allDayPlayer;
 
   const { hourCounts, dayOfWeekCounts } = patterns;
@@ -208,15 +198,47 @@ export default function StatsPage() {
     };
   }, []);
 
-  // Build query params for date range
-  const queryParams = new URLSearchParams();
-  if (dateRange.start) queryParams.append('start', dateRange.start);
-  if (dateRange.end) queryParams.append('end', dateRange.end);
-  queryParams.append('limit', '2000');
+  /*
+   * Bucketing happens in the database, in the viewer's zone.
+   *
+   * `played_at` is stored as UTC, and "peak hour" is only meaningful in local
+   * time, so the zone travels with the request rather than the aggregate
+   * coming back in UTC.
+   */
+  const timezone = useMemo(
+    () => Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+    []
+  );
 
-  // Fetch historical data from database
-  const { data: historyData, isLoading } = useSWR(
-    `/api/stats/history?${queryParams.toString()}`,
+  const buildPatternParams = useCallback(
+    (start: string | null, end: string | null) => {
+      const params = new URLSearchParams();
+      if (start) params.append('start', start);
+      if (end) params.append('end', end);
+      params.append('tz', timezone);
+      return params.toString();
+    },
+    [timezone]
+  );
+
+  // Aggregated patterns for the selected window
+  const { data: patternsResponse, isLoading } = useSWR(
+    `/api/stats/patterns?${buildPatternParams(dateRange.start, dateRange.end)}`,
+    fetcher
+  );
+
+  /*
+   * Raw plays, only for the "last 50" list below the tiles. Every other
+   * number on the page comes from the aggregate above, so this stays small
+   * instead of pulling thousands of rows the page would only count.
+   */
+  const historyParams = new URLSearchParams();
+  if (dateRange.start) historyParams.append('start', dateRange.start);
+  if (dateRange.end) historyParams.append('end', dateRange.end);
+  historyParams.append('limit', '50');
+
+  const { data: historyData } = useSWR(
+    `/api/stats/history?${historyParams.toString()}`,
     fetcher
   );
 
@@ -235,33 +257,25 @@ export default function StatsPage() {
   const topTracks = topTracksData?.data || [];
 
   // Comparison mode data fetching
-  const periodAParams = new URLSearchParams();
-  periodAParams.append('start', comparisonRanges.periodA.start);
-  periodAParams.append('end', comparisonRanges.periodA.end);
-  periodAParams.append('limit', '2000');
-
-  const periodBParams = new URLSearchParams();
-  periodBParams.append('start', comparisonRanges.periodB.start);
-  periodBParams.append('end', comparisonRanges.periodB.end);
-  periodBParams.append('limit', '2000');
-
   const { data: periodAData, isLoading: isLoadingA } = useSWR(
-    selectedView === 'compare' ? `/api/stats/history?${periodAParams.toString()}` : null,
+    selectedView === 'compare'
+      ? `/api/stats/patterns?${buildPatternParams(comparisonRanges.periodA.start, comparisonRanges.periodA.end)}`
+      : null,
     fetcher
   );
 
   const { data: periodBData, isLoading: isLoadingB } = useSWR(
-    selectedView === 'compare' ? `/api/stats/history?${periodBParams.toString()}` : null,
+    selectedView === 'compare'
+      ? `/api/stats/patterns?${buildPatternParams(comparisonRanges.periodB.start, comparisonRanges.periodB.end)}`
+      : null,
     fetcher
   );
 
-  const periodATracks = periodAData?.data || [];
-  const periodBTracks = periodBData?.data || [];
   const isLoadingComparison = isLoadingA || isLoadingB;
 
   // Calculate patterns for comparison periods
-  const periodAPatterns = useMemo(() => calculatePatterns(periodATracks), [periodATracks]);
-  const periodBPatterns = useMemo(() => calculatePatterns(periodBTracks), [periodBTracks]);
+  const periodAPatterns = useMemo(() => shapePatterns(periodAData?.data), [periodAData]);
+  const periodBPatterns = useMemo(() => shapePatterns(periodBData?.data), [periodBData]);
   const periodAPersona = useMemo(() => getPersonaFromPatterns(periodAPatterns), [periodAPatterns]);
   const periodBPersona = useMemo(() => getPersonaFromPatterns(periodBPatterns), [periodBPatterns]);
 
@@ -317,56 +331,8 @@ export default function StatsPage() {
     };
   }, [periodAPatterns, periodBPatterns, periodAPersona, periodBPersona]);
 
-  // Calculate listening patterns
-  const patterns = useMemo(() => {
-    if (recentTracks.length === 0) return null;
-
-    // Group by hour of day
-    const hourCounts = new Array(24).fill(0);
-    const dayOfWeekCounts = new Array(7).fill(0);
-    const artistCounts: { [key: string]: number } = {};
-    let totalDurationMs = 0;
-
-    recentTracks.forEach((item: any) => {
-      const date = new Date(item.playedAt);
-      const hour = date.getHours();
-      const dayOfWeek = date.getDay();
-
-      hourCounts[hour]++;
-      dayOfWeekCounts[dayOfWeek]++;
-      totalDurationMs += item.track.durationMs || 0;
-
-      // Count artists
-      item.track.artists?.forEach((artist: any) => {
-        artistCounts[artist.name] = (artistCounts[artist.name] || 0) + 1;
-      });
-    });
-
-    // Find peak listening hour
-    const peakHour = hourCounts.indexOf(Math.max(...hourCounts));
-    const peakDay = dayOfWeekCounts.indexOf(Math.max(...dayOfWeekCounts));
-
-    // Top artists
-    const topArtists = Object.entries(artistCounts)
-      .sort(([, a], [, b]) => b - a)
-      .slice(0, 5)
-      .map(([name, count]) => ({ name, count }));
-
-    // Calculate total listening time
-    const totalHours = Math.floor(totalDurationMs / (1000 * 60 * 60));
-    const totalMinutes = Math.floor((totalDurationMs % (1000 * 60 * 60)) / (1000 * 60));
-
-    return {
-      hourCounts,
-      dayOfWeekCounts,
-      peakHour,
-      peakDay,
-      topArtists,
-      totalTracks: recentTracks.length,
-      totalHours,
-      totalMinutes,
-    };
-  }, [recentTracks]);
+  // Listening patterns for the selected window
+  const patterns = useMemo(() => shapePatterns(patternsResponse?.data), [patternsResponse]);
 
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -761,9 +727,7 @@ export default function StatsPage() {
                     description="Hour × Day of Week activity heatmap"
                   />
                   <div className="mt-4">
-                    <HourDayHeatmap
-                      data={recentTracks.map((t: any) => ({ playedAt: t.playedAt }))}
-                    />
+                    <HourDayHeatmap grid={patterns.grid} />
                   </div>
                 </AnimatedCard>
 
@@ -934,9 +898,7 @@ export default function StatsPage() {
                       description={`${periodBPatterns.totalTracks} plays`}
                     />
                     <div className="mt-4">
-                      <HourDayHeatmap
-                        data={periodBTracks.map((t: any) => ({ playedAt: t.playedAt }))}
-                      />
+                      <HourDayHeatmap grid={periodBPatterns.grid} />
                     </div>
                   </AnimatedCard>
 
@@ -946,9 +908,7 @@ export default function StatsPage() {
                       description={`${periodAPatterns.totalTracks} plays`}
                     />
                     <div className="mt-4">
-                      <HourDayHeatmap
-                        data={periodATracks.map((t: any) => ({ playedAt: t.playedAt }))}
-                      />
+                      <HourDayHeatmap grid={periodAPatterns.grid} />
                     </div>
                   </AnimatedCard>
                 </div>

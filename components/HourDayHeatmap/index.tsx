@@ -7,7 +7,14 @@ import { useSequentialRamp } from '@/hooks/useChartPalette';
 const RAMP_STEPS = 5;
 
 interface HourDayHeatmapProps {
-  data: Array<{ playedAt: string | Date }>;
+  /*
+   * A 7×24 grid of play counts, weekday-major, already bucketed in the
+   * viewer's timezone by `/api/stats/patterns`. Preferred over `data`: the
+   * caller no longer has to hold every play row in memory to draw this.
+   */
+  grid?: number[][];
+  /* Raw plays, bucketed here. Kept for callers that still have rows. */
+  data?: Array<{ playedAt: string | Date }>;
   showLabels?: boolean;
   className?: string;
 }
@@ -15,6 +22,7 @@ interface HourDayHeatmapProps {
 const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 export default function HourDayHeatmap({
+  grid: providedGrid,
   data,
   showLabels = true,
   className = '',
@@ -35,20 +43,23 @@ export default function HourDayHeatmap({
   // Build 7x24 grid of counts
   const { grid, maxCount, totalPlays } = useMemo(() => {
     // Initialize 7 days × 24 hours grid
-    const grid: number[][] = Array.from({ length: 7 }, () => Array(24).fill(0));
-    let total = 0;
+    const grid: number[][] = providedGrid
+      ? providedGrid.map((row) => [...row])
+      : Array.from({ length: 7 }, () => Array(24).fill(0));
 
-    data.forEach((item) => {
-      const date = new Date(item.playedAt);
-      const day = date.getDay(); // 0-6
-      const hour = date.getHours(); // 0-23
-      grid[day][hour]++;
-      total++;
-    });
+    if (!providedGrid) {
+      (data ?? []).forEach((item) => {
+        const date = new Date(item.playedAt);
+        const day = date.getDay(); // 0-6
+        const hour = date.getHours(); // 0-23
+        grid[day][hour]++;
+      });
+    }
 
+    const total = grid.flat().reduce((sum, count) => sum + count, 0);
     const max = Math.max(...grid.flat(), 1);
     return { grid, maxCount: max, totalPlays: total };
-  }, [data]);
+  }, [providedGrid, data]);
 
   const getColor = (count: number) => {
     // Absence is not a low value: an empty cell takes the surface, so "no
