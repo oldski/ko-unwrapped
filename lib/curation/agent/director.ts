@@ -3,7 +3,7 @@ import type { PoolTrack, Preset } from './types';
 import { DISCOVERY_RATIO } from './types';
 import { validateDirectorOutput, type ValidatedSet } from './validateDirectorOutput';
 
-const MODEL = 'claude-sonnet-5';
+const MODEL = 'claude-sonnet-5-5';
 
 function getClient(): Anthropic {
   if (!process.env.ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY is not set');
@@ -22,7 +22,7 @@ Craft rules:
 - Hit the duration window using each track's duration_ms.
 - For every chosen track write a short placement note (why here). For every adjacent pair write a one-line transition note.
 - Write a 2-3 sentence narrative describing the set's journey.
-Return via the build_set tool only.`;
+Choose at least 3 tracks.`;
 
 export async function directSet(args: {
   seeds: PoolTrack[];
@@ -49,23 +49,23 @@ ${poolLines}`;
 
   const response = await client.messages.create({
     model: MODEL,
-    max_tokens: 4096,
+    max_tokens: 16000,
     system: SYSTEM,
     messages: [{ role: 'user', content: user }],
-    tools: [
-      {
-        name: 'build_set',
-        description: 'Submit the final ordered set.',
-        input_schema: {
+    output_config: {
+      format: {
+        type: 'json_schema',
+        schema: {
           type: 'object',
           properties: {
-            track_ids: { type: 'array', items: { type: 'string' }, minItems: 3 },
+            track_ids: { type: 'array', items: { type: 'string' } },
             placement_notes: {
               type: 'array',
               items: {
                 type: 'object',
                 properties: { track_id: { type: 'string' }, note: { type: 'string' } },
                 required: ['track_id', 'note'],
+                additionalProperties: false,
               },
             },
             transitions: {
@@ -74,27 +74,28 @@ ${poolLines}`;
                 type: 'object',
                 properties: { from_index: { type: 'integer' }, note: { type: 'string' } },
                 required: ['from_index', 'note'],
+                additionalProperties: false,
               },
             },
             narrative: { type: 'string' },
           },
           required: ['track_ids', 'placement_notes', 'transitions', 'narrative'],
+          additionalProperties: false,
         },
       },
-    ],
-    tool_choice: { type: 'tool', name: 'build_set' },
+    },
   });
 
-  for (const block of response.content) {
-    if (block.type === 'tool_use' && block.name === 'build_set') {
-      return validateDirectorOutput({
-        raw: block.input as ValidationInput['raw'],
-        pool,
-        durationTargetMs,
-      });
-    }
+  if (response.stop_reason !== 'end_turn') {
+    throw new Error(`director stopped early: ${response.stop_reason}`);
   }
-  throw new Error('director returned no build_set tool call');
+  const text = response.content.find((b) => b.type === 'text');
+  if (!text || text.type !== 'text') throw new Error('director returned no set');
+  return validateDirectorOutput({
+    raw: JSON.parse(text.text) as ValidationInput['raw'],
+    pool,
+    durationTargetMs,
+  });
 }
 
 type ValidationInput = Parameters<typeof validateDirectorOutput>[0];
