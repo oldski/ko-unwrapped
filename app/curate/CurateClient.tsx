@@ -3,6 +3,7 @@
 import { useCallback, useState } from 'react';
 import { energyFromTags } from '@/lib/curation/energy';
 import { smoothTransitions } from '@/lib/curation/smoothTransitions';
+import { titleFromTags } from '@/lib/curation/setTitle';
 import type { Filters, Preset, SetTrack, TrackHit, Transition } from './types';
 import { DEFAULT_FILTERS } from './types';
 import SeedTray from './SeedTray';
@@ -28,6 +29,7 @@ export default function CurateClient({ displayName }: { displayName: string }) {
   const [preset, setPreset] = useState<Preset>('balanced');
   const [transitions, setTransitions] = useState<Transition[]>([]);
   const [narrative, setNarrative] = useState('');
+  const [title, setTitle] = useState('');
   const [fallbackNotice, setFallbackNotice] = useState<string | null>(null);
   const [progressStage, setProgressStage] = useState<string | null>(null);
   // On by default: see the note in generate.
@@ -122,6 +124,7 @@ export default function CurateClient({ displayName }: { displayName: string }) {
       setAlternates((data.alternates ?? []).map(withEnergy));
       setTransitions(data.transitions ?? []);
       setNarrative(data.narrative ?? '');
+      setTitle(data.title ?? '');
       if (data.mode === 'fallback') {
         setFallbackNotice('The set director was unavailable, so this set was sequenced the classic way.');
       }
@@ -320,6 +323,7 @@ export default function CurateClient({ displayName }: { displayName: string }) {
         {pushOpen && (
           <PushDialog
             set={set}
+            defaultName={title || titleFromTags(set)}
             defaultDescription={narrative || 'Curated with oldski unwrapped'}
             onClose={() => setPushOpen(false)}
           />

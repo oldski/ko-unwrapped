@@ -22,6 +22,7 @@ Craft rules:
 - Hit the duration window using each track's duration_ms.
 - For every chosen track write a short placement note (why here). For every adjacent pair write a one-line transition note.
 - Write a 2-3 sentence narrative describing the set's journey.
+- Name the set the way a playful daylist would: all lowercase, 3-6 words, stacking a mood or two, the vibe or genre feel, and a time or setting the music fits ("hazy synth-pop rooftop sunday", "sad banger 2am drive", "sparkly kitchen disco"). Riff on the feeling instead of repeating tag names back; specific to this set, and a little silly is good. No artist or track names, no quotes or emoji, never the word "set" or a date.
 Choose at least 3 tracks.`;
 
 export async function directSet(args: {
@@ -78,8 +79,9 @@ ${poolLines}`;
               },
             },
             narrative: { type: 'string' },
+            title: { type: 'string' },
           },
-          required: ['track_ids', 'placement_notes', 'transitions', 'narrative'],
+          required: ['track_ids', 'placement_notes', 'transitions', 'narrative', 'title'],
           additionalProperties: false,
         },
       },

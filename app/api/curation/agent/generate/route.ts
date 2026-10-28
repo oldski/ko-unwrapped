@@ -100,6 +100,7 @@ function fallbackResult(
     })),
     transitions: [],
     narrative: '',
+    title: '',
     totalDurationMs: ranked.totalDurationMs,
     meta: { poolSize: ranked.meta.candidatePoolSize, discoveredCount: 0, fallbackReason: reason },
   };
@@ -192,6 +193,7 @@ export async function POST(request: Request) {
         alternates: leftovers,
         transitions: set.transitions,
         narrative: set.narrative,
+        title: set.title,
         totalDurationMs: agentTracks.reduce((s, t) => s + t.durationMs, 0),
         meta: {
           poolSize: pool.length,

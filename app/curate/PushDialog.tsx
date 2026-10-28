@@ -5,15 +5,17 @@ import type { SetTrack } from './types';
 
 export default function PushDialog({
   set,
+  defaultName,
   defaultDescription,
   onClose,
 }: {
   set: SetTrack[];
+  defaultName: string;
   defaultDescription: string;
   onClose: () => void;
 }) {
   const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  const [name, setName] = useState(`oldski set — ${today}`);
+  const [name, setName] = useState(defaultName || `oldski set — ${today}`);
   const [state, setState] = useState<'idle' | 'pushing' | 'done' | 'error'>('idle');
   const [result, setResult] = useState<string>('');
 

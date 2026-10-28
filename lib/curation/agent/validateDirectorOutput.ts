@@ -1,4 +1,5 @@
 import type { DirectorSet, PoolTrack } from './types';
+import { cleanSetTitle } from '../setTitle';
 
 export interface ValidationInput {
   raw: {
@@ -6,6 +7,7 @@ export interface ValidationInput {
     placement_notes: { track_id: string; note: string }[];
     transitions: { from_index: number; note: string }[];
     narrative: string;
+    title?: string;
   };
   pool: PoolTrack[];
   durationTargetMs: [number, number];
@@ -61,6 +63,7 @@ export function validateDirectorOutput(input: ValidationInput): ValidatedSet {
     placementNotes,
     transitions,
     narrative: typeof raw.narrative === 'string' ? raw.narrative : '',
+    title: cleanSetTitle(raw.title),
     warnings,
   };
 }

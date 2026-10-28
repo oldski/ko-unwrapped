@@ -30,6 +30,7 @@ export interface DirectorSet {
   placementNotes: Record<string, string>; // trackId -> note
   transitions: { fromIndex: number; note: string }[];
   narrative: string;
+  title: string;                  // playlist name, '' when none
 }
 
 export interface AgentTrack extends Omit<PoolTrack, 'source'> {
@@ -43,6 +44,7 @@ export interface AgentGenerateResult {
   tracks: AgentTrack[];
   transitions: { fromIndex: number; note: string }[];
   narrative: string;
+  title: string;
   totalDurationMs: number;
   meta: {
     poolSize: number;
