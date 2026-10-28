@@ -61,6 +61,16 @@ describe('validateDirectorOutput', () => {
     expect(v.warnings.some((w) => w.includes('below'))).toBe(true);
   });
 
+  it('passes the set title through, cleaned', () => {
+    const v = validateDirectorOutput({ raw: raw(['a', 'b'], { title: ' "Neon Rain Drive" ' }), pool, durationTargetMs: [100_000, 400_000] });
+    expect(v.title).toBe('Neon Rain Drive');
+  });
+
+  it('returns an empty title when the director gave none', () => {
+    const v = validateDirectorOutput({ raw: raw(['a', 'b']), pool, durationTargetMs: [100_000, 400_000] });
+    expect(v.title).toBe('');
+  });
+
   it('drops transitions whose from_index lost its successor', () => {
     const v = validateDirectorOutput({ raw: raw(['a', 'b', 'c', 'd']), pool, durationTargetMs: [100_000, 400_000] });
     for (const t of v.transitions) expect(t.fromIndex).toBeLessThan(v.trackIds.length - 1);
